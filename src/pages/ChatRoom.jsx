@@ -24,39 +24,40 @@ const ChatRoom = () => {
     const messagesRef = ref(rtdb, "chatMessages");
 
     const fetchScreenName = async (userId) => {
-      if (screenNames[userId]) return;
+      if (screenNames[userId]) return screenNames[userId];
+
       try {
         const docRef = doc(db, "users", userId);
         const snap = await getDoc(docRef);
-        if (snap.exists()) {
-          const data = snap.data();
-          setScreenNames((prev) => ({
-            ...prev,
-            [userId]: data.screenName || "Unknown"
-          }));
-        } else {
-          setScreenNames((prev) => ({ ...prev, [userId]: "Unknown" }));
-        }
+        const data = snap.exists() ? snap.data() : null;
+        const name = data?.screenName || "Unknown";
+
+        setScreenNames((prev) => ({ ...prev, [userId]: name }));
+        return name;
       } catch {
         setScreenNames((prev) => ({ ...prev, [userId]: "Unknown" }));
+        return "Unknown";
       }
     };
 
     const handleNewMessage = async (snapshot) => {
       const data = snapshot.val();
       const id = snapshot.key;
-      await fetchScreenName(data.userId);
+      const screenName = await fetchScreenName(data.userId);
       setMessages((prev) => {
         const exists = prev.some((msg) => msg.id === id);
-        return exists ? prev : [...prev, { id, ...data }];
+        return exists ? prev : [...prev, { id, ...data, screenName }];
       });
     };
 
-    const handleUpdate = (snapshot) => {
+    const handleUpdate = async (snapshot) => {
       const data = snapshot.val();
       const id = snapshot.key;
+      const screenName = await fetchScreenName(data.userId);
       setMessages((prev) =>
-        prev.map((msg) => (msg.id === id ? { ...msg, ...data } : msg))
+        prev.map((msg) =>
+          msg.id === id ? { ...msg, ...data, screenName } : msg
+        )
       );
     };
 
@@ -74,7 +75,7 @@ const ChatRoom = () => {
       updateListener();
       removeListener();
     };
-  }, [screenNames]);
+  }, []); // 🔥 Remove screenNames dependency to avoid blocking updates
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -116,7 +117,7 @@ const ChatRoom = () => {
         {messages.map((msg) => (
           <Box key={msg.id} sx={{ mb: 1, borderBottom: "1px solid #ccc", pb: 1 }}>
             <Typography variant="subtitle2" color="primary">
-              {screenNames[msg.userId] || "Loading..."}
+              {msg.screenName || "Loading..."}
             </Typography>
             {editingId === msg.id ? (
               <Stack direction="row" spacing={1}>
