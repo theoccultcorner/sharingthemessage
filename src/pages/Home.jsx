@@ -97,7 +97,7 @@ const Home = () => {
     "&:hover": { backgroundColor: "#16302D" }
   }}
 >
-  Daily Meditation
+ JFT Daily Meditation
 </Button>
 
  
