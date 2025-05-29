@@ -52,7 +52,7 @@ const Meetings = () => {
         gutterBottom
         sx={{ fontWeight: "bold" }}
       >
-        Weekly NA Meetings
+        Daily NA Meetings
       </Typography>
 
       <Stack spacing={3}>

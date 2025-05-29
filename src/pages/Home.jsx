@@ -46,7 +46,7 @@ const Home = () => {
       <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
         <Typography variant="h4" gutterBottom>Welcome, {screenName || user?.displayName}!</Typography>
         <Typography variant="body1" gutterBottom>
-          This is the home of the "Sharing the Message" group of Narcotics Anonymous.
+          To the "Sharing the Message" group of Narcotics Anonymous Community Homepage.
         </Typography>
 
         <Stack spacing={2} sx={{ mt: 4 }}>
