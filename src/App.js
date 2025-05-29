@@ -1,25 +1,55 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import Login from "./components/Login";
+import CreateScreenName from "./components/CreateScreenName";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+import Meetings from "./pages/Meetings"; // ✅ New import
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const ProtectedRoute = ({ children }) => {
+  const { user, loading, screenName } = useAuth();
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/" />;
+  if (!screenName && window.location.pathname !== "/create-screen-name") {
+    return <Navigate to="/create-screen-name" />;
+  }
+  return children;
+};
+
+const App = () => (
+  <AuthProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/create-screen-name" element={<CreateScreenName />} />
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/meetings"
+          element={
+            <ProtectedRoute>
+              <Meetings />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </Router>
+  </AuthProvider>
+);
 
 export default App;
