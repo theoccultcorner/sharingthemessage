@@ -2,12 +2,12 @@ import React from "react";
 import {
   Container,
   Typography,
-  Grid,
   Paper,
   Box,
   useTheme,
   useMediaQuery,
-  Divider
+  Divider,
+  Stack
 } from "@mui/material";
 
 const meetings = {
@@ -55,45 +55,32 @@ const Meetings = () => {
         Weekly NA Meetings
       </Typography>
 
-      <Grid container spacing={2}>
+      <Stack spacing={3}>
         {Object.entries(meetings).map(([day, slots]) => (
-          <Grid item xs={12} sm={6} md={4} key={day}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 2,
-                borderRadius: 2,
-                backgroundColor: "#f9f9f9"
-              }}
+          <Paper key={day} elevation={2} sx={{ p: 2 }}>
+            <Typography
+              variant="h6"
+              sx={{ fontWeight: 600, color: "#1F3F3A", mb: 1 }}
             >
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 600,
-                  color: "#1F3F3A",
-                  borderBottom: "1px solid #ccc",
-                  pb: 1,
-                  mb: 1
-                }}
-              >
-                {day}
-              </Typography>
+              {day}
+            </Typography>
 
-              {slots.map(({ time, host }, index) => (
-                <Box key={index} sx={{ mb: 1 }}>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                    ⏰ {time}
-                  </Typography>
-                  <Typography variant="body2" sx={{ ml: 1 }}>
-                    👤 {host}
-                  </Typography>
-                  {index < slots.length - 1 && <Divider sx={{ my: 1 }} />}
-                </Box>
-              ))}
-            </Paper>
-          </Grid>
+            <Divider sx={{ mb: 1 }} />
+
+            {slots.map(({ time, host }, index) => (
+              <Box key={index} sx={{ mb: 1 }}>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  ⏰ {time}
+                </Typography>
+                <Typography variant="body2" sx={{ ml: 2 }}>
+                  👤 {host}
+                </Typography>
+                {index < slots.length - 1 && <Divider sx={{ my: 1 }} />}
+              </Box>
+            ))}
+          </Paper>
         ))}
-      </Grid>
+      </Stack>
     </Container>
   );
 };
