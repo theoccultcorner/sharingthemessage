@@ -1,13 +1,13 @@
-
 import React, { useEffect, useState, useRef } from "react";
 import {
   Box, Typography, TextField, Button, Paper, Stack, IconButton
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import {
-  ref, onChildAdded, onChildRemoved, onChildChanged, push, remove, update, get, child, getDatabase
+  ref, onChildAdded, onChildChanged, onChildRemoved,
+  push, remove, update, get, child
 } from "firebase/database";
-import { db as rtdb } from "../firebase"; // Assuming you configured realtime db in your firebase.js
+import { db as rtdb } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 
 const ChatRoom = () => {
@@ -22,10 +22,12 @@ const ChatRoom = () => {
   useEffect(() => {
     const messagesRef = ref(rtdb, "chatMessages");
 
-    const handleAdd = async (snapshot) => {
+    const handleNewMessage = async (snapshot) => {
       const data = snapshot.val();
       const id = snapshot.key;
       const userId = data.userId;
+
+      // Fetch screen name if not cached
       if (!screenNames[userId]) {
         try {
           const snap = await get(child(ref(rtdb), `users/${userId}`));
@@ -35,32 +37,31 @@ const ChatRoom = () => {
           setScreenNames((prev) => ({ ...prev, [userId]: "Unknown" }));
         }
       }
+
       setMessages((prev) => [...prev, { id, ...data }]);
     };
 
-    const handleChange = (snapshot) => {
-      const data = snapshot.val();
+    const handleUpdate = (snapshot) => {
+      const updated = snapshot.val();
       const id = snapshot.key;
-      setMessages((prev) =>
-        prev.map((msg) => (msg.id === id ? { ...msg, ...data } : msg))
-      );
+      setMessages((prev) => prev.map((msg) => msg.id === id ? { ...msg, ...updated } : msg));
     };
 
-    const handleRemove = (snapshot) => {
+    const handleDelete = (snapshot) => {
       const id = snapshot.key;
       setMessages((prev) => prev.filter((msg) => msg.id !== id));
     };
 
-    const addListener = onChildAdded(messagesRef, handleAdd);
-    const changeListener = onChildChanged(messagesRef, handleChange);
-    const removeListener = onChildRemoved(messagesRef, handleRemove);
+    const addRef = onChildAdded(messagesRef, handleNewMessage);
+    const updateRef = onChildChanged(messagesRef, handleUpdate);
+    const deleteRef = onChildRemoved(messagesRef, handleDelete);
 
     return () => {
-      addListener();
-      changeListener();
-      removeListener();
+      addRef();
+      updateRef();
+      deleteRef();
     };
-  }, []);
+  }, [screenNames]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -68,8 +69,8 @@ const ChatRoom = () => {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    const messagesRef = ref(rtdb, "chatMessages");
-    await push(messagesRef, {
+    const msgRef = ref(rtdb, "chatMessages");
+    await push(msgRef, {
       text: input,
       userId: user.uid,
       createdAt: Date.now()
