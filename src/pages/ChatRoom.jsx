@@ -17,28 +17,34 @@ const ChatRoom = () => {
   const [input, setInput] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
-  const [screenNames, setScreenNames] = useState({});
+  const screenNameCache = useRef({});
   const bottomRef = useRef(null);
+
+  // Fetch screen name once and cache it
+  const fetchScreenName = async (userId) => {
+    if (screenNameCache.current[userId]) {
+      return screenNameCache.current[userId];
+    }
+
+    try {
+      const docRef = doc(db, "users", userId);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        const name = snap.data().screenName || "Anonymous";
+        screenNameCache.current[userId] = name;
+        return name;
+      }
+    } catch (error) {
+      console.error("Failed to fetch screen name:", error);
+    }
+
+    // fallback default
+    screenNameCache.current[userId] = "Anonymous";
+    return "Anonymous";
+  };
 
   useEffect(() => {
     const messagesRef = ref(rtdb, "chatMessages");
-
-    const fetchScreenName = async (userId) => {
-      if (screenNames[userId]) return screenNames[userId];
-
-      try {
-        const docRef = doc(db, "users", userId);
-        const snap = await getDoc(docRef);
-        const data = snap.exists() ? snap.data() : null;
-        const name = data?.screenName || "Unknown";
-
-        setScreenNames((prev) => ({ ...prev, [userId]: name }));
-        return name;
-      } catch {
-        setScreenNames((prev) => ({ ...prev, [userId]: "Unknown" }));
-        return "Unknown";
-      }
-    };
 
     const handleNewMessage = async (snapshot) => {
       const data = snapshot.val();
@@ -55,9 +61,7 @@ const ChatRoom = () => {
       const id = snapshot.key;
       const screenName = await fetchScreenName(data.userId);
       setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === id ? { ...msg, ...data, screenName } : msg
-        )
+        prev.map((msg) => (msg.id === id ? { ...msg, ...data, screenName } : msg))
       );
     };
 
@@ -75,7 +79,7 @@ const ChatRoom = () => {
       updateListener();
       removeListener();
     };
-  }, []); // 🔥 Remove screenNames dependency to avoid blocking updates
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -117,7 +121,7 @@ const ChatRoom = () => {
         {messages.map((msg) => (
           <Box key={msg.id} sx={{ mb: 1, borderBottom: "1px solid #ccc", pb: 1 }}>
             <Typography variant="subtitle2" color="primary">
-              {msg.screenName || "Loading..."}
+              {msg.screenName}
             </Typography>
             {editingId === msg.id ? (
               <Stack direction="row" spacing={1}>
