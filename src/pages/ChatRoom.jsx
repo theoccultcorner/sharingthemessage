@@ -16,23 +16,25 @@ const ChatRoom = () => {
   const [input, setInput] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
-  const bottomRef = useRef(null);
   const [screenNames, setScreenNames] = useState({});
+  const bottomRef = useRef(null);
 
   useEffect(() => {
     const q = query(collection(db, "chatMessages"), orderBy("createdAt"));
     const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const newScreenNames = { ...screenNames };
       const msgs = await Promise.all(snapshot.docs.map(async (docSnap) => {
         const data = docSnap.data();
         const userId = data.userId;
-        if (!screenNames[userId]) {
+        if (!newScreenNames[userId]) {
           const userRef = doc(db, "users", userId);
           const userSnap = await getDoc(userRef);
           const userData = userSnap.exists() ? userSnap.data() : {};
-          setScreenNames((prev) => ({ ...prev, [userId]: userData.screenName || "Unknown" }));
+          newScreenNames[userId] = userData.screenName || "Unknown";
         }
         return { id: docSnap.id, ...data };
       }));
+      setScreenNames(newScreenNames);
       setMessages(msgs);
     });
     return () => unsubscribe();
@@ -70,11 +72,12 @@ const ChatRoom = () => {
   };
 
   return (
-    <Box sx={{ p: 2, maxWidth: 600, mx: "auto" }}>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", p: 2 }}>
       <Typography variant="h5" gutterBottom>
         Chatroom
       </Typography>
-      <Paper sx={{ maxHeight: 400, overflowY: "auto", p: 2, mb: 2 }}>
+
+      <Paper sx={{ flexGrow: 1, overflowY: "auto", p: 2, mb: 1 }}>
         {messages.map((msg) => (
           <Box key={msg.id} sx={{ mb: 1, borderBottom: "1px solid #ccc", pb: 1 }}>
             <Typography variant="subtitle2" color="primary">
@@ -107,7 +110,7 @@ const ChatRoom = () => {
         <div ref={bottomRef} />
       </Paper>
 
-      <Stack direction="row" spacing={1}>
+      <Box component="form" onSubmit={(e) => { e.preventDefault(); sendMessage(); }} sx={{ display: "flex", gap: 1 }}>
         <TextField
           fullWidth
           size="small"
@@ -115,10 +118,10 @@ const ChatRoom = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        <Button variant="contained" onClick={sendMessage} sx={{ backgroundColor: "#1F3F3A" }}>
+        <Button type="submit" variant="contained" sx={{ backgroundColor: "#1F3F3A" }}>
           Send
         </Button>
-      </Stack>
+      </Box>
     </Box>
   );
 };
