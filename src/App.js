@@ -9,7 +9,7 @@ import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Meetings from "./pages/Meetings";
 import Meditation from "./pages/Meditation";
-import Chatroom from "./pages/Chatroom"; // ✅ Import Chatroom
+import Chatroom from "./pages/ChatRoom"; // ✅ Import Chatroom
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading, screenName } = useAuth();
