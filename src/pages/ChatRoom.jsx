@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from "react";
 import {
   Box, Typography, TextField, Button, Paper, Stack, IconButton
@@ -11,7 +12,7 @@ import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 
 const ChatRoom = () => {
-  const { user } = useAuth();
+  const { user, screenName: userScreenName } = useAuth();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [editingId, setEditingId] = useState(null);
@@ -27,10 +28,14 @@ const ChatRoom = () => {
         const data = docSnap.data();
         const userId = data.userId;
         if (!newScreenNames[userId]) {
-          const userRef = doc(db, "users", userId);
-          const userSnap = await getDoc(userRef);
-          const userData = userSnap.exists() ? userSnap.data() : {};
-          newScreenNames[userId] = userData.screenName || "Unknown";
+          try {
+            const userRef = doc(db, "users", userId);
+            const userSnap = await getDoc(userRef);
+            const userData = userSnap.exists() ? userSnap.data() : {};
+            newScreenNames[userId] = userData.screenName || "Unknown";
+          } catch (err) {
+            newScreenNames[userId] = "Unknown";
+          }
         }
         return { id: docSnap.id, ...data };
       }));
