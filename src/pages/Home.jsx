@@ -15,6 +15,7 @@ import {
   Paper,
   Stack
 } from "@mui/material";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew"; 
 import GroupIcon from '@mui/icons-material/Group';
 import MessageIcon from '@mui/icons-material/Message';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
