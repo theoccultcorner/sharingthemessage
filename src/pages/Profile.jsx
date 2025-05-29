@@ -32,7 +32,9 @@ const Profile = () => {
     screenName: screenName || "",
     cleanDate: "",
     sponsorName: "",
-    bio: ""
+    bio: "",
+    favoriteStep: "",
+    homeGroup: ""
   });
 
   const [editMode, setEditMode] = useState(false);
@@ -48,7 +50,9 @@ const Profile = () => {
           screenName: data.screenName || "",
           cleanDate: data.cleanDate || "",
           sponsorName: data.sponsorName || "",
-          bio: data.bio || ""
+          bio: data.bio || "",
+          favoriteStep: data.favoriteStep || "",
+          homeGroup: data.homeGroup || ""
         });
       }
     };
@@ -86,7 +90,6 @@ const Profile = () => {
     const dayMilestones = [30, 60, 90, 180, 365];
     const yearMilestones = Array.from({ length: 10 }, (_, i) => (i + 1) * 365);
     const allMilestones = [...dayMilestones, ...yearMilestones];
-
     return allMilestones
       .filter((m) => days >= m)
       .map((m) => (
@@ -102,8 +105,7 @@ const Profile = () => {
 
   return (
     <Box>
-      {/* Top AppBar */}
-      <AppBar position="static"sx={{ backgroundColor: "#1F3F3A" }} >
+      <AppBar position="static" sx={{ backgroundColor: "#1F3F3A" }}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             My NA Profile
@@ -114,115 +116,51 @@ const Profile = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Main Content */}
       <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
         {editMode ? (
           <Stack spacing={2} mt={3}>
-            <TextField
-              label="Screen Name"
-              value={profileData.screenName}
-              onChange={handleChange("screenName")}
-              fullWidth
-            />
-            <TextField
-              label="Clean Date"
-              type="date"
-              value={profileData.cleanDate}
-              onChange={handleChange("cleanDate")}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-            />
-            <TextField
-              label="Sponsor Name"
-              value={profileData.sponsorName}
-              onChange={handleChange("sponsorName")}
-              fullWidth
-            />
-            <TextField
-              label="Personal Motto / Bio"
-              value={profileData.bio}
-              onChange={handleChange("bio")}
-              fullWidth
-              multiline
-              minRows={3}
-            />
-       <Stack direction="row" spacing={2}>
-  <Button
-    variant="contained"
-    onClick={handleSave}
-    disabled={loading}
-    sx={{
-      backgroundColor: "#1F3F3A",
-      "&:hover": {
-        backgroundColor: "#16302D"
-      }
-    }}
-  >
-    {loading ? "Saving..." : "Save"}
-  </Button>
-  <Button
-    variant="outlined"
-    onClick={() => setEditMode(false)}
-    sx={{
-      color: "#1F3F3A",
-      borderColor: "#1F3F3A",
-      "&:hover": {
-        backgroundColor: "#f1f1f1",
-        borderColor: "#16302D",
-        color: "#16302D"
-      }
-    }}
-  >
-    Cancel
-  </Button>
-</Stack>
-
+            <TextField label="Screen Name" value={profileData.screenName} onChange={handleChange("screenName")} fullWidth />
+            <TextField label="Clean Date" type="date" value={profileData.cleanDate} onChange={handleChange("cleanDate")} InputLabelProps={{ shrink: true }} fullWidth />
+            <TextField label="Sponsor Name" value={profileData.sponsorName} onChange={handleChange("sponsorName")} fullWidth />
+            <TextField label="Favorite Step" value={profileData.favoriteStep} onChange={handleChange("favoriteStep")} fullWidth />
+            <TextField label="Home Group" value={profileData.homeGroup} onChange={handleChange("homeGroup")} fullWidth />
+            <TextField label="Personal Motto / Bio" value={profileData.bio} onChange={handleChange("bio")} fullWidth multiline minRows={3} />
+            <Stack direction="row" spacing={2}>
+              <Button variant="contained" onClick={handleSave} disabled={loading} sx={{ backgroundColor: "#1F3F3A", "&:hover": { backgroundColor: "#16302D" } }}>
+                {loading ? "Saving..." : "Save"}
+              </Button>
+              <Button variant="outlined" onClick={() => setEditMode(false)} sx={{ color: "#1F3F3A", borderColor: "#1F3F3A", "&:hover": { backgroundColor: "#f1f1f1", borderColor: "#16302D", color: "#16302D" } }}>
+                Cancel
+              </Button>
+            </Stack>
           </Stack>
         ) : (
           <Stack spacing={2} mt={3}>
             <Typography><strong>Screen Name:</strong> {profileData.screenName}</Typography>
-            <Typography>
-              <strong>Clean Date:</strong>{" "}
-              {profileData.cleanDate
-                ? `${profileData.cleanDate} (${getDaysClean(profileData.cleanDate)} days clean)`
-                : "Not set"}
-            </Typography>
+            <Typography><strong>Clean Date:</strong> {profileData.cleanDate ? `${profileData.cleanDate} (${getDaysClean(profileData.cleanDate)} days clean)` : "Not set"}</Typography>
             {profileData.cleanDate && (
               <Stack direction="row" spacing={1} flexWrap="wrap">
                 {renderMilestones(getDaysClean(profileData.cleanDate))}
               </Stack>
             )}
             <Typography><strong>Sponsor:</strong> {profileData.sponsorName || "Not set"}</Typography>
+            <Typography><strong>Favorite Step:</strong> {profileData.favoriteStep || "Not provided"}</Typography>
+            <Typography><strong>Home Group:</strong> {profileData.homeGroup || "Not provided"}</Typography>
             <Typography><strong>Bio:</strong> {profileData.bio || "No bio provided"}</Typography>
-           <Button
-  variant="contained"
-  onClick={() => setEditMode(true)}
-  sx={{
-    backgroundColor: "#1F3F3A",
-    "&:hover": {
-      backgroundColor: "#16302D"
-    }
-  }}
->
-  Edit Profile
-</Button>
+            <Button variant="contained" onClick={() => setEditMode(true)} sx={{ backgroundColor: "#1F3F3A", "&:hover": { backgroundColor: "#16302D" } }}>
+              Edit Profile
+            </Button>
           </Stack>
         )}
       </Container>
 
-      {/* Bottom Navigation */}
       <Paper sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }} elevation={3}>
-        <BottomNavigation
-          showLabels
-          value={navValue}
-          
-          onChange={(event, newValue) => {
-            setNavValue(newValue);
-            if (newValue === 0) navigate("/meetings");
-            if (newValue === 1) alert("Messaging not implemented yet");
-            if (newValue === 2) navigate("/profile");
-          }}
-        >
+        <BottomNavigation showLabels value={navValue} onChange={(event, newValue) => {
+          setNavValue(newValue);
+          if (newValue === 0) navigate("/meetings");
+          if (newValue === 1) alert("Messaging not implemented yet");
+          if (newValue === 2) navigate("/profile");
+        }}>
           <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
           <BottomNavigationAction label="Messages" icon={<MessageIcon />} />
           <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
