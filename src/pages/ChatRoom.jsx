@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import {
   Box, Typography, TextField, Button, Paper, Stack,
-  IconButton, Avatar, Divider
+  IconButton, Avatar  
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import {
