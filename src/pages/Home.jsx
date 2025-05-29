@@ -89,17 +89,17 @@ const Home = () => {
             My Profile
           </Button>
 
-          <Button
-            variant="contained"
-            startIcon={<WbSunnyIcon />}
-            onClick={() => navigate("/meditation")}
-            sx={{
-              backgroundColor: "#1F3F3A",
-              "&:hover": { backgroundColor: "#16302D" }
-            }}
-          >
-            Daily Meditation
-          </Button>
+         <Button
+  variant="contained"
+  onClick={() => navigate("/meditation")}
+  sx={{
+    backgroundColor: "#1F3F3A",
+    "&:hover": { backgroundColor: "#16302D" }
+  }}
+>
+  Daily Meditation
+</Button>
+
 
           
 
