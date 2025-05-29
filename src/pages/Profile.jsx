@@ -141,18 +141,25 @@ const Profile = () => {
           </Stack>
         ) : (
           <Stack spacing={2} mt={3}>
-            <Typography><strong>Screen Name:</strong> {profileData.screenName}</Typography>
-            <Typography><strong>Clean Date:</strong> {profileData.cleanDate ? `${profileData.cleanDate} (${getDaysClean(profileData.cleanDate)} days clean)` : "Not set"}</Typography>
+            {profileData.screenName && <Typography><strong>Screen Name:</strong> {profileData.screenName}</Typography>}
             {profileData.cleanDate && (
-              <Stack direction="row" spacing={1} flexWrap="wrap">
-                {renderMilestones(getDaysClean(profileData.cleanDate))}
-              </Stack>
+              <>
+                <Typography><strong>Clean Date:</strong> {`${profileData.cleanDate} (${getDaysClean(profileData.cleanDate)} days clean)`}</Typography>
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+                  {renderMilestones(getDaysClean(profileData.cleanDate))}
+                </Stack>
+              </>
             )}
-            <Typography><strong>Sponsor:</strong> {profileData.sponsorName || "Not set"}</Typography>
-            <Typography><strong>Phone:</strong> <Link href={`tel:${profileData.phone}`} underline="hover">{profileData.phone || "Not set"}</Link></Typography>
-            <Typography><strong>Meeting Role:</strong> {profileData.meetingRole || "Not provided"}</Typography>
-            <Typography><strong>Service Commitment:</strong> {profileData.serviceCommitment || "Not provided"}</Typography>
-            <Typography><strong>Bio:</strong> {profileData.bio || "No bio provided"}</Typography>
+            {profileData.sponsorName && <Typography><strong>Sponsor:</strong> {profileData.sponsorName}</Typography>}
+            {profileData.phone && (
+              <Typography>
+                <strong>Phone:</strong>{" "}
+                <Link href={`tel:${profileData.phone}`} underline="hover">{profileData.phone}</Link>
+              </Typography>
+            )}
+            {profileData.meetingRole && <Typography><strong>Meeting Role:</strong> {profileData.meetingRole}</Typography>}
+            {profileData.serviceCommitment && <Typography><strong>Service Commitment:</strong> {profileData.serviceCommitment}</Typography>}
+            {profileData.bio && <Typography><strong>Bio:</strong> {profileData.bio}</Typography>}
             <Button variant="contained" onClick={() => setEditMode(true)} sx={{ backgroundColor: "#1F3F3A" }}>
               Edit Profile
             </Button>
