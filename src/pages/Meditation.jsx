@@ -25,9 +25,7 @@ const Meditation = () => {
       try {
         const response = await fetch("/meditations_cleaned.json");
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch: ${response.statusText}`);
-        }
+        if (!response.ok) throw new Error("Failed to load meditations");
 
         const data = await response.json();
 
@@ -37,13 +35,16 @@ const Meditation = () => {
         const key = `${month}-${day}`;
 
         if (data[key]) {
-          setMeditation(data[key]);
+          setMeditation({
+            date: today.toDateString(),
+            text: data[key]
+          });
         } else {
           setMeditation(null);
         }
       } catch (err) {
-        console.error("Error loading meditation:", err);
-        setError("Couldn't load meditation. Please try again later.");
+        console.error(err);
+        setError("Couldn't load meditation.");
       } finally {
         setLoading(false);
       }
