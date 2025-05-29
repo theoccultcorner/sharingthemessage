@@ -15,7 +15,8 @@ import {
   Paper,
   BottomNavigation,
   BottomNavigationAction,
-  Chip
+  Chip,
+  Link
 } from "@mui/material";
 import GroupIcon from "@mui/icons-material/Group";
 import MessageIcon from "@mui/icons-material/Message";
@@ -33,8 +34,9 @@ const Profile = () => {
     cleanDate: "",
     sponsorName: "",
     bio: "",
-    favoriteStep: "",
-    homeGroup: ""
+    phone: "",
+    meetingRole: "",
+    serviceCommitment: ""
   });
 
   const [editMode, setEditMode] = useState(false);
@@ -51,8 +53,9 @@ const Profile = () => {
           cleanDate: data.cleanDate || "",
           sponsorName: data.sponsorName || "",
           bio: data.bio || "",
-          favoriteStep: data.favoriteStep || "",
-          homeGroup: data.homeGroup || ""
+          phone: data.phone || "",
+          meetingRole: data.meetingRole || "",
+          serviceCommitment: data.serviceCommitment || ""
         });
       }
     };
@@ -122,8 +125,9 @@ const Profile = () => {
             <TextField label="Screen Name" value={profileData.screenName} onChange={handleChange("screenName")} fullWidth />
             <TextField label="Clean Date" type="date" value={profileData.cleanDate} onChange={handleChange("cleanDate")} InputLabelProps={{ shrink: true }} fullWidth />
             <TextField label="Sponsor Name" value={profileData.sponsorName} onChange={handleChange("sponsorName")} fullWidth />
-            <TextField label="Favorite Step" value={profileData.favoriteStep} onChange={handleChange("favoriteStep")} fullWidth />
-            <TextField label="Home Group" value={profileData.homeGroup} onChange={handleChange("homeGroup")} fullWidth />
+            <TextField label="Phone Number" value={profileData.phone} onChange={handleChange("phone")} fullWidth />
+            <TextField label="Meeting Role" value={profileData.meetingRole} onChange={handleChange("meetingRole")} fullWidth />
+            <TextField label="Service Commitment" value={profileData.serviceCommitment} onChange={handleChange("serviceCommitment")} fullWidth />
             <TextField label="Personal Motto / Bio" value={profileData.bio} onChange={handleChange("bio")} fullWidth multiline minRows={3} />
             <Stack direction="row" spacing={2}>
               <Button variant="contained" onClick={handleSave} disabled={loading} sx={{ backgroundColor: "#1F3F3A", "&:hover": { backgroundColor: "#16302D" } }}>
@@ -144,8 +148,9 @@ const Profile = () => {
               </Stack>
             )}
             <Typography><strong>Sponsor:</strong> {profileData.sponsorName || "Not set"}</Typography>
-            <Typography><strong>Favorite Step:</strong> {profileData.favoriteStep || "Not provided"}</Typography>
-            <Typography><strong>Home Group:</strong> {profileData.homeGroup || "Not provided"}</Typography>
+            <Typography><strong>Phone:</strong> <Link href={`tel:${profileData.phone}`} underline="hover">{profileData.phone || "Not set"}</Link></Typography>
+            <Typography><strong>Meeting Role:</strong> {profileData.meetingRole || "Not provided"}</Typography>
+            <Typography><strong>Service Commitment:</strong> {profileData.serviceCommitment || "Not provided"}</Typography>
             <Typography><strong>Bio:</strong> {profileData.bio || "No bio provided"}</Typography>
             <Button variant="contained" onClick={() => setEditMode(true)} sx={{ backgroundColor: "#1F3F3A", "&:hover": { backgroundColor: "#16302D" } }}>
               Edit Profile
