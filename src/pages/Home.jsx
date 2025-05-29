@@ -73,7 +73,7 @@ const Home = () => {
               "&:hover": { backgroundColor: "#16302D" }
             }}
           >
-            Message a Sponsor
+            Phone list
           </Button>
 
           <Button
