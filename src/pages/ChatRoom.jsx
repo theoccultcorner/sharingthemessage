@@ -21,25 +21,24 @@ const ChatRoom = () => {
   const bottomRef = useRef(null);
 
   const fetchUserInfo = async (userId) => {
-    if (userCache.current[userId]) {
-      return userCache.current[userId];
-    }
+    if (userCache.current[userId]) return userCache.current[userId];
 
     try {
       const docRef = doc(db, "users", userId);
       const snap = await getDoc(docRef);
       if (snap.exists()) {
-        const { screenName = "Anonymous", avatarUrl = "" } = snap.data();
-        userCache.current[userId] = { screenName, avatarUrl };
-        return { screenName, avatarUrl };
+        const { screenName, avatarUrl = "" } = snap.data();
+        if (screenName) {
+          const userInfo = { screenName, avatarUrl };
+          userCache.current[userId] = userInfo;
+          return userInfo;
+        }
       }
     } catch (error) {
       console.error("Failed to fetch user info:", error);
     }
 
-    const fallback = { screenName: "Anonymous", avatarUrl: "" };
-    userCache.current[userId] = fallback;
-    return fallback;
+    return null; // ❌ No screen name — don't render message
   };
 
   useEffect(() => {
@@ -48,20 +47,26 @@ const ChatRoom = () => {
     const handleNewMessage = async (snapshot) => {
       const data = snapshot.val();
       const id = snapshot.key;
-      const { screenName, avatarUrl } = await fetchUserInfo(data.userId);
+      const userInfo = await fetchUserInfo(data.userId);
+
+      if (!userInfo) return; // Skip if user info could not be fetched
+
       setMessages((prev) => {
         const exists = prev.some((msg) => msg.id === id);
-        return exists ? prev : [...prev, { id, ...data, screenName, avatarUrl }];
+        return exists ? prev : [...prev, { id, ...data, ...userInfo }];
       });
     };
 
     const handleUpdate = async (snapshot) => {
       const data = snapshot.val();
       const id = snapshot.key;
-      const { screenName, avatarUrl } = await fetchUserInfo(data.userId);
+      const userInfo = await fetchUserInfo(data.userId);
+
+      if (!userInfo) return;
+
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.id === id ? { ...msg, ...data, screenName, avatarUrl } : msg
+          msg.id === id ? { ...msg, ...data, ...userInfo } : msg
         )
       );
     };
