@@ -99,7 +99,20 @@ const Home = () => {
   Daily Meditation
 </Button>
 
-
+ <Box sx={{ p: 4 }}>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          Click below to read today’s official Narcotics Anonymous meditation.
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          href="https://na.org/daily-meditations/spad/"
+          target="_blank"
+          endIcon={<OpenInNewIcon />}
+        >
+          View SPAD Meditation
+        </Button>
+      </Box>
           
 
           <Button
