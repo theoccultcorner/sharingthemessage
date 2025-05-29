@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import {
-  Box, Typography, TextField, Button, Paper, Stack, IconButton
+  Box, Typography, TextField, Button, Paper, Stack, IconButton, Avatar
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import {
@@ -17,30 +17,29 @@ const ChatRoom = () => {
   const [input, setInput] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
-  const screenNameCache = useRef({});
+  const userCache = useRef({});
   const bottomRef = useRef(null);
 
-  // Fetch screen name once and cache it
-  const fetchScreenName = async (userId) => {
-    if (screenNameCache.current[userId]) {
-      return screenNameCache.current[userId];
+  const fetchUserInfo = async (userId) => {
+    if (userCache.current[userId]) {
+      return userCache.current[userId];
     }
 
     try {
       const docRef = doc(db, "users", userId);
       const snap = await getDoc(docRef);
       if (snap.exists()) {
-        const name = snap.data().screenName || "Anonymous";
-        screenNameCache.current[userId] = name;
-        return name;
+        const { screenName = "Anonymous", avatarUrl = "" } = snap.data();
+        userCache.current[userId] = { screenName, avatarUrl };
+        return { screenName, avatarUrl };
       }
     } catch (error) {
-      console.error("Failed to fetch screen name:", error);
+      console.error("Failed to fetch user info:", error);
     }
 
-    // fallback default
-    screenNameCache.current[userId] = "Anonymous";
-    return "Anonymous";
+    const fallback = { screenName: "Anonymous", avatarUrl: "" };
+    userCache.current[userId] = fallback;
+    return fallback;
   };
 
   useEffect(() => {
@@ -49,19 +48,21 @@ const ChatRoom = () => {
     const handleNewMessage = async (snapshot) => {
       const data = snapshot.val();
       const id = snapshot.key;
-      const screenName = await fetchScreenName(data.userId);
+      const { screenName, avatarUrl } = await fetchUserInfo(data.userId);
       setMessages((prev) => {
         const exists = prev.some((msg) => msg.id === id);
-        return exists ? prev : [...prev, { id, ...data, screenName }];
+        return exists ? prev : [...prev, { id, ...data, screenName, avatarUrl }];
       });
     };
 
     const handleUpdate = async (snapshot) => {
       const data = snapshot.val();
       const id = snapshot.key;
-      const screenName = await fetchScreenName(data.userId);
+      const { screenName, avatarUrl } = await fetchUserInfo(data.userId);
       setMessages((prev) =>
-        prev.map((msg) => (msg.id === id ? { ...msg, ...data, screenName } : msg))
+        prev.map((msg) =>
+          msg.id === id ? { ...msg, ...data, screenName, avatarUrl } : msg
+        )
       );
     };
 
@@ -120,11 +121,14 @@ const ChatRoom = () => {
       <Paper sx={{ flexGrow: 1, overflowY: "auto", p: 2, mb: 1 }}>
         {messages.map((msg) => (
           <Box key={msg.id} sx={{ mb: 1, borderBottom: "1px solid #ccc", pb: 1 }}>
-            <Typography variant="subtitle2" color="primary">
-              {msg.screenName}
-            </Typography>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Avatar src={msg.avatarUrl || undefined} alt={msg.screenName} />
+              <Typography variant="subtitle2" color="primary">
+                {msg.screenName}
+              </Typography>
+            </Stack>
             {editingId === msg.id ? (
-              <Stack direction="row" spacing={1}>
+              <Stack direction="row" spacing={1} mt={1}>
                 <TextField
                   size="small"
                   value={editingText}
@@ -133,7 +137,7 @@ const ChatRoom = () => {
                 <Button onClick={confirmEdit} size="small">Save</Button>
               </Stack>
             ) : (
-              <Typography variant="body1">{msg.text}</Typography>
+              <Typography variant="body1" mt={1}>{msg.text}</Typography>
             )}
             {msg.userId === user.uid && editingId !== msg.id && (
               <Stack direction="row" spacing={1} mt={1}>
@@ -150,7 +154,11 @@ const ChatRoom = () => {
         <div ref={bottomRef} />
       </Paper>
 
-      <Box component="form" onSubmit={(e) => { e.preventDefault(); sendMessage(); }} sx={{ display: "flex", gap: 1 }}>
+      <Box
+        component="form"
+        onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
+        sx={{ display: "flex", gap: 1 }}
+      >
         <TextField
           fullWidth
           size="small"
