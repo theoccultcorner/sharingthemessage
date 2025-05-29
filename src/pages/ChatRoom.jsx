@@ -5,10 +5,9 @@ import {
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import {
-  collection, query, orderBy, addDoc, onSnapshot, serverTimestamp,
-  deleteDoc, doc, updateDoc, getDoc
-} from "firebase/firestore";
-import { db } from "../firebase";
+  ref, onChildAdded, onChildRemoved, onChildChanged, push, remove, update, get, child, getDatabase
+} from "firebase/database";
+import { db as rtdb } from "../firebase"; // Assuming you configured realtime db in your firebase.js
 import { useAuth } from "../context/AuthContext";
 
 const ChatRoom = () => {
@@ -21,28 +20,46 @@ const ChatRoom = () => {
   const bottomRef = useRef(null);
 
   useEffect(() => {
-    const q = query(collection(db, "chatMessages"), orderBy("createdAt"));
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-      const newScreenNames = { ...screenNames };
-      const msgs = await Promise.all(snapshot.docs.map(async (docSnap) => {
-        const data = docSnap.data();
-        const userId = data.userId;
-        if (!newScreenNames[userId]) {
-          try {
-            const userRef = doc(db, "users", userId);
-            const userSnap = await getDoc(userRef);
-            const userData = userSnap.exists() ? userSnap.data() : {};
-            newScreenNames[userId] = userData.screenName || "Unknown";
-          } catch (err) {
-            newScreenNames[userId] = "Unknown";
-          }
+    const messagesRef = ref(rtdb, "chatMessages");
+
+    const handleAdd = async (snapshot) => {
+      const data = snapshot.val();
+      const id = snapshot.key;
+      const userId = data.userId;
+      if (!screenNames[userId]) {
+        try {
+          const snap = await get(child(ref(rtdb), `users/${userId}`));
+          const userData = snap.exists() ? snap.val() : {};
+          setScreenNames((prev) => ({ ...prev, [userId]: userData.screenName || "Unknown" }));
+        } catch {
+          setScreenNames((prev) => ({ ...prev, [userId]: "Unknown" }));
         }
-        return { id: docSnap.id, ...data };
-      }));
-      setScreenNames(newScreenNames);
-      setMessages(msgs);
-    });
-    return () => unsubscribe();
+      }
+      setMessages((prev) => [...prev, { id, ...data }]);
+    };
+
+    const handleChange = (snapshot) => {
+      const data = snapshot.val();
+      const id = snapshot.key;
+      setMessages((prev) =>
+        prev.map((msg) => (msg.id === id ? { ...msg, ...data } : msg))
+      );
+    };
+
+    const handleRemove = (snapshot) => {
+      const id = snapshot.key;
+      setMessages((prev) => prev.filter((msg) => msg.id !== id));
+    };
+
+    const addListener = onChildAdded(messagesRef, handleAdd);
+    const changeListener = onChildChanged(messagesRef, handleChange);
+    const removeListener = onChildRemoved(messagesRef, handleRemove);
+
+    return () => {
+      addListener();
+      changeListener();
+      removeListener();
+    };
   }, []);
 
   useEffect(() => {
@@ -51,10 +68,11 @@ const ChatRoom = () => {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    await addDoc(collection(db, "chatMessages"), {
+    const messagesRef = ref(rtdb, "chatMessages");
+    await push(messagesRef, {
       text: input,
       userId: user.uid,
-      createdAt: serverTimestamp()
+      createdAt: Date.now()
     });
     setInput("");
   };
@@ -66,14 +84,14 @@ const ChatRoom = () => {
 
   const confirmEdit = async () => {
     if (!editingText.trim()) return;
-    const msgRef = doc(db, "chatMessages", editingId);
-    await updateDoc(msgRef, { text: editingText });
+    const msgRef = ref(rtdb, `chatMessages/${editingId}`);
+    await update(msgRef, { text: editingText });
     setEditingId(null);
     setEditingText("");
   };
 
   const deleteMessage = async (id) => {
-    await deleteDoc(doc(db, "chatMessages", id));
+    await remove(ref(rtdb, `chatMessages/${id}`));
   };
 
   return (
