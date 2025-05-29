@@ -7,7 +7,7 @@ import {
   ref, onChildAdded, onChildChanged, onChildRemoved,
   push, remove, update, get, child
 } from "firebase/database";
-import { db as rtdb } from "../firebase";
+import { rtdb } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 
 const ChatRoom = () => {
@@ -27,7 +27,6 @@ const ChatRoom = () => {
       const id = snapshot.key;
       const userId = data.userId;
 
-      // Fetch screen name if not cached
       if (!screenNames[userId]) {
         try {
           const snap = await get(child(ref(rtdb), `users/${userId}`));
@@ -38,13 +37,18 @@ const ChatRoom = () => {
         }
       }
 
-      setMessages((prev) => [...prev, { id, ...data }]);
+      setMessages((prev) => {
+        const exists = prev.some((msg) => msg.id === id);
+        return exists ? prev : [...prev, { id, ...data }];
+      });
     };
 
     const handleUpdate = (snapshot) => {
-      const updated = snapshot.val();
+      const data = snapshot.val();
       const id = snapshot.key;
-      setMessages((prev) => prev.map((msg) => msg.id === id ? { ...msg, ...updated } : msg));
+      setMessages((prev) =>
+        prev.map((msg) => (msg.id === id ? { ...msg, ...data } : msg))
+      );
     };
 
     const handleDelete = (snapshot) => {
@@ -52,14 +56,12 @@ const ChatRoom = () => {
       setMessages((prev) => prev.filter((msg) => msg.id !== id));
     };
 
-    const addRef = onChildAdded(messagesRef, handleNewMessage);
-    const updateRef = onChildChanged(messagesRef, handleUpdate);
-    const deleteRef = onChildRemoved(messagesRef, handleDelete);
+    const addListener = onChildAdded(messagesRef, handleNewMessage);
+    const updateListener = onChildChanged(messagesRef, handleUpdate);
+    const removeListener = onChildRemoved(messagesRef, handleDelete);
 
     return () => {
-      addRef();
-      updateRef();
-      deleteRef();
+      addListener(); updateListener(); removeListener();
     };
   }, [screenNames]);
 
@@ -69,8 +71,7 @@ const ChatRoom = () => {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    const msgRef = ref(rtdb, "chatMessages");
-    await push(msgRef, {
+    await push(ref(rtdb, "chatMessages"), {
       text: input,
       userId: user.uid,
       createdAt: Date.now()
@@ -85,8 +86,9 @@ const ChatRoom = () => {
 
   const confirmEdit = async () => {
     if (!editingText.trim()) return;
-    const msgRef = ref(rtdb, `chatMessages/${editingId}`);
-    await update(msgRef, { text: editingText });
+    await update(ref(rtdb, `chatMessages/${editingId}`), {
+      text: editingText
+    });
     setEditingId(null);
     setEditingText("");
   };
@@ -97,9 +99,7 @@ const ChatRoom = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", p: 2 }}>
-      <Typography variant="h5" gutterBottom>
-        Chatroom
-      </Typography>
+      <Typography variant="h5" gutterBottom>Chatroom</Typography>
 
       <Paper sx={{ flexGrow: 1, overflowY: "auto", p: 2, mb: 1 }}>
         {messages.map((msg) => (
