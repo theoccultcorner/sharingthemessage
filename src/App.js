@@ -5,7 +5,8 @@ import Login from "./components/Login";
 import CreateScreenName from "./components/CreateScreenName";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
-import Meetings from "./pages/Meetings"; // ✅ New import
+import Meetings from "./pages/Meetings";
+import Meditation from "./pages/Meditation"; // ✅ New import
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading, screenName } = useAuth();
@@ -44,6 +45,14 @@ const App = () => (
           element={
             <ProtectedRoute>
               <Meetings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/meditation"
+          element={
+            <ProtectedRoute>
+              <Meditation />
             </ProtectedRoute>
           }
         />
