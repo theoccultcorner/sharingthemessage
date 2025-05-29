@@ -22,23 +22,19 @@ const ChatRoom = () => {
 
   const fetchUserInfo = async (userId) => {
     if (userCache.current[userId]) return userCache.current[userId];
-
     try {
       const docRef = doc(db, "users", userId);
       const snap = await getDoc(docRef);
       if (snap.exists()) {
-        const { screenName, avatarUrl = "" } = snap.data();
-        if (screenName) {
-          const userInfo = { screenName, avatarUrl };
-          userCache.current[userId] = userInfo;
-          return userInfo;
-        }
+        const { screenName, avatarUrl = "", email = "" } = snap.data();
+        const info = { screenName, avatarUrl, email };
+        userCache.current[userId] = info;
+        return info;
       }
-    } catch (error) {
-      console.error("Failed to fetch user info:", error);
+    } catch (err) {
+      console.error("Error fetching user info:", err);
     }
-
-    return null; // ❌ No screen name — don't render message
+    return { screenName: "Unknown", avatarUrl: "", email: "N/A" };
   };
 
   useEffect(() => {
@@ -48,26 +44,15 @@ const ChatRoom = () => {
       const data = snapshot.val();
       const id = snapshot.key;
       const userInfo = await fetchUserInfo(data.userId);
-
-      if (!userInfo) return; // Skip if user info could not be fetched
-
-      setMessages((prev) => {
-        const exists = prev.some((msg) => msg.id === id);
-        return exists ? prev : [...prev, { id, ...data, ...userInfo }];
-      });
+      setMessages((prev) => [...prev, { id, ...data, ...userInfo }]);
     };
 
     const handleUpdate = async (snapshot) => {
       const data = snapshot.val();
       const id = snapshot.key;
       const userInfo = await fetchUserInfo(data.userId);
-
-      if (!userInfo) return;
-
       setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === id ? { ...msg, ...data, ...userInfo } : msg
-        )
+        prev.map((msg) => (msg.id === id ? { ...msg, ...data, ...userInfo } : msg))
       );
     };
 
@@ -108,9 +93,7 @@ const ChatRoom = () => {
 
   const confirmEdit = async () => {
     if (!editingText.trim()) return;
-    await update(ref(rtdb, `chatMessages/${editingId}`), {
-      text: editingText
-    });
+    await update(ref(rtdb, `chatMessages/${editingId}`), { text: editingText });
     setEditingId(null);
     setEditingText("");
   };
@@ -120,22 +103,26 @@ const ChatRoom = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", p: 2 }}>
-      <Typography variant="h5" gutterBottom>Chatroom</Typography>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", p: 0 }}>
+      <Typography variant="h5" sx={{ backgroundColor: "#1F3F3A", color: "#fff", p: 2 }}>
+        Group Chat
+      </Typography>
 
-      <Paper sx={{ flexGrow: 1, overflowY: "auto", p: 2, mb: 1 }}>
+      <Paper sx={{ flexGrow: 1, overflowY: "auto", p: 2, mb: 1, borderRadius: 0 }}>
         {messages.map((msg) => (
-          <Box key={msg.id} sx={{ mb: 1, borderBottom: "1px solid #ccc", pb: 1 }}>
+          <Box key={msg.id} sx={{ mb: 2 }}>
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Avatar src={msg.avatarUrl || undefined} alt={msg.screenName} />
-              <Typography variant="subtitle2" color="primary">
-                {msg.screenName}
-              </Typography>
+              <Avatar src={msg.avatarUrl} />
+              <Box>
+                <Typography variant="subtitle2">{msg.screenName}</Typography>
+                <Typography variant="caption" color="textSecondary">{msg.email}</Typography>
+              </Box>
             </Stack>
             {editingId === msg.id ? (
               <Stack direction="row" spacing={1} mt={1}>
                 <TextField
                   size="small"
+                  fullWidth
                   value={editingText}
                   onChange={(e) => setEditingText(e.target.value)}
                 />
@@ -146,12 +133,8 @@ const ChatRoom = () => {
             )}
             {msg.userId === user.uid && editingId !== msg.id && (
               <Stack direction="row" spacing={1} mt={1}>
-                <IconButton size="small" onClick={() => startEditing(msg)}>
-                  <Edit fontSize="small" />
-                </IconButton>
-                <IconButton size="small" onClick={() => deleteMessage(msg.id)}>
-                  <Delete fontSize="small" />
-                </IconButton>
+                <IconButton size="small" onClick={() => startEditing(msg)}><Edit fontSize="small" /></IconButton>
+                <IconButton size="small" onClick={() => deleteMessage(msg.id)}><Delete fontSize="small" /></IconButton>
               </Stack>
             )}
           </Box>
@@ -162,16 +145,23 @@ const ChatRoom = () => {
       <Box
         component="form"
         onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
-        sx={{ display: "flex", gap: 1 }}
+        sx={{
+          display: "flex",
+          p: 1,
+          borderTop: "1px solid #ccc",
+          backgroundColor: "#fff",
+          position: "sticky",
+          bottom: 0,
+        }}
       >
         <TextField
           fullWidth
           size="small"
-          placeholder="Type your message..."
+          placeholder="Type a message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        <Button type="submit" variant="contained" sx={{ backgroundColor: "#1F3F3A" }}>
+        <Button type="submit" variant="contained" sx={{ backgroundColor: "#1F3F3A", ml: 1 }}>
           Send
         </Button>
       </Box>
