@@ -19,8 +19,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import MessageIcon from '@mui/icons-material/Message';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
-import WbSunnyIcon from '@mui/icons-material/WbSunny';
-import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+ 
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 
 const Home = () => {
