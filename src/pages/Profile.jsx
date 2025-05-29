@@ -179,7 +179,10 @@ const Profile = () => {
   }}
   sx={{
     "& .Mui-selected": {
-      color: "#1F3F3A"
+      color: "#1F3F3A"  // Selected icon and label color
+    },
+    "& .MuiBottomNavigationAction-root": {
+      color: "#777" // Unselected icon and label color
     }
   }}
 >
@@ -187,6 +190,7 @@ const Profile = () => {
   <BottomNavigationAction label="Messages" icon={<MessageIcon />} />
   <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
 </BottomNavigation>
+
       </Paper>
     </Box>
   );
