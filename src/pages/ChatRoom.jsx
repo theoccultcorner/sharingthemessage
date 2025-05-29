@@ -5,13 +5,14 @@ import {
 import { Edit, Delete } from "@mui/icons-material";
 import {
   ref, onChildAdded, onChildChanged, onChildRemoved,
-  push, remove, update, get, child
+  push, remove, update
 } from "firebase/database";
-import { rtdb } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { db, rtdb } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 
 const ChatRoom = () => {
-  const { user, screenName: userScreenName } = useAuth();
+  const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [editingId, setEditingId] = useState(null);
@@ -22,21 +23,29 @@ const ChatRoom = () => {
   useEffect(() => {
     const messagesRef = ref(rtdb, "chatMessages");
 
+    const fetchScreenName = async (userId) => {
+      if (screenNames[userId]) return;
+      try {
+        const docRef = doc(db, "users", userId);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          setScreenNames((prev) => ({
+            ...prev,
+            [userId]: data.screenName || "Unknown"
+          }));
+        } else {
+          setScreenNames((prev) => ({ ...prev, [userId]: "Unknown" }));
+        }
+      } catch {
+        setScreenNames((prev) => ({ ...prev, [userId]: "Unknown" }));
+      }
+    };
+
     const handleNewMessage = async (snapshot) => {
       const data = snapshot.val();
       const id = snapshot.key;
-      const userId = data.userId;
-
-      if (!screenNames[userId]) {
-        try {
-          const snap = await get(child(ref(rtdb), `users/${userId}`));
-          const userData = snap.exists() ? snap.val() : {};
-          setScreenNames((prev) => ({ ...prev, [userId]: userData.screenName || "Unknown" }));
-        } catch {
-          setScreenNames((prev) => ({ ...prev, [userId]: "Unknown" }));
-        }
-      }
-
+      await fetchScreenName(data.userId);
       setMessages((prev) => {
         const exists = prev.some((msg) => msg.id === id);
         return exists ? prev : [...prev, { id, ...data }];
@@ -61,7 +70,9 @@ const ChatRoom = () => {
     const removeListener = onChildRemoved(messagesRef, handleDelete);
 
     return () => {
-      addListener(); updateListener(); removeListener();
+      addListener();
+      updateListener();
+      removeListener();
     };
   }, [screenNames]);
 
