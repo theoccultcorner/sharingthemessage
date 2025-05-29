@@ -89,16 +89,7 @@ const Home = () => {
             My Profile
           </Button>
 
-         <Button
-  variant="contained"
-  onClick={() => navigate("/meditation")}
-  sx={{
-    backgroundColor: "#1F3F3A",
-    "&:hover": { backgroundColor: "#16302D" }
-  }}
->
- JFT Daily Meditation
-</Button>
+         
 
  
  
@@ -118,6 +109,18 @@ const Home = () => {
                   <Typography variant="body1" sx={{ mb: 2 }}>
           Click below to read today’s official Narcotics Anonymous meditation.
         </Typography>
+
+ <Button
+  variant="contained"
+  onClick={() => navigate("/meditation")}
+  sx={{
+    backgroundColor: "#1F3F3A",
+    "&:hover": { backgroundColor: "#16302D" }
+  }}
+>
+ JFT Daily Meditation
+</Button>
+
         <Button
           sx={{
     backgroundColor: "#1F3F3A",
