@@ -1,3 +1,5 @@
+// Profile.jsx
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { db, auth } from "../firebase";
@@ -92,8 +94,7 @@ const Profile = () => {
   const renderMilestones = (days) => {
     const dayMilestones = [30, 60, 90, 180, 365];
     const yearMilestones = Array.from({ length: 10 }, (_, i) => (i + 1) * 365);
-    const allMilestones = [...dayMilestones, ...yearMilestones];
-    return allMilestones
+    return [...dayMilestones, ...yearMilestones]
       .filter((m) => days >= m)
       .map((m) => (
         <Chip
@@ -122,18 +123,18 @@ const Profile = () => {
       <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
         {editMode ? (
           <Stack spacing={2} mt={3}>
-            <TextField label="Screen Name" value={profileData.screenName} onChange={handleChange("screenName")} fullWidth />
-            <TextField label="Clean Date" type="date" value={profileData.cleanDate} onChange={handleChange("cleanDate")} InputLabelProps={{ shrink: true }} fullWidth />
-            <TextField label="Sponsor Name" value={profileData.sponsorName} onChange={handleChange("sponsorName")} fullWidth />
-            <TextField label="Phone Number" value={profileData.phone} onChange={handleChange("phone")} fullWidth />
-            <TextField label="Meeting Role" value={profileData.meetingRole} onChange={handleChange("meetingRole")} fullWidth />
-            <TextField label="Service Commitment" value={profileData.serviceCommitment} onChange={handleChange("serviceCommitment")} fullWidth />
-            <TextField label="Personal Motto / Bio" value={profileData.bio} onChange={handleChange("bio")} fullWidth multiline minRows={3} />
+            <TextField label="Screen Name" value={profileData.screenName} onChange={handleChange("screenName")} helperText="How others will see you" fullWidth />
+            <TextField label="Clean Date" type="date" value={profileData.cleanDate} onChange={handleChange("cleanDate")} InputLabelProps={{ shrink: true }} helperText="Your recovery start date" fullWidth />
+            <TextField label="Sponsor Name" value={profileData.sponsorName} onChange={handleChange("sponsorName")} helperText="Your NA sponsor's name" fullWidth />
+            <TextField label="Phone Number" value={profileData.phone} onChange={handleChange("phone")} helperText="Tap-to-call contact info (optional)" fullWidth />
+            <TextField label="Meeting Role" value={profileData.meetingRole} onChange={handleChange("meetingRole")} helperText="E.g., Chairperson, Greeter, Secretary" fullWidth />
+            <TextField label="Service Commitment" value={profileData.serviceCommitment} onChange={handleChange("serviceCommitment")} helperText="E.g., Setup crew, Literature, Treasurer" fullWidth />
+            <TextField label="Bio / Motto" value={profileData.bio} onChange={handleChange("bio")} helperText="Personal message, motto, or quote" fullWidth multiline minRows={3} />
             <Stack direction="row" spacing={2}>
-              <Button variant="contained" onClick={handleSave} disabled={loading} sx={{ backgroundColor: "#1F3F3A", "&:hover": { backgroundColor: "#16302D" } }}>
+              <Button variant="contained" onClick={handleSave} disabled={loading} sx={{ backgroundColor: "#1F3F3A" }}>
                 {loading ? "Saving..." : "Save"}
               </Button>
-              <Button variant="outlined" onClick={() => setEditMode(false)} sx={{ color: "#1F3F3A", borderColor: "#1F3F3A", "&:hover": { backgroundColor: "#f1f1f1", borderColor: "#16302D", color: "#16302D" } }}>
+              <Button variant="outlined" onClick={() => setEditMode(false)} sx={{ color: "#1F3F3A", borderColor: "#1F3F3A" }}>
                 Cancel
               </Button>
             </Stack>
@@ -152,7 +153,7 @@ const Profile = () => {
             <Typography><strong>Meeting Role:</strong> {profileData.meetingRole || "Not provided"}</Typography>
             <Typography><strong>Service Commitment:</strong> {profileData.serviceCommitment || "Not provided"}</Typography>
             <Typography><strong>Bio:</strong> {profileData.bio || "No bio provided"}</Typography>
-            <Button variant="contained" onClick={() => setEditMode(true)} sx={{ backgroundColor: "#1F3F3A", "&:hover": { backgroundColor: "#16302D" } }}>
+            <Button variant="contained" onClick={() => setEditMode(true)} sx={{ backgroundColor: "#1F3F3A" }}>
               Edit Profile
             </Button>
           </Stack>
