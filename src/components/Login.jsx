@@ -72,7 +72,11 @@ const Login = () => {
         Sharing the Message Group of Narcotics Anonymous
       </Typography>
 
-      <Typography variant="h4" gutterBottom>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ color: "#1F3F3A" }}
+      >
         {isSignup ? "Sign Up" : "Login"}
       </Typography>
 
@@ -99,9 +103,7 @@ const Login = () => {
               onClick={handleEmailSignup}
               sx={{
                 backgroundColor: "#1F3F3A",
-                "&:hover": {
-                  backgroundColor: "#16302D"
-                }
+                "&:hover": { backgroundColor: "#16302D" }
               }}
             >
               Sign Up
@@ -117,9 +119,7 @@ const Login = () => {
               onClick={handleEmailLogin}
               sx={{
                 backgroundColor: "#1F3F3A",
-                "&:hover": {
-                  backgroundColor: "#16302D"
-                }
+                "&:hover": { backgroundColor: "#16302D" }
               }}
             >
               Login
@@ -130,7 +130,15 @@ const Login = () => {
           </>
         )}
 
-        <Button variant="outlined" onClick={handleGoogleLogin}>
+        <Button
+          variant="contained"
+          onClick={handleGoogleLogin}
+          sx={{
+            backgroundColor: "#1F3F3A",
+            color: "#fff",
+            "&:hover": { backgroundColor: "#16302D" }
+          }}
+        >
           Sign in with Google
         </Button>
       </Stack>
