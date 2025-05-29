@@ -1,42 +1,38 @@
 import React, { useEffect, useState, useRef } from "react";
 import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Paper,
-  Stack,
-  IconButton,
-  Avatar,
-  Divider
+  Box, Typography, TextField, Button, Paper, Stack, IconButton
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import {
-  collection,
-  query,
-  orderBy,
-  addDoc,
-  onSnapshot,
-  serverTimestamp,
-  deleteDoc,
-  doc,
-  updateDoc
+  collection, query, orderBy, addDoc, onSnapshot, serverTimestamp,
+  deleteDoc, doc, updateDoc, getDoc
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 
 const ChatRoom = () => {
-  const { user, screenName } = useAuth();
+  const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
   const bottomRef = useRef(null);
+  const [screenNames, setScreenNames] = useState({});
 
   useEffect(() => {
     const q = query(collection(db, "chatMessages"), orderBy("createdAt"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const msgs = await Promise.all(snapshot.docs.map(async (docSnap) => {
+        const data = docSnap.data();
+        const userId = data.userId;
+        if (!screenNames[userId]) {
+          const userRef = doc(db, "users", userId);
+          const userSnap = await getDoc(userRef);
+          const userData = userSnap.exists() ? userSnap.data() : {};
+          setScreenNames((prev) => ({ ...prev, [userId]: userData.screenName || "Unknown" }));
+        }
+        return { id: docSnap.id, ...data };
+      }));
       setMessages(msgs);
     });
     return () => unsubscribe();
@@ -51,7 +47,6 @@ const ChatRoom = () => {
     await addDoc(collection(db, "chatMessages"), {
       text: input,
       userId: user.uid,
-      screenName: screenName,
       createdAt: serverTimestamp()
     });
     setInput("");
@@ -75,59 +70,38 @@ const ChatRoom = () => {
   };
 
   return (
-    <Box sx={{ px: 2, py: 4, maxWidth: 700, mx: "auto" }}>
-      <Typography variant="h4" gutterBottom align="center">
-        Group Chat
+    <Box sx={{ p: 2, maxWidth: 600, mx: "auto" }}>
+      <Typography variant="h5" gutterBottom>
+        Chatroom
       </Typography>
-
-      <Paper elevation={3} sx={{ maxHeight: "60vh", overflowY: "auto", p: 2, mb: 2 }}>
+      <Paper sx={{ maxHeight: 400, overflowY: "auto", p: 2, mb: 2 }}>
         {messages.map((msg) => (
-          <Box key={msg.id} sx={{ mb: 2 }}>
-            <Stack direction="row" spacing={2} alignItems="flex-start">
-              <Avatar sx={{ bgcolor: "#1F3F3A" }}>
-                {msg.screenName?.charAt(0).toUpperCase() || "?"}
-              </Avatar>
-              <Box flexGrow={1}>
-                <Stack direction="row" justifyContent="space-between">
-                  <Typography fontWeight="bold">{msg.screenName}</Typography>
-                  {msg.createdAt?.toDate && (
-                    <Typography variant="caption" color="text.secondary">
-                      {msg.createdAt.toDate().toLocaleString()}
-                    </Typography>
-                  )}
-                </Stack>
-
-                {editingId === msg.id ? (
-                  <Stack direction="row" spacing={1} mt={1}>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={editingText}
-                      onChange={(e) => setEditingText(e.target.value)}
-                    />
-                    <Button onClick={confirmEdit} size="small" variant="contained" color="primary">
-                      Save
-                    </Button>
-                  </Stack>
-                ) : (
-                  <Typography variant="body1" sx={{ mt: 0.5 }}>
-                    {msg.text}
-                  </Typography>
-                )}
-
-                {msg.userId === user.uid && editingId !== msg.id && (
-                  <Stack direction="row" spacing={1} mt={1}>
-                    <IconButton size="small" onClick={() => startEditing(msg)}>
-                      <Edit fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => deleteMessage(msg.id)}>
-                      <Delete fontSize="small" />
-                    </IconButton>
-                  </Stack>
-                )}
-              </Box>
-            </Stack>
-            <Divider sx={{ my: 1 }} />
+          <Box key={msg.id} sx={{ mb: 1, borderBottom: "1px solid #ccc", pb: 1 }}>
+            <Typography variant="subtitle2" color="primary">
+              {screenNames[msg.userId] || "Loading..."}
+            </Typography>
+            {editingId === msg.id ? (
+              <Stack direction="row" spacing={1}>
+                <TextField
+                  size="small"
+                  value={editingText}
+                  onChange={(e) => setEditingText(e.target.value)}
+                />
+                <Button onClick={confirmEdit} size="small">Save</Button>
+              </Stack>
+            ) : (
+              <Typography variant="body1">{msg.text}</Typography>
+            )}
+            {msg.userId === user.uid && editingId !== msg.id && (
+              <Stack direction="row" spacing={1} mt={1}>
+                <IconButton size="small" onClick={() => startEditing(msg)}>
+                  <Edit fontSize="small" />
+                </IconButton>
+                <IconButton size="small" onClick={() => deleteMessage(msg.id)}>
+                  <Delete fontSize="small" />
+                </IconButton>
+              </Stack>
+            )}
           </Box>
         ))}
         <div ref={bottomRef} />
@@ -140,7 +114,6 @@ const ChatRoom = () => {
           placeholder="Type your message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && sendMessage()}
         />
         <Button variant="contained" onClick={sendMessage} sx={{ backgroundColor: "#1F3F3A" }}>
           Send
