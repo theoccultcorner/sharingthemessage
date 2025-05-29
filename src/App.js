@@ -8,9 +8,9 @@ import CreateScreenName from "./components/CreateScreenName";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Meetings from "./pages/Meetings";
-import Meditation from "./pages/Meditation"; // ✅ New import
+import Meditation from "./pages/Meditation";
+import Chatroom from "./pages/Chatroom"; // ✅ Import Chatroom
 
-// 🔒 ProtectedRoute component to guard routes
 const ProtectedRoute = ({ children }) => {
   const { user, loading, screenName } = useAuth();
 
@@ -59,6 +59,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <Meditation />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chatroom" // ✅ New route for chatroom
+            element={
+              <ProtectedRoute>
+                <Chatroom />
               </ProtectedRoute>
             }
           />

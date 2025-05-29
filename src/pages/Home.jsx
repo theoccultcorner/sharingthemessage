@@ -157,7 +157,7 @@ const Home = () => {
           }}
         >
           <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
-          <BottomNavigationAction label="Messages" icon={<MessageIcon />} />
+<BottomNavigationAction label="Messages" icon={<MessageIcon />} onClick={() => navigate("/chatroom")} />  
           <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
         </BottomNavigation>
       </Paper>
