@@ -43,7 +43,7 @@ const Meditation = () => {
         }
       } catch (err) {
         console.error("Error loading meditation:", err);
-        setError("Could not load meditation. Please try again later.");
+        setError("Couldn't load meditation. Please try again later.");
       } finally {
         setLoading(false);
       }
