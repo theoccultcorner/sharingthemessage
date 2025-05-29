@@ -140,26 +140,26 @@ const Home = () => {
       </Container>
 
       <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
-        <BottomNavigation
-          showLabels
-          value={navValue}
-          onChange={(event, newValue) => {
-            setNavValue(newValue);
-            if (newValue === 0) navigate("/meetings");
-            if (newValue === 1) alert("Messaging not implemented yet");
-            if (newValue === 2) navigate("/profile");
-          }}
-          sx={{
-            backgroundColor: "#f5f5f5",
-            "& .Mui-selected, & .Mui-selected > svg": {
-              color: "#1F3F3A"
-            }
-          }}
-        >
-          <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
-<BottomNavigationAction label="Messages" icon={<MessageIcon />} onClick={() => navigate("/chatroom")} />  
-          <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
-        </BottomNavigation>
+    <BottomNavigation
+  showLabels
+  value={navValue}
+  onChange={(event, newValue) => {
+    setNavValue(newValue);
+    if (newValue === 0) navigate("/meetings");
+    if (newValue === 1) navigate("/chatroom"); // ✅ removed alert
+    if (newValue === 2) navigate("/profile");
+  }}
+  sx={{
+    backgroundColor: "#f5f5f5",
+    "& .Mui-selected, & .Mui-selected > svg": {
+      color: "#1F3F3A"
+    }
+  }}
+>
+  <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
+  <BottomNavigationAction label="Messages" icon={<MessageIcon />} />  
+  <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
+</BottomNavigation>
       </Paper>
     </Box>
   );
