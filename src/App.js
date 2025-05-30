@@ -1,5 +1,3 @@
-// src/App.jsx
-
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -9,7 +7,8 @@ import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Meetings from "./pages/Meetings";
 import Meditation from "./pages/Meditation";
-import Chatroom from "./pages/ChatRoom"; // ✅ Import Chatroom
+import Chatroom from "./pages/ChatRoom";
+import PhoneList from "./pages/PhoneList"; // ✅ Import PhoneList
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading, screenName } = useAuth();
@@ -63,10 +62,18 @@ const App = () => {
             }
           />
           <Route
-            path="/chatroom" // ✅ New route for chatroom
+            path="/chatroom"
             element={
               <ProtectedRoute>
                 <Chatroom />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/phone-list" // ✅ New protected route
+            element={
+              <ProtectedRoute>
+                <PhoneList />
               </ProtectedRoute>
             }
           />

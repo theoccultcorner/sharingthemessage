@@ -79,16 +79,17 @@ const Home = () => {
             Find a Meeting
           </Button>
 
-          <Button
-            variant="contained"
-            startIcon={<MessageIcon />}
-            sx={{
-              backgroundColor: "#1F3F3A",
-              "&:hover": { backgroundColor: "#16302D" }
-            }}
-          >
-            Phone list
-          </Button>
+       <Button
+      variant="contained"
+      startIcon={<MessageIcon />}
+      onClick={() => navigate("/phone-list")} // ✅ Navigate on click
+      sx={{
+        backgroundColor: "#1F3F3A",
+        "&:hover": { backgroundColor: "#16302D" }
+      }}
+    >
+      Phone list
+    </Button>
 
           <Button
             variant="contained"
