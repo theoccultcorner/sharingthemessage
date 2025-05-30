@@ -10,6 +10,8 @@ import {
   Stack
 } from "@mui/material";
 
+
+
 const meetings = {
   Sunday: [{ time: "8 PM", host: "GREGORY" }],
   Monday: [
@@ -52,7 +54,10 @@ const Meetings = () => {
         gutterBottom
         sx={{ fontWeight: "bold" }}
       >
-        Daily NA Meetings
+        Daily NA Meetings<p>
+          upstairs in back of thrift store suite D
+209 W. Main St, Santa Maria, CA, 93458
+        </p>
       </Typography>
 
       <Stack spacing={3}>
