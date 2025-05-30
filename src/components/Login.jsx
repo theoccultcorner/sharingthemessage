@@ -23,6 +23,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isSignup, setIsSignup] = useState(false);
 
+  const green = "#1F3F3A";
+
   const handleGoogleLogin = async () => {
     await setPersistence(auth, browserLocalPersistence);
     const result = await signInWithPopup(auth, provider);
@@ -64,19 +66,11 @@ const Login = () => {
 
   return (
     <Container maxWidth="sm" style={{ marginTop: "2rem", textAlign: "center" }}>
-      <Typography
-        variant="h5"
-        gutterBottom
-        sx={{ fontWeight: 600, color: "#1F3F3A" }}
-      >
+      <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: green }}>
         Sharing the Message Group of Narcotics Anonymous
       </Typography>
 
-      <Typography
-        variant="h4"
-        gutterBottom
-        sx={{ color: "#1F3F3A" }}
-      >
+      <Typography variant="h4" gutterBottom sx={{ color: green }}>
         {isSignup ? "Sign Up" : "Login"}
       </Typography>
 
@@ -87,6 +81,7 @@ const Login = () => {
           fullWidth
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          sx={{ input: { color: green }, label: { color: green } }}
         />
         <TextField
           label="Password"
@@ -94,6 +89,7 @@ const Login = () => {
           fullWidth
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          sx={{ input: { color: green }, label: { color: green } }}
         />
 
         {isSignup ? (
@@ -102,13 +98,17 @@ const Login = () => {
               variant="contained"
               onClick={handleEmailSignup}
               sx={{
-                backgroundColor: "#1F3F3A",
+                backgroundColor: green,
                 "&:hover": { backgroundColor: "#16302D" }
               }}
             >
               Sign Up
             </Button>
-            <Button variant="text" onClick={() => setIsSignup(false)}>
+            <Button
+              variant="text"
+              onClick={() => setIsSignup(false)}
+              sx={{ color: green }}
+            >
               Already have an account? Login
             </Button>
           </>
@@ -118,13 +118,17 @@ const Login = () => {
               variant="contained"
               onClick={handleEmailLogin}
               sx={{
-                backgroundColor: "#1F3F3A",
+                backgroundColor: green,
                 "&:hover": { backgroundColor: "#16302D" }
               }}
             >
               Login
             </Button>
-            <Button variant="text" onClick={() => setIsSignup(true)}>
+            <Button
+              variant="text"
+              onClick={() => setIsSignup(true)}
+              sx={{ color: green }}
+            >
               Don’t have an account? Sign Up
             </Button>
           </>
@@ -134,7 +138,7 @@ const Login = () => {
           variant="contained"
           onClick={handleGoogleLogin}
           sx={{
-            backgroundColor: "#1F3F3A",
+            backgroundColor: green,
             color: "#fff",
             "&:hover": { backgroundColor: "#16302D" }
           }}
