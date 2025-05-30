@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import {
-  Box, Typography, TextField, Button, Paper, Stack, IconButton, Avatar
+  Box, Typography, TextField, Button, Paper, Stack,
+  IconButton, Avatar, Popover
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Edit, Delete, EmojiEmotions } from "@mui/icons-material";
 import {
   ref, onChildAdded, onChildChanged, onChildRemoved,
   push, remove, update
@@ -10,7 +11,8 @@ import {
 import { doc, getDoc } from "firebase/firestore";
 import { db, rtdb } from "../firebase";
 import { useAuth } from "../context/AuthContext";
-import md5 from "md5"; // ✅ Ensure you run: npm install md5
+import Picker from "@emoji-mart/react";
+import data from "@emoji-mart/data";
 
 const ChatRoom = () => {
   const { user } = useAuth();
@@ -18,6 +20,7 @@ const ChatRoom = () => {
   const [input, setInput] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
+  const [anchorEl, setAnchorEl] = useState(null);
   const userCache = useRef({});
   const bottomRef = useRef(null);
 
@@ -28,7 +31,7 @@ const ChatRoom = () => {
       const snap = await getDoc(docRef);
       if (snap.exists()) {
         const { screenName = "Anonymous", email = "" } = snap.data();
-        const avatarUrl = `https://www.gravatar.com/avatar/${md5(email)}?d=identicon`;
+        const avatarUrl = `https://www.gravatar.com/avatar?d=identicon&email=${encodeURIComponent(email)}`;
         const info = { screenName, avatarUrl };
         userCache.current[userId] = info;
         return info;
@@ -99,9 +102,7 @@ const ChatRoom = () => {
 
   const confirmEdit = async () => {
     if (!editingText.trim()) return;
-    await update(ref(rtdb, `chatMessages/${editingId}`), {
-      text: editingText
-    });
+    await update(ref(rtdb, `chatMessages/${editingId}`), { text: editingText });
     setEditingId(null);
     setEditingText("");
   };
@@ -110,11 +111,12 @@ const ChatRoom = () => {
     await remove(ref(rtdb, `chatMessages/${id}`));
   };
 
-  const formatTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit"
-    });
+  const formatTime = (timestamp) =>
+    new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  const handleEmojiClick = (emoji) => {
+    setInput((prev) => prev + emoji.native);
+    setAnchorEl(null);
   };
 
   return (
@@ -152,12 +154,8 @@ const ChatRoom = () => {
                   </Typography>
                   {isOwn && editingId !== msg.id && (
                     <Stack direction="row" spacing={0}>
-                      <IconButton size="small" onClick={() => startEditing(msg)}>
-                        <Edit fontSize="small" />
-                      </IconButton>
-                      <IconButton size="small" onClick={() => deleteMessage(msg.id)}>
-                        <Delete fontSize="small" />
-                      </IconButton>
+                      <IconButton size="small" onClick={() => startEditing(msg)}><Edit fontSize="small" /></IconButton>
+                      <IconButton size="small" onClick={() => deleteMessage(msg.id)}><Delete fontSize="small" /></IconButton>
                     </Stack>
                   )}
                 </Stack>
@@ -198,10 +196,21 @@ const ChatRoom = () => {
           bottom: 0
         }}
       >
+        <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+          <EmojiEmotions />
+        </IconButton>
+        <Popover
+          open={Boolean(anchorEl)}
+          anchorEl={anchorEl}
+          onClose={() => setAnchorEl(null)}
+          anchorOrigin={{ vertical: "top", horizontal: "left" }}
+        >
+          <Picker data={data} onEmojiSelect={handleEmojiClick} />
+        </Popover>
         <TextField
           fullWidth
           size="small"
-          placeholder="Type a message or paste media/emoji..."
+          placeholder="Type a message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
