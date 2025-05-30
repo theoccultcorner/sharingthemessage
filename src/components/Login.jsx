@@ -146,6 +146,9 @@ const Login = () => {
           Sign in with Google
         </Button>
       </Stack>
+      <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: green }}>
+      The only requirement for membership is a desire to stop using. 
+      </Typography>
     </Container>
   );
 };
