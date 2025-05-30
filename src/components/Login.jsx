@@ -14,8 +14,7 @@ import {
   Container,
   Typography,
   TextField,
-  Stack,
-  Box
+  Stack
 } from "@mui/material";
 
 const Login = () => {
@@ -66,95 +65,91 @@ const Login = () => {
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        justifyContent: "space-between",
-        px: 2,
-        py: 4,
-      }}
-    >
-      {/* Top Section */}
-      <Container maxWidth="sm">
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: green, textAlign: "center" }}>
-          Sharing the Message Group of Narcotics Anonymous
-        </Typography>
+    <Container maxWidth="sm" style={{ marginTop: "2rem", textAlign: "center" }}>
+      <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: green }}>
+        Sharing the Message Group of Narcotics Anonymous
+      </Typography>
 
-        <Typography variant="h4" gutterBottom sx={{ color: green, textAlign: "center" }}>
-          {isSignup ? "Sign Up" : "Login"}
-        </Typography>
+      <Typography variant="h4" gutterBottom sx={{ color: green }}>
+        {isSignup ? "Sign Up" : "Login"}
+      </Typography>
 
-        <Stack spacing={2} sx={{ mt: 2 }}>
-          <TextField
-            label="Email"
-            type="email"
-            fullWidth
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            sx={{ input: { color: green }, label: { color: green } }}
-          />
-          <TextField
-            label="Password"
-            type="password"
-            fullWidth
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            sx={{ input: { color: green }, label: { color: green } }}
-          />
+      <Stack spacing={2} sx={{ mt: 2 }}>
+        <TextField
+          label="Email"
+          type="email"
+          fullWidth
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          sx={{ input: { color: green }, label: { color: green } }}
+        />
+        <TextField
+          label="Password"
+          type="password"
+          fullWidth
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          sx={{ input: { color: green }, label: { color: green } }}
+        />
 
-          {isSignup ? (
-            <>
-              <Button
-                variant="contained"
-                onClick={handleEmailSignup}
-                sx={{ backgroundColor: green, "&:hover": { backgroundColor: "#16302D" } }}
-              >
-                Sign Up
-              </Button>
-              <Button variant="text" onClick={() => setIsSignup(false)} sx={{ color: green }}>
-                Already have an account? Login
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="contained"
-                onClick={handleEmailLogin}
-                sx={{ backgroundColor: green, "&:hover": { backgroundColor: "#16302D" } }}
-              >
-                Login
-              </Button>
-              <Button variant="text" onClick={() => setIsSignup(true)} sx={{ color: green }}>
-                Don’t have an account? Sign Up
-              </Button>
-            </>
-          )}
+        {isSignup ? (
+          <>
+            <Button
+              variant="contained"
+              onClick={handleEmailSignup}
+              sx={{
+                backgroundColor: green,
+                "&:hover": { backgroundColor: "#16302D" }
+              }}
+            >
+              Sign Up
+            </Button>
+            <Button
+              variant="text"
+              onClick={() => setIsSignup(false)}
+              sx={{ color: green }}
+            >
+              Already have an account? Login
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              variant="contained"
+              onClick={handleEmailLogin}
+              sx={{
+                backgroundColor: green,
+                "&:hover": { backgroundColor: "#16302D" }
+              }}
+            >
+              Login
+            </Button>
+            <Button
+              variant="text"
+              onClick={() => setIsSignup(true)}
+              sx={{ color: green }}
+            >
+              Don’t have an account? Sign Up
+            </Button>
+          </>
+        )}
 
-          <Button
-            variant="contained"
-            onClick={handleGoogleLogin}
-            sx={{ backgroundColor: green, color: "#fff", "&:hover": { backgroundColor: "#16302D" } }}
-          >
-            Sign in with Google
-          </Button>
-        </Stack>
-      </Container>
-
-      {/* Bottom Quote */}
-     <Typography
-      variant="h6"
-      sx={{
-        color: green,
-        fontWeight: 300,
-        textAlign: "center",
-       
-      }}
-    >
+        <Button
+          variant="contained"
+          onClick={handleGoogleLogin}
+          sx={{
+            backgroundColor: green,
+            color: "#fff",
+            "&:hover": { backgroundColor: "#16302D" }
+          }}
+        >
+          Sign in with Google
+        </Button>
+      </Stack>
+      <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: green }}>
       The only requirement for membership is a desire to stop using.
-    </Typography>
-    </Box>
+      </Typography>
+    </Container>
   );
 };
 
