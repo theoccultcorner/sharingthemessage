@@ -46,6 +46,19 @@ const Home = () => {
       </AppBar>
 
       <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
+
+  <Button
+            variant="contained"
+            startIcon={<AccountCircleIcon />}
+            onClick={() => navigate("/profile")}
+            sx={{
+              backgroundColor: "#1F3F3A",
+              "&:hover": { backgroundColor: "#16302D" }
+            }}
+          >
+            My Profile
+          </Button>
+
         <Typography variant="h4" gutterBottom>
           Welcome, {screenName || user?.displayName}!
         </Typography>
@@ -76,23 +89,6 @@ const Home = () => {
           >
             Phone list
           </Button>
-
-          <Button
-            variant="contained"
-            startIcon={<AccountCircleIcon />}
-            onClick={() => navigate("/profile")}
-            sx={{
-              backgroundColor: "#1F3F3A",
-              "&:hover": { backgroundColor: "#16302D" }
-            }}
-          >
-            My Profile
-          </Button>
-
-         
-
- 
- 
 
           <Button
             variant="contained"
