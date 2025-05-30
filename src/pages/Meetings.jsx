@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -91,8 +91,9 @@ const extraMeetings = {
 const Meetings = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [selectedTab, setSelectedTab] = useState(0);
   const daysOfWeek = Object.keys(existingMeetings);
+  const todayIndex = new Date().getDay(); // Sunday = 0, Monday = 1, etc.
+  const [selectedTab, setSelectedTab] = useState(todayIndex);
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
