@@ -46,7 +46,7 @@ const Home = () => {
       </AppBar>
 
       <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
-
+ <Stack spacing={2} sx={{ mt: 4 }}> 
   <Button
             variant="contained"
             startIcon={<AccountCircleIcon />}
@@ -58,7 +58,7 @@ const Home = () => {
           >
             My Profile
           </Button>
-
+</Stack>
         <Typography variant="h4" gutterBottom>
           Welcome, {screenName || user?.displayName}!
         </Typography>
