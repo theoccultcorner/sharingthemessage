@@ -147,7 +147,7 @@ const Login = () => {
       variant="h6"
       sx={{
         color: green,
-        fontWeight: 500,
+        fontWeight: 200,
         textAlign: "center",
         mb: 2,
         px: 2
