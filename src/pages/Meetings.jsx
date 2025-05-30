@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Container,
   Typography,
@@ -7,44 +7,48 @@ import {
   useTheme,
   useMediaQuery,
   Divider,
-  Stack
+  Stack,
+  ToggleButtonGroup,
+  ToggleButton
 } from "@mui/material";
 
-
-
-const meetings = {
-  Sunday: [{ time: "8 PM", host: "GREGORY" }],
+const meetingsData = {
+  Sunday: [
+    { time: "8:30 AM - 9:30 AM", title: "Men's Stag", location: "420 Soares Ave, Orcutt, CA" },
+    { time: "8:00 PM - 9:00 PM", title: "Sharing the Message", location: "209 W. Main St, Santa Maria, CA" }
+  ],
   Monday: [
-    { time: "12 PM", host: "MARK" },
-    { time: "8 PM", host: "Daniel M." }
+    { time: "12:00 PM - 1:00 PM", title: "Sharing the Message", location: "209 W. Main St, Santa Maria, CA" },
+    { time: "8:00 PM - 9:00 PM", title: "Sharing the Message - Leaders Choice", location: "209 W. Main St, Santa Maria, CA" }
   ],
   Tuesday: [
-    { time: "12 PM", host: "Peanut" },
-    { time: "6:30 PM", host: "Men’s Stag – John T." },
-    { time: "8 PM", host: "LORENZO" }
+    { time: "12:00 PM - 1:00 PM", title: "Sharing the Message - Leaders Choice", location: "209 W. Main St, Santa Maria, CA" },
+    { time: "6:30 PM - 7:30 PM", title: "Men’s Stag", location: "209 W. Main St, Santa Maria, CA" },
+    { time: "8:00 PM - 9:00 PM", title: "Sharing the Message - Leaders Choice", location: "209 W. Main St, Santa Maria, CA" }
   ],
   Wednesday: [
-    { time: "12 PM", host: "Cambria" },
-    { time: "8 PM", host: "Hannah" }
+    { time: "12:00 PM - 1:00 PM", title: "Sharing the Message - Stick Meeting", location: "209 W. Main St, Santa Maria, CA" },
+    { time: "8:00 PM - 9:00 PM", title: "Sharing the Message - Leaders Choice", location: "209 W. Main St, Santa Maria, CA" }
   ],
   Thursday: [
-    { time: "12 PM", host: "BART" },
-    { time: "6:30 PM", host: "Women’s Meeting – Jaclyn" },
-    { time: "8 PM", host: "Dinah R." }
+    { time: "12:00 PM - 1:00 PM", title: "Sharing the Message - Leaders Choice", location: "209 W. Main St, Santa Maria, CA" },
+    { time: "6:30 PM - 7:30 PM", title: "Women’s Meeting", location: "209 W. Main St, Santa Maria, CA" },
+    { time: "8:00 PM - 9:00 PM", title: "Sharing the Message - Leaders Choice", location: "209 W. Main St, Santa Maria, CA" }
   ],
   Friday: [
-    { time: "12 PM", host: "SPAD / Joseph" },
-    { time: "8 PM", host: "MICHAEL B." }
+    { time: "12:00 PM - 1:00 PM", title: "Sharing the Message - SPAD Book Study", location: "209 W. Main St, Santa Maria, CA" },
+    { time: "8:00 PM - 9:00 PM", title: "Sharing the Message - SPAD Book Study", location: "209 W. Main St, Santa Maria, CA" }
   ],
   Saturday: [
-    { time: "12 PM", host: "T" },
-    { time: "12 PM", host: "Juanita" }
+    { time: "12:00 PM - 1:00 PM", title: "Sharing the Message - Leaders Choice", location: "209 W. Main St, Santa Maria, CA" },
+    { time: "8:00 PM - 9:00 PM", title: "Sharing the Message - Leaders Choice", location: "209 W. Main St, Santa Maria, CA" }
   ]
 };
 
 const Meetings = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [selectedDay, setSelectedDay] = useState("Monday");
 
   return (
     <Container sx={{ mt: 4, mb: 10 }}>
@@ -54,38 +58,48 @@ const Meetings = () => {
         gutterBottom
         sx={{ fontWeight: "bold" }}
       >
-        Daily NA Meetings<p>
-          upstairs in back of thrift store suite D
-209 W. Main St, Santa Maria, CA, 93458
-        </p>
+        Daily NA Meetings
+        <Typography variant="body1">
+          Upstairs in back of thrift store suite D<br />209 W. Main St, Santa Maria, CA, 93458
+        </Typography>
       </Typography>
 
-      <Stack spacing={3}>
-        {Object.entries(meetings).map(([day, slots]) => (
-          <Paper key={day} elevation={2} sx={{ p: 2 }}>
-            <Typography
-              variant="h6"
-              sx={{ fontWeight: 600, color: "#1F3F3A", mb: 1 }}
-            >
+      <Box sx={{ display: "flex", justifyContent: "center", my: 3 }}>
+        <ToggleButtonGroup
+          value={selectedDay}
+          exclusive
+          onChange={(e, value) => value && setSelectedDay(value)}
+          size="small"
+          color="primary"
+        >
+          {Object.keys(meetingsData).map((day) => (
+            <ToggleButton key={day} value={day}>
               {day}
-            </Typography>
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      </Box>
 
-            <Divider sx={{ mb: 1 }} />
+      <Paper elevation={3} sx={{ p: 3 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, color: "#1F3F3A" }}>
+          {selectedDay} Meetings
+        </Typography>
+        <Divider sx={{ my: 1 }} />
 
-            {slots.map(({ time, host }, index) => (
-              <Box key={index} sx={{ mb: 1 }}>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  ⏰ {time}
-                </Typography>
-                <Typography variant="body2" sx={{ ml: 2 }}>
-                  👤 {host}
-                </Typography>
-                {index < slots.length - 1 && <Divider sx={{ my: 1 }} />}
-              </Box>
-            ))}
-          </Paper>
-        ))}
-      </Stack>
+        <Stack spacing={2}>
+          {meetingsData[selectedDay].map((meeting, index) => (
+            <Box key={index}>
+              <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                ⏰ {meeting.time}
+              </Typography>
+              <Typography variant="body2" sx={{ ml: 2 }}>
+                📌 {meeting.title} <br />📍 {meeting.location}
+              </Typography>
+              {index < meetingsData[selectedDay].length - 1 && <Divider sx={{ my: 1 }} />}
+            </Box>
+          ))}
+        </Stack>
+      </Paper>
     </Container>
   );
 };
