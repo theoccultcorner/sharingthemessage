@@ -147,10 +147,9 @@ const Login = () => {
       variant="h6"
       sx={{
         color: green,
-        fontWeight: 200,
-      
-        mb: 2,
-        px: 2
+        fontWeight: 300,
+        textAlign: "center",
+       
       }}
     >
       The only requirement for membership is a desire to stop using.
