@@ -143,17 +143,18 @@ const Login = () => {
       </Container>
 
       {/* Bottom Quote */}
-      <Typography
-        variant="h6"
-        sx={{
-          color: green,
-          fontWeight: 500,
-          textAlign: "center",
-          mb: 2
-        }}
-      >
-        The only requirement for membership is a desire to stop using.
-      </Typography>
+     <Typography
+      variant="h6"
+      sx={{
+        color: green,
+        fontWeight: 500,
+        textAlign: "center",
+        mb: 2,
+        px: 2
+      }}
+    >
+      The only requirement for membership is a desire to stop using.
+    </Typography>
     </Box>
   );
 };
