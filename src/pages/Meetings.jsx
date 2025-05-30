@@ -42,39 +42,49 @@ const existingMeetings = {
   ]
 };
 
-const fullMeetings = {
+const extraMeetings = {
   Sunday: [
     "8:30 am - 9:30 am – Men's Stag – 420 Soares Ave, Orcutt, CA",
     "9:00 am - 10:00 am – Destiny Group – 119 N. D St, Lompoc, CA",
     "12:00 pm - 1:00 pm – Cambria New Attitude – 1069 Main St, Cambria, CA (Virtual + In-Person)",
-    "8:00 pm - 9:00 pm – Sharing the Message – 209 W. Main St, Santa Maria, CA"
+    "4:00 pm - 5:00 pm – Ladies Night (Zoom) – Central Coast, CA – Zoom ID: 761 398 5501, Passcode: warrior",
+    "6:00 pm - 7:00 pm – Sunday Night Serenity – 5318 Palma Ave., Atascadero, CA",
+    "7:00 pm - 8:00 pm – Lompoc New Attitudes – 129 N. I st, Lompoc, CA",
+    "7:00 pm - 8:00 pm – Five Cities Group – Hope Church, 900 N. Oak Park, Arroyo Grande, CA"
   ],
   Monday: [
-    "12:00 pm - 1:00 pm – Sharing the Message – 209 W. Main St, Santa Maria, CA",
-    "6:30 pm - 7:30 pm – SOS Women's Meeting – 6717 Morro Rd, Atascadero, CA",
-    "8:00 pm - 9:00 pm – Sharing the Message – 209 W. Main St, Santa Maria, CA"
+    "9:00 am - 10:00 am – Destiny Group – 119 N. D St, Lompoc, CA",
+    "9:00 am - 10:00 am – Central Coast Breakfast Club (Zoom) – Lompoc, CA",
+    "6:30 pm - 7:30 pm – Give it Away Men's – 5850 Rosario Ave, Atascadero, CA",
+    "6:30 pm - 7:30 pm – Women's Hard Knocks – 530 12th St., Paso Robles, CA",
+    "7:00 pm - 8:00 pm – Orcutt Reconnections – 420 Soares Ave, Orcutt, CA"
   ],
   Tuesday: [
-    "12:00 pm - 1:00 pm – Sharing the Message – 209 W. Main St, Santa Maria, CA",
-    "6:30 pm - 7:30 pm – Sharing the Message - Men's Stag – 209 W. Main St, Santa Maria, CA",
-    "8:00 pm - 9:00 pm – Sharing the Message – 209 W. Main St, Santa Maria, CA"
+    "9:00 am - 10:00 am – Destiny Group – 119 N. D St, Lompoc, CA",
+    "6:00 pm - 7:00 pm – Five Cities Group – 990 Dolliver, Pismo Beach, CA",
+    "6:30 pm - 7:30 pm – Tuesday Hard Knocks – 530 12th St., Paso Robles, CA",
+    "7:30 pm - 8:30 pm – Five Cities Men's Group – Hope Church, Arroyo Grande, CA"
   ],
   Wednesday: [
-    "12:00 pm - 1:00 pm – Sharing the Message – 209 W. Main St, Santa Maria, CA",
-    "8:00 pm - 9:00 pm – Sharing the Message – 209 W. Main St, Santa Maria, CA"
+    "9:00 am - 10:00 am – Breakfast Club – Lompoc, CA",
+    "6:30 pm - 7:30 pm – Hard Knocks Sweets and Treats – 530 12th St., Paso Robles, CA",
+    "7:00 pm - 8:00 pm – Gryphon Men's Group – 1825 San Ramon, Atascadero, CA"
   ],
   Thursday: [
-    "12:00 pm - 1:00 pm – Sharing the Message – 209 W. Main St, Santa Maria, CA",
-    "6:30 pm - 7:30 pm – Sharing the Message - Women's – 209 W. Main St, Santa Maria, CA",
-    "8:00 pm - 9:00 pm – Sharing the Message – 209 W. Main St, Santa Maria, CA"
+    "9:00 am - 10:00 am – Spiritual Principles – Central Coast Breakfast Club (Zoom)",
+    "7:15 pm - 8:15 pm – NA Stick Meeting – Hope Lutheran Church, Atascadero, CA",
+    "7:30 pm - 8:30 pm – Off the Rock – 710 Harbor Way, Morro Bay, CA"
   ],
   Friday: [
-    "12:00 pm - 1:00 pm – Sharing the Message – 209 W. Main St, Santa Maria, CA",
-    "8:00 pm - 9:00 pm – Sharing the Message SPAD Book Study – 209 W. Main St, Santa Maria, CA"
+    "12:00 pm - 1:00 pm – Alcohol is a Drug – 1069 Main St, Cambria, CA",
+    "7:00 pm - 8:00 pm – Friday Night Freedom – 8600 Atascadero Ave, Atascadero, CA",
+    "8:00 pm - 9:15 pm – Candlelight – Lompoc New Attitudes, Lompoc, CA"
   ],
   Saturday: [
-    "12:00 pm - 1:00 pm – Sharing the Message – 209 W. Main St, Santa Maria, CA",
-    "8:00 pm - 9:00 pm – Sharing the Message – 209 W. Main St, Santa Maria, CA"
+    "7:30 am - 8:30 am – Saturday Wakeup! – 5318 Palma Ave., Atascadero, CA",
+    "6:00 pm - 7:00 pm – New Attitudes – 129 N I Street, Lompoc, CA",
+    "6:30 pm - 7:30 pm – Saturday Hard Knocks – 530 12th St., Paso Robles, CA",
+    "7:00 pm - 8:00 pm – Keep it Simple – Alano Club, 3075 Broad St., SLO, CA"
   ]
 };
 
@@ -104,11 +114,11 @@ const Meetings = () => {
         value={selectedTab}
         onChange={handleTabChange}
         variant="scrollable"
-        scrollButtons
+        scrollButtons="auto"
         allowScrollButtonsMobile
         sx={{ mb: 2 }}
       >
-        {daysOfWeek.map((day, index) => (
+        {daysOfWeek.map((day) => (
           <Tab key={day} label={day} />
         ))}
       </Tabs>
@@ -129,12 +139,12 @@ const Meetings = () => {
 
         <Paper elevation={3} sx={{ p: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 600, color: "#1F3F3A", mb: 1 }}>
-            Full Schedule
+            All NA Meetings
           </Typography>
-          {fullMeetings[daysOfWeek[selectedTab]].map((entry, idx) => (
+          {extraMeetings[daysOfWeek[selectedTab]]?.map((entry, idx) => (
             <Box key={idx} sx={{ mb: 1 }}>
               <Typography variant="body2">📍 {entry}</Typography>
-              {idx < fullMeetings[daysOfWeek[selectedTab]].length - 1 && <Divider sx={{ my: 1 }} />}
+              {idx < extraMeetings[daysOfWeek[selectedTab]].length - 1 && <Divider sx={{ my: 1 }} />}
             </Box>
           ))}
         </Paper>
