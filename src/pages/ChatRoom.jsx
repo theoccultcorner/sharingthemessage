@@ -30,8 +30,7 @@ const ChatRoom = () => {
       const docRef = doc(db, "users", userId);
       const snap = await getDoc(docRef);
       if (snap.exists()) {
-        const { screenName = "Anonymous", email = "" } = snap.data();
-        const avatarUrl = `https://www.gravatar.com/avatar?d=identicon&email=${encodeURIComponent(email)}`;
+        const { screenName = "Anonymous", avatarUrl = "" } = snap.data();
         const info = { screenName, avatarUrl };
         userCache.current[userId] = info;
         return info;
@@ -102,7 +101,9 @@ const ChatRoom = () => {
 
   const confirmEdit = async () => {
     if (!editingText.trim()) return;
-    await update(ref(rtdb, `chatMessages/${editingId}`), { text: editingText });
+    await update(ref(rtdb, `chatMessages/${editingId}`), {
+      text: editingText
+    });
     setEditingId(null);
     setEditingText("");
   };
