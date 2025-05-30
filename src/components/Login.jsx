@@ -148,7 +148,7 @@ const Login = () => {
       sx={{
         color: green,
         fontWeight: 200,
-        textAlign: "center",
+      
         mb: 2,
         px: 2
       }}
