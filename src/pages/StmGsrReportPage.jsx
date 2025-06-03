@@ -13,6 +13,8 @@ const authorizedEmails = [
   "theoccultcorner@gmail.com"
 ];
 
+const defaultTitle = "STM GSR Report – June 2025";
+
 const defaultText = `
 Positions Available
 
@@ -57,6 +59,7 @@ const StmGsrReport = () => {
   const { user } = useAuth();
   const isAuthorized = authorizedEmails.includes(user?.email);
   const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(defaultTitle);
   const [reportText, setReportText] = useState(defaultText);
 
   const renderFormattedText = (text) => {
@@ -100,9 +103,19 @@ const StmGsrReport = () => {
 
   return (
     <Box p={3}>
-      <Typography variant="h4" gutterBottom>
-        STM GSR Report – May 2025
-      </Typography>
+      {editing ? (
+        <TextField
+          fullWidth
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          variant="outlined"
+          sx={{ backgroundColor: "#fff", mb: 2 }}
+        />
+      ) : (
+        <Typography variant="h4" gutterBottom>
+          {title}
+        </Typography>
+      )}
 
       {editing ? (
         <TextField
