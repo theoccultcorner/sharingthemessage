@@ -18,7 +18,11 @@ import {
   BottomNavigation,
   BottomNavigationAction,
   Chip,
-  Link
+  Link,
+  Card,
+  CardContent,
+  Avatar,
+  Divider
 } from "@mui/material";
 import GroupIcon from "@mui/icons-material/Group";
 import MessageIcon from "@mui/icons-material/Message";
@@ -108,7 +112,7 @@ const Profile = () => {
   };
 
   return (
-    <Box>
+    <Box minHeight="100vh" display="flex" flexDirection="column" bgcolor="#f0f0f0">
       <AppBar position="static" sx={{ backgroundColor: "#1F3F3A" }}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
@@ -120,77 +124,85 @@ const Profile = () => {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
-        {editMode ? (
-          <Stack spacing={2} mt={3}>
-            <TextField label="Screen Name" value={profileData.screenName} onChange={handleChange("screenName")} helperText="How others will see you" fullWidth />
-            <TextField label="Clean Date" type="date" value={profileData.cleanDate} onChange={handleChange("cleanDate")} InputLabelProps={{ shrink: true }} helperText="Your recovery start date" fullWidth />
-            <TextField label="Sponsor Name" value={profileData.sponsorName} onChange={handleChange("sponsorName")} helperText="Your NA sponsor's name" fullWidth />
-            <TextField label="Phone Number" value={profileData.phone} onChange={handleChange("phone")} helperText="Tap-to-call contact info (optional)" fullWidth />
-            <TextField label="Meeting Role" value={profileData.meetingRole} onChange={handleChange("meetingRole")} helperText="E.g., Chairperson, Greeter, Secretary" fullWidth />
-            <TextField label="Service Commitment" value={profileData.serviceCommitment} onChange={handleChange("serviceCommitment")} helperText="E.g., Setup crew, Literature, Treasurer" fullWidth />
-            <TextField label="Bio / Motto" value={profileData.bio} onChange={handleChange("bio")} helperText="Personal message, motto, or quote" fullWidth multiline minRows={3} />
-            <Stack direction="row" spacing={2}>
-              <Button variant="contained" onClick={handleSave} disabled={loading} sx={{ backgroundColor: "#1F3F3A" }}>
-                {loading ? "Saving..." : "Save"}
-              </Button>
-              <Button variant="outlined" onClick={() => setEditMode(false)} sx={{ color: "#1F3F3A", borderColor: "#1F3F3A" }}>
-                Cancel
-              </Button>
-            </Stack>
-          </Stack>
-        ) : (
-          <Stack spacing={2} mt={3}>
-            {profileData.screenName && <Typography><strong>Screen Name:</strong> {profileData.screenName}</Typography>}
-            {profileData.cleanDate && (
-              <>
-                <Typography><strong>Clean Date:</strong> {`${profileData.cleanDate} (${getDaysClean(profileData.cleanDate)} days clean)`}</Typography>
-                <Stack direction="row" spacing={1} flexWrap="wrap">
-                  {renderMilestones(getDaysClean(profileData.cleanDate))}
+      <Container maxWidth="sm" sx={{ mt: 4, mb: 10, flexGrow: 1 }}>
+        <Card>
+          <CardContent>
+            <Stack alignItems="center" spacing={2}>
+              <Avatar sx={{ width: 80, height: 80, bgcolor: "#1F3F3A" }}>
+                {profileData.screenName?.[0]?.toUpperCase() || "U"}
+              </Avatar>
+              {editMode ? (
+                <Stack spacing={2} width="100%">
+                  <TextField label="Screen Name" value={profileData.screenName} onChange={handleChange("screenName")} helperText="How others will see you" fullWidth />
+                  <TextField label="Clean Date" type="date" value={profileData.cleanDate} onChange={handleChange("cleanDate")} InputLabelProps={{ shrink: true }} helperText="Your recovery start date" fullWidth />
+                  <TextField label="Sponsor Name" value={profileData.sponsorName} onChange={handleChange("sponsorName")} helperText="Your NA sponsor's name" fullWidth />
+                  <TextField label="Phone Number" value={profileData.phone} onChange={handleChange("phone")} helperText="Tap-to-call contact info (optional)" fullWidth />
+                  <TextField label="Meeting Role" value={profileData.meetingRole} onChange={handleChange("meetingRole")} helperText="E.g., Chairperson, Greeter, Secretary" fullWidth />
+                  <TextField label="Service Commitment" value={profileData.serviceCommitment} onChange={handleChange("serviceCommitment")} helperText="E.g., Setup crew, Literature, Treasurer" fullWidth />
+                  <TextField label="Bio / Motto" value={profileData.bio} onChange={handleChange("bio")} helperText="Personal message, motto, or quote" fullWidth multiline minRows={3} />
+                  <Stack direction="row" spacing={2}>
+                    <Button variant="contained" onClick={handleSave} disabled={loading} sx={{ backgroundColor: "#1F3F3A" }}>
+                      {loading ? "Saving..." : "Save"}
+                    </Button>
+                    <Button variant="outlined" onClick={() => setEditMode(false)} sx={{ color: "#1F3F3A", borderColor: "#1F3F3A" }}>
+                      Cancel
+                    </Button>
+                  </Stack>
                 </Stack>
-              </>
-            )}
-            {profileData.sponsorName && <Typography><strong>Sponsor:</strong> {profileData.sponsorName}</Typography>}
-            {profileData.phone && (
-              <Typography>
-                <strong>Phone:</strong>{" "}
-                <Link href={`tel:${profileData.phone}`} underline="hover">{profileData.phone}</Link>
-              </Typography>
-            )}
-            {profileData.meetingRole && <Typography><strong>Meeting Role:</strong> {profileData.meetingRole}</Typography>}
-            {profileData.serviceCommitment && <Typography><strong>Service Commitment:</strong> {profileData.serviceCommitment}</Typography>}
-            {profileData.bio && <Typography><strong>Bio:</strong> {profileData.bio}</Typography>}
-            <Button variant="contained" onClick={() => setEditMode(true)} sx={{ backgroundColor: "#1F3F3A" }}>
-              Edit Profile
-            </Button>
-          </Stack>
-        )}
+              ) : (
+                <Stack spacing={2} width="100%">
+                  {profileData.screenName && <Typography><strong>Screen Name:</strong> {profileData.screenName}</Typography>}
+                  {profileData.cleanDate && (
+                    <>
+                      <Typography><strong>Clean Date:</strong> {`${profileData.cleanDate} (${getDaysClean(profileData.cleanDate)} days clean)`}</Typography>
+                      <Stack direction="row" spacing={1} flexWrap="wrap">
+                        {renderMilestones(getDaysClean(profileData.cleanDate))}
+                      </Stack>
+                    </>
+                  )}
+                  {profileData.sponsorName && <Typography><strong>Sponsor:</strong> {profileData.sponsorName}</Typography>}
+                  {profileData.phone && (
+                    <Typography>
+                      <strong>Phone:</strong> <Link href={`tel:${profileData.phone}`} underline="hover">{profileData.phone}</Link>
+                    </Typography>
+                  )}
+                  {profileData.meetingRole && <Typography><strong>Meeting Role:</strong> {profileData.meetingRole}</Typography>}
+                  {profileData.serviceCommitment && <Typography><strong>Service Commitment:</strong> {profileData.serviceCommitment}</Typography>}
+                  {profileData.bio && <Typography><strong>Bio:</strong> {profileData.bio}</Typography>}
+                  <Divider sx={{ my: 2 }} />
+                  <Button variant="contained" onClick={() => setEditMode(true)} sx={{ backgroundColor: "#1F3F3A" }}>
+                    Edit Profile
+                  </Button>
+                </Stack>
+              )}
+            </Stack>
+          </CardContent>
+        </Card>
       </Container>
 
       <Paper sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }} elevation={3}>
-<BottomNavigation
-  showLabels
-  value={navValue}
-  onChange={(event, newValue) => {
-    setNavValue(newValue);
-    if (newValue === 0) navigate("/meetings");
-    if (newValue === 1) alert("Messaging not implemented yet");
-    if (newValue === 2) navigate("/profile");
-  }}
-  sx={{
-    "& .Mui-selected": {
-      color: "#1F3F3A"  // Selected icon and label color
-    },
-    "& .MuiBottomNavigationAction-root": {
-      color: "#777" // Unselected icon and label color
-    }
-  }}
->
-  <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
-  <BottomNavigationAction label="Messages" icon={<MessageIcon />} />
-  <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
-</BottomNavigation>
-
+        <BottomNavigation
+          showLabels
+          value={navValue}
+          onChange={(event, newValue) => {
+            setNavValue(newValue);
+            if (newValue === 0) navigate("/meetings");
+            if (newValue === 1) alert("Messaging not implemented yet");
+            if (newValue === 2) navigate("/profile");
+          }}
+          sx={{
+            "& .Mui-selected": {
+              color: "#1F3F3A"
+            },
+            "& .MuiBottomNavigationAction-root": {
+              color: "#777"
+            }
+          }}
+        >
+          <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
+          <BottomNavigationAction label="Messages" icon={<MessageIcon />} />
+          <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
+        </BottomNavigation>
       </Paper>
     </Box>
   );
