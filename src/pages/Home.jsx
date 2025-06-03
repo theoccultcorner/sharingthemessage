@@ -132,9 +132,7 @@ const Home = () => {
         >
           View SPAD Meditation
         </Button>
-   
-        </Stack>
-   <Button
+      <Button
     variant="contained"
     onClick={() => navigate("/gsr-report")}
     sx={{
@@ -144,6 +142,8 @@ const Home = () => {
   >
     View STM GSR Report
   </Button>
+        </Stack>
+ 
       </Container>
 
       <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
