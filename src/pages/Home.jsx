@@ -20,7 +20,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import MessageIcon from '@mui/icons-material/Message';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
- import StmGsrReport from "./StmGsrReport";
+ import StmGsrReportPage from "./StmGsrReportPage";
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 
 const Home = () => {
@@ -134,16 +134,10 @@ const Home = () => {
         </Button>
    
         </Stack>
-       <Button
-  variant="contained"
-  onClick={() => navigate("/gsr-report")}
-  sx={{
-    backgroundColor: "#1F3F3A",
-    "&:hover": { backgroundColor: "#16302D" }
-  }}
->
-  View STM GSR Report
-</Button>
+     <Typography variant="h5" sx={{ mt: 6, mb: 2 }}>
+  STM GSR Report – May 2025
+</Typography>
+<StmGsrReportPage />
       </Container>
 
       <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
