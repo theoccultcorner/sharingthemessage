@@ -55,7 +55,7 @@ const StmGsrReport = () => {
         <ListItem>• Celebrating a milestone? Add your name & clean date to the board.</ListItem>
         <ListItem>• PR, H&I & Behind the Walls Sponsorship needs volunteers. Info posted.</ListItem>
         <ListItem>• NA Area Info: <a href="https://centralcoastna.org" target="_blank" rel="noreferrer">centralcoastna.org</a></ListItem>
-        <ListItem>• Are there any other NA announcements from the floor?</ListItem>
+       
       </List>
     </Box>
   );

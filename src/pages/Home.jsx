@@ -134,10 +134,16 @@ const Home = () => {
         </Button>
    
         </Stack>
-         <Typography variant="h5" sx={{ mt: 6, mb: 2 }}>
-    STM GSR Report – May 2025
-  </Typography>
-  <StmGsrReport />
+       <Button
+  variant="contained"
+  onClick={() => navigate("/gsr-report")}
+  sx={{
+    backgroundColor: "#1F3F3A",
+    "&:hover": { backgroundColor: "#16302D" }
+  }}
+>
+  View STM GSR Report
+</Button>
       </Container>
 
       <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>

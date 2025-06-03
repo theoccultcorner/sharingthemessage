@@ -69,6 +69,11 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="/gsr-report" 
+          element={<StmGsrReportPage />
+            
+          }
+           />
           <Route
             path="/phone-list" // ✅ New protected route
             element={
