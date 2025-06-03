@@ -47,17 +47,7 @@ const Home = () => {
 
       <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
  <Stack spacing={2} sx={{ mt: 4 }}> 
-  <Button
-            variant="contained"
-            startIcon={<AccountCircleIcon />}
-            onClick={() => navigate("/profile")}
-            sx={{
-              backgroundColor: "#1F3F3A",
-              "&:hover": { backgroundColor: "#16302D" }
-            }}
-          >
-            My Profile
-          </Button>
+ 
 </Stack>
         <Typography variant="h4" gutterBottom>
           Welcome, {screenName || user?.displayName}!
