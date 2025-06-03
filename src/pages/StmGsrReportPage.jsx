@@ -73,9 +73,26 @@ const StmGsrReport = () => {
         );
       }
 
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      const parts = trimmed.split(urlRegex);
+
       return (
         <Typography key={index} variant="body1" sx={{ ml: 2 }}>
-          {trimmed}
+          {parts.map((part, i) =>
+            urlRegex.test(part) ? (
+              <a
+                key={i}
+                href={part}
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: "#1F3F3A" }}
+              >
+                {part}
+              </a>
+            ) : (
+              <React.Fragment key={i}>{part}</React.Fragment>
+            )
+          )}
         </Typography>
       );
     });
