@@ -13,32 +13,35 @@ import {
 } from "@mui/material";
 
 const existingMeetings = {
-  Sunday: [{ time: "8 PM", host: "GREGORY" }],
+  Sunday: [[{ time: "12 PM", host: "Jon T." }],
+    { time: "8 PM", host: "GREGORY" }
+  
+  ],
   Monday: [
     { time: "12 PM", host: "MARK" },
     { time: "8 PM", host: "Daniel M." }
   ],
   Tuesday: [
     { time: "12 PM", host: "Peanut" },
-    { time: "6:30 PM", host: "Men’s Stag – John T." },
+    { time: "6:30 PM", host: "Men’s Stag – OPEN." },
     { time: "8 PM", host: "LORENZO" }
   ],
   Wednesday: [
-    { time: "12 PM", host: "Cambria" },
+    { time: "12 PM", host: "Bart" },
     { time: "8 PM", host: "Hannah" }
   ],
   Thursday: [
-    { time: "12 PM", host: "BART" },
+    { time: "12 PM", host: "Cambria" },
     { time: "6:30 PM", host: "Women’s Meeting – Jaclyn" },
-    { time: "8 PM", host: "Dinah R." }
+    { time: "8 PM", host: "OPEN" }
   ],
   Friday: [
-    { time: "12 PM", host: "Michael B." },
-    { time: "8 PM", host: "SPAD / Joseph" }
+    { time: "12 PM", host: "Juanita" },
+    { time: "8 PM", host: "Joseph / Candle-light" }
   ],
   Saturday: [
     { time: "12 PM", host: "T" },
-    { time: "12 PM", host: "Juanita" }
+    { time: "8 PM", host: "Michael B." }
   ]
 };
 
