@@ -9,7 +9,7 @@ import Meetings from "./pages/Meetings";
 import Meditation from "./pages/Meditation";
 import Chatroom from "./pages/ChatRoom";
 import PhoneList from "./pages/PhoneList"; // ✅ Import PhoneList
-
+import StmGsrReportPage from "./pages/StmGsrReportPage"; 
 const ProtectedRoute = ({ children }) => {
   const { user, loading, screenName } = useAuth();
 
@@ -70,8 +70,10 @@ const App = () => {
             }
           />
           <Route path="/gsr-report" 
-          element={<StmGsrReportPage />
-            
+          element={
+                <ProtectedRoute> 
+          <StmGsrReportPage />
+</ProtectedRoute>
           }
            />
           <Route
