@@ -1,6 +1,14 @@
 import React, { useState } from "react";
-import { Box, Typography, List, ListItem, Divider, Button, TextField } from "@mui/material";
-import { useAuth } from "../context/AuthContext"; // assuming your auth context provides `user`
+import {
+  Box,
+  Typography,
+  List,
+  ListItem,
+  Divider,
+  Button,
+  TextField
+} from "@mui/material";
+import { useAuth } from "../context/AuthContext";
 
 const authorizedEmails = [
   "nmsaucedapalacios@gmail.com",
@@ -58,8 +66,13 @@ const StmGsrReport = () => {
             {editing ? (
               <TextField
                 fullWidth
+                multiline
+                minRows={2}
+                maxRows={10}
                 value={item}
                 onChange={(e) => handleChange(key, index, e.target.value)}
+                variant="outlined"
+                sx={{ backgroundColor: "#fff" }}
               />
             ) : (
               item.includes("http") ? (
