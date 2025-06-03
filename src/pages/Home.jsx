@@ -60,14 +60,7 @@ const Home = () => {
       </AppBar>
 
       <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
-        <Typography variant="h4" gutterBottom>
-          Welcome, {screenName || user?.displayName}!
-        </Typography>
-        <Typography variant="body1" gutterBottom>
-          To the "Sharing the Message" group of Narcotics Anonymous Community Homepage.
-        </Typography>
-
-        <Stack spacing={2} sx={{ mt: 4 }}>
+         <Stack spacing={2} sx={{ mt: 4 }}>
           <Button
             variant="contained"
             onClick={handleOpenMenu}
@@ -102,6 +95,14 @@ const Home = () => {
             </MenuItem>
           </Menu>
         </Stack>
+        <Typography variant="h4" gutterBottom>
+          Welcome, {screenName || user?.displayName}!
+        </Typography>
+        <Typography variant="body1" gutterBottom>
+          To the "Sharing the Message" group of Narcotics Anonymous Community Homepage.
+        </Typography>
+
+        
       </Container>
 
       <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
