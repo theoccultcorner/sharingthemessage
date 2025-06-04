@@ -122,6 +122,14 @@ const Home = () => {
             }
           }}
         >
+          <Typography variant="h4" gutterBottom>
+          NA Service Prayer
+        </Typography>
+        <Typography variant="body1" gutterBottom>
+        GOD, grant us knowledge that we may serve according to Your Divine precepts.
+Instill in us a sense of Your purpose.
+Make us servants of Your will and grant us a bond of selflessness that this may truly be Your work, not ours, in order that no addict, anywhere, need die from the horrors of addiction.  
+        </Typography>
           <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
           <BottomNavigationAction label="Messages" icon={<MessageIcon />} />
           <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
