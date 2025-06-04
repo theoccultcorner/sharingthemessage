@@ -64,6 +64,9 @@ const Home = () => {
               <Typography variant="h4" gutterBottom>
           Welcome, {screenName || user?.displayName}!
         </Typography>
+           <Typography variant="body1" gutterBottom>
+          To the "Sharing the Message" group of Narcotics Anonymous Community Homepage.
+        </Typography>
            <Typography variant="h4" gutterBottom>
           NA Service Prayer
         </Typography>
@@ -72,9 +75,7 @@ const Home = () => {
 Instill in us a sense of Your purpose.
 Make us servants of Your will and grant us a bond of selflessness that this may truly be Your work, not ours, in order that no addict, anywhere, need die from the horrors of addiction.  
         </Typography>
-        <Typography variant="body1" gutterBottom>
-          To the "Sharing the Message" group of Narcotics Anonymous Community Homepage.
-        </Typography>
+        
            <Button
             variant="contained"
             onClick={handleOpenMenu}
