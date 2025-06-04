@@ -67,7 +67,7 @@ const Home = () => {
            <Typography variant="body1" gutterBottom>
           To the "Sharing the Message" group of Narcotics Anonymous Community Homepage.
         </Typography>
-           <Typography variant="h4" gutterBottom>
+           <Typography variant="h2" gutterBottom>
           NA Service Prayer
         </Typography>
                    <Typography variant="body1" gutterBottom>
