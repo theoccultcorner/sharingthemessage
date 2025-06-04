@@ -61,7 +61,13 @@ const Home = () => {
 
       <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
          <Stack spacing={2} sx={{ mt: 4 }}>
-          <Button
+              <Typography variant="h4" gutterBottom>
+          Welcome, {screenName || user?.displayName}!
+        </Typography>
+        <Typography variant="body1" gutterBottom>
+          To the "Sharing the Message" group of Narcotics Anonymous Community Homepage.
+        </Typography>
+           <Button
             variant="contained"
             onClick={handleOpenMenu}
             sx={{ backgroundColor: "#1F3F3A", "&:hover": { backgroundColor: "#16302D" } }}
@@ -95,12 +101,7 @@ const Home = () => {
             </MenuItem>
           </Menu>
         </Stack>
-        <Typography variant="h4" gutterBottom>
-          Welcome, {screenName || user?.displayName}!
-        </Typography>
-        <Typography variant="body1" gutterBottom>
-          To the "Sharing the Message" group of Narcotics Anonymous Community Homepage.
-        </Typography>
+
 
         
       </Container>
