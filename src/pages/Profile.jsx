@@ -223,24 +223,24 @@ const Profile = () => {
       </Container>
 
       <Paper sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }} elevation={3}>
-        <BottomNavigation
+            <BottomNavigation
           showLabels
           value={navValue}
           onChange={(event, newValue) => {
             setNavValue(newValue);
             if (newValue === 0) navigate("/meetings");
-            if (newValue === 1) alert("Messaging not implemented yet");
+            if (newValue === 1) navigate("/chatroom");
             if (newValue === 2) navigate("/profile");
           }}
           sx={{
-            "& .Mui-selected": {
+            backgroundColor: "#f5f5f5",
+            "& .Mui-selected, & .Mui-selected > svg": {
               color: "#1F3F3A"
-            },
-            "& .MuiBottomNavigationAction-root": {
-              color: "#777"
             }
           }}
         >
+          
+
           <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
           <BottomNavigationAction label="Messages" icon={<MessageIcon />} />
           <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
