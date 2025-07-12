@@ -61,7 +61,22 @@ const Home = () => {
 
       <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
          <Stack spacing={2} sx={{ mt: 4 }}>
-          <Button
+              <Typography variant="h4" gutterBottom>
+          Welcome, {screenName || user?.displayName}!
+        </Typography>
+           <Typography variant="body1" gutterBottom>
+          To the "Sharing the Message" group of Narcotics Anonymous Community Homepage.
+        </Typography>
+           <Typography variant="h5" gutterBottom>
+          NA Service Prayer
+        </Typography>
+                   <Typography variant="body1" gutterBottom>
+        GOD, grant us knowledge that we may serve according to Your Divine precepts.
+Instill in us a sense of Your purpose.
+Make us servants of Your will and grant us a bond of selflessness that this may truly be Your work, not ours, in order that no addict, anywhere, need die from the horrors of addiction.  
+        </Typography>
+        
+           <Button
             variant="contained"
             onClick={handleOpenMenu}
             sx={{ backgroundColor: "#1F3F3A", "&:hover": { backgroundColor: "#16302D" } }}
@@ -95,12 +110,7 @@ const Home = () => {
             </MenuItem>
           </Menu>
         </Stack>
-        <Typography variant="h4" gutterBottom>
-          Welcome, {screenName || user?.displayName}!
-        </Typography>
-        <Typography variant="body1" gutterBottom>
-          To the "Sharing the Message" group of Narcotics Anonymous Community Homepage.
-        </Typography>
+
 
         
       </Container>
@@ -122,6 +132,8 @@ const Home = () => {
             }
           }}
         >
+          
+
           <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
           <BottomNavigationAction label="Messages" icon={<MessageIcon />} />
           <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />

@@ -33,10 +33,10 @@ const existingMeetings = {
   Thursday: [
     { time: "12 PM", host: "Cambria" },
     { time: "6:30 PM", host: "Women’s Meeting – Jaclyn" },
-    { time: "8 PM", host: "OPEN" }
+    { time: "8 PM", host: "Bobby" }
   ],
   Friday: [
-    { time: "12 PM", host: "Juanita" },
+    { time: "12 PM", host: "Jaunita" },
     { time: "8 PM", host: "Joseph / Candle-light" }
   ],
   Saturday: [
