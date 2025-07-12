@@ -47,6 +47,7 @@ const Profile = () => {
 
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState("");
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -67,6 +68,44 @@ const Profile = () => {
     };
     loadProfile();
   }, [user]);
+
+  useEffect(() => {
+    if (!profileData.cleanDate) return;
+
+    const nextMilestone = getNextYearMilestone(profileData.cleanDate);
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const remainingTime = nextMilestone - now;
+      setCountdown(formatCountdown(remainingTime));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [profileData.cleanDate]);
+
+  const getNextYearMilestone = (cleanDateString) => {
+    const cleanDate = new Date(cleanDateString);
+    const today = new Date();
+
+    let nextAnniversary = new Date(cleanDate);
+    nextAnniversary.setFullYear(cleanDate.getFullYear() + 1);
+
+    while (nextAnniversary <= today) {
+      nextAnniversary.setFullYear(nextAnniversary.getFullYear() + 1);
+    }
+
+    return nextAnniversary;
+  };
+
+  const formatCountdown = (ms) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const days = Math.floor(totalSeconds / (3600 * 24));
+    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  };
 
   const handleChange = (field) => (e) => {
     setProfileData({ ...profileData, [field]: e.target.value });
@@ -158,6 +197,9 @@ const Profile = () => {
                       <Stack direction="row" spacing={1} flexWrap="wrap">
                         {renderMilestones(getDaysClean(profileData.cleanDate))}
                       </Stack>
+                      <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                        Next Anniversary in: {countdown}
+                      </Typography>
                     </>
                   )}
                   {profileData.sponsorName && <Typography><strong>Sponsor:</strong> {profileData.sponsorName}</Typography>}
