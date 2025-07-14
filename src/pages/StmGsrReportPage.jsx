@@ -13,39 +13,58 @@ const authorizedEmails = [
   "theoccultcorner@gmail.com"
 ];
 
-const defaultTitle = "STM GSR Report – June 2025";
+const defaultTitle = "STM GSR REPORT JULY 2025";
 
 const defaultText = `
 Positions Available
+STM Group Service Elections: August 9th @ 11am. Chair, Vice-Chair, Secretary, GSR, Literature & Treasurer Positions Open. Please support STM.
 
-• STM GROUP Vice-Chair, Secretary, Literature & GSR needed.
-• Thursday 8pm & Men's Stag Meeting, Tuesday 6:30 Secretary Positions Open.
-• Greeters, Coffee Persons & Meeting Service Reps (MSRs) needed for ALL STM Meetings.
+Tuesday 6:30 Men’s Stag Secretary Position Open.
+
+Greeters, Coffee Persons & Meeting Service Reps (MSRs) needed for ALL STM Meetings.
 
 Meeting News
+STM Women’s Meeting: Thursdays @ 6:30pm needs support. Keytags 1st Thursday.
 
-• STM Men's Stag Meeting: Tuesdays @ 6:30pm needs support.
-• STM Women's Meeting: Thursdays @ 6:30pm needs support.
-• Guad Squad: Wednesdays @ 7pm, 950A Guadalupe St.
-• STM Activities Committee Meeting: June 14th @ 9am.
-• STM Group Service Committee Meeting: June 14th @ 10am. Meeting Representatives required.
+STM Men’s Stag Meeting: Tuesdays @ 6:30pm needs support & a Meeting Secretary.
+
+Guad Squad: Wednesday @ 7pm, 950A Guadalupe St.
+
+Survivors Bday/Speaker Mtgs:
+
+Saturday, July 19th – Vanessa R.
+
+Wednesday, July 30th – Hilda R. @ 6pm
+
+STM Birthday/Speaker Meeting: Saturday, July 26th @ 8pm. Speaker Gilbert AKA Peanut.
+
+STM Activities Committee Meeting: August 9th @ 9am. Support upcoming STM Activities.
+
+STM Group Service Committee Meeting: August 9th @ 10am. ALL Meeting Secretaries or Meeting Representatives required to attend. Come support STM & attend Group Service.
 
 Activities Flyers Posted
+New Attitudes Family Game Night, 129 N. I Street: July 26th 7:30pm. Free Event.
 
-• Fun in the Sun @ Avila Beach: June 7th 10–2pm. Free Hamburgers & Hotdogs.
-• Survivors Hard Knocks @ 530 12th St, Paso Robles: June 7th 6:30pm.
-• Father’s Day Campout @ Nacimiento Lake: June 12–15th.
-• Gold Coast Campout @ Cachuma Lake: June 20–22nd. $40 for 3 days w/3 meals or $10 a day w/o meals.
-• STM Day at the Park: June 28th @ 4:30pm. $5 a plate & $3 entry for Ping Pong Tournament @ 5:30pm. Speakers: T & Nellie P. @ 8pm.
+New Attitudes Campout @ Lopez Lake: August 8th–10th $50 per person. $15 Saturday only.
+
+Hot Summer Nights @ Atascadero: August 9th 5–10pm. $20 a plate.
+
+Men’s Retreat @ Lopez Lake: August 21st–24th $175 each – Campsite, T-shirt & Food.
+
+SB Activities Campout @ Lopez Lake: September 4th–7th $75 per person. $50 for 12 & under.
 
 Other NA Announcements
+STM Spanish NA Literature for sale now.
 
-• STM Spanish NA Literature for sale now.
-• STM Venmo & CashApp: 7th donations, Literature Sales & Activities (tag $ with info).
-• STM gear for sale: hoodies, t-shirts, caps, beanies, coffee cups, stickers. Order sheet posted.
-• Celebrating a milestone? Add your name & clean date to the board.
-• PR, H&I & Behind the Walls Sponsorship needs volunteers. Info posted.
-• NA Area Info: https://centralcoastna.org
+STM Venmo & CashApp: Please tag $ w/info.
+
+STM MERCH. for sale. Order sheet posted.
+
+Celebrating a milestone in your recovery? Put your name & clean time on board.
+
+PR, H&I & Behind the Walls Sponsorship needs volunteers. Info posted.
+
+NA Area Information @ centralcoastna.org
 `;
 
 const knownHeaders = [
