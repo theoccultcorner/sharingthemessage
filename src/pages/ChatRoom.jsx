@@ -74,7 +74,8 @@ const ChatRoom = () => {
     const removeListener = onChildRemoved(messagesRef, handleDelete);
 
     return () => {
-      addListener();
+      // Manually detach listeners
+      addListener(); // Call returned function to unsubscribe
       updateListener();
       removeListener();
     };
@@ -112,8 +113,13 @@ const ChatRoom = () => {
     await remove(ref(rtdb, `chatMessages/${id}`));
   };
 
-  const formatTime = (timestamp) =>
-    new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const formatTime = (timestamp) => {
+    if (!timestamp) return "";
+    return new Date(timestamp).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  };
 
   const handleEmojiClick = (emoji) => {
     setInput((prev) => prev + emoji.native);
@@ -122,13 +128,26 @@ const ChatRoom = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-      <Typography variant="h5" sx={{ backgroundColor: "#1F3F3A", color: "#fff", p: 2, textAlign: "center" }}>
+      <Typography
+        variant="h5"
+        sx={{
+          backgroundColor: "#1F3F3A",
+          color: "#fff",
+          p: 2,
+          textAlign: "center"
+        }}
+      >
         Group Chat
       </Typography>
 
       <Paper sx={{ flexGrow: 1, overflowY: "auto", px: 2, py: 1 }}>
+        {messages.length === 0 && (
+          <Typography variant="body2" sx={{ color: "gray", textAlign: "center", mt: 4 }}>
+            No messages yet...
+          </Typography>
+        )}
         {messages.map((msg) => {
-          const isOwn = msg.userId === user.uid;
+          const isOwn = msg.userId === user?.uid;
           return (
             <Stack
               key={msg.id}
@@ -186,7 +205,10 @@ const ChatRoom = () => {
 
       <Box
         component="form"
-        onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          sendMessage();
+        }}
         sx={{
           display: "flex",
           gap: 1,
