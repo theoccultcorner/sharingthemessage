@@ -5,8 +5,7 @@ import {
 } from "@mui/material";
 import { Edit, Delete, EmojiEmotions } from "@mui/icons-material";
 import {
-  ref, onChildAdded, onChildChanged, onChildRemoved,
-  push, remove, update
+  ref, onChildAdded, onChildChanged, onChildRemoved, push, remove, update, off
 } from "firebase/database";
 import { doc, getDoc } from "firebase/firestore";
 import { db, rtdb } from "../firebase";
@@ -47,6 +46,7 @@ const ChatRoom = () => {
     const handleNewMessage = async (snapshot) => {
       const data = snapshot.val();
       const id = snapshot.key;
+      if (!data) return;
       const userInfo = await fetchUserInfo(data.userId);
       setMessages((prev) =>
         prev.some((msg) => msg.id === id)
@@ -69,15 +69,12 @@ const ChatRoom = () => {
       setMessages((prev) => prev.filter((msg) => msg.id !== id));
     };
 
-    const addListener = onChildAdded(messagesRef, handleNewMessage);
-    const updateListener = onChildChanged(messagesRef, handleUpdate);
-    const removeListener = onChildRemoved(messagesRef, handleDelete);
+    onChildAdded(messagesRef, handleNewMessage);
+    onChildChanged(messagesRef, handleUpdate);
+    onChildRemoved(messagesRef, handleDelete);
 
     return () => {
-      // Manually detach listeners
-      addListener(); // Call returned function to unsubscribe
-      updateListener();
-      removeListener();
+      off(messagesRef);
     };
   }, []);
 
@@ -87,12 +84,16 @@ const ChatRoom = () => {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    await push(ref(rtdb, "chatMessages"), {
-      text: input,
-      userId: user.uid,
-      createdAt: Date.now()
-    });
-    setInput("");
+    try {
+      await push(ref(rtdb, "chatMessages"), {
+        text: input,
+        userId: user.uid,
+        createdAt: Date.now()
+      });
+      setInput("");
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    }
   };
 
   const startEditing = (msg) => {
@@ -102,15 +103,23 @@ const ChatRoom = () => {
 
   const confirmEdit = async () => {
     if (!editingText.trim()) return;
-    await update(ref(rtdb, `chatMessages/${editingId}`), {
-      text: editingText
-    });
-    setEditingId(null);
-    setEditingText("");
+    try {
+      await update(ref(rtdb, `chatMessages/${editingId}`), {
+        text: editingText
+      });
+      setEditingId(null);
+      setEditingText("");
+    } catch (err) {
+      console.error("Edit failed:", err);
+    }
   };
 
   const deleteMessage = async (id) => {
-    await remove(ref(rtdb, `chatMessages/${id}`));
+    try {
+      await remove(ref(rtdb, `chatMessages/${id}`));
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
   };
 
   const formatTime = (timestamp) => {
@@ -125,6 +134,11 @@ const ChatRoom = () => {
     setInput((prev) => prev + emoji.native);
     setAnchorEl(null);
   };
+
+  // ⏳ Wait for user to be ready
+  if (!user) {
+    return <Typography textAlign="center" mt={4}>Loading user...</Typography>;
+  }
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
@@ -147,7 +161,7 @@ const ChatRoom = () => {
           </Typography>
         )}
         {messages.map((msg) => {
-          const isOwn = msg.userId === user?.uid;
+          const isOwn = msg.userId === user.uid;
           return (
             <Stack
               key={msg.id}
