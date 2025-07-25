@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Login from "./components/Login";
@@ -8,8 +7,10 @@ import Profile from "./pages/Profile";
 import Meetings from "./pages/Meetings";
 import Meditation from "./pages/Meditation";
 import Chatroom from "./pages/ChatRoom";
-import PhoneList from "./pages/PhoneList"; // ✅ Import PhoneList
-import StmGsrReportPage from "./pages/StmGsrReportPage"; 
+import PhoneList from "./pages/PhoneList";
+import StmGsrReportPage from "./pages/StmGsrReportPage";
+import Audiobooks from "./pages/Audiobooks"; // ✅ Import Audiobooks
+
 const ProtectedRoute = ({ children }) => {
   const { user, loading, screenName } = useAuth();
 
@@ -69,18 +70,27 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          <Route path="/gsr-report" 
-          element={
-                <ProtectedRoute> 
-          <StmGsrReportPage />
-</ProtectedRoute>
-          }
-           />
           <Route
-            path="/phone-list" // ✅ New protected route
+            path="/gsr-report"
+            element={
+              <ProtectedRoute>
+                <StmGsrReportPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/phone-list"
             element={
               <ProtectedRoute>
                 <PhoneList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/audiobooks" // ✅ New protected route
+            element={
+              <ProtectedRoute>
+                <Audiobooks />
               </ProtectedRoute>
             }
           />
