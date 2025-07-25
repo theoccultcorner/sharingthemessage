@@ -22,7 +22,7 @@ const existingMeetings = {
     { time: "8 PM", host: "Daniel M." }
   ],
   Tuesday: [
-    { time: "12 PM", host: "Peanut" },
+    { time: "12 PM", host: "Cierra" },
     { time: "6:30 PM", host: "Men’s Stag – OPEN." },
     { time: "8 PM", host: "LORENZO" }
   ],
