@@ -1,260 +1,170 @@
+// /pages/MessageBoard.jsx
 import React, { useEffect, useState, useRef } from "react";
 import {
-  Box, Typography, TextField, Button, Paper, Stack,
-  IconButton, Avatar, Popover
+  Box, Typography, TextField, Button, Paper, Stack, Avatar, IconButton, Divider
 } from "@mui/material";
-import { Edit, Delete, EmojiEmotions } from "@mui/icons-material";
+import { ThumbUp, Send } from "@mui/icons-material";
 import {
-  ref, onChildAdded, onChildChanged, onChildRemoved, push, remove, update, off
+  ref, onValue, push, update, off
 } from "firebase/database";
-import { doc, getDoc } from "firebase/firestore";
 import { db, rtdb } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
-import Picker from "@emoji-mart/react";
-import data from "@emoji-mart/data";
 
 const ChatRoom = () => {
   const { user } = useAuth();
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [editingId, setEditingId] = useState(null);
-  const [editingText, setEditingText] = useState("");
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [newPost, setNewPost] = useState("");
+  const [commentInputs, setCommentInputs] = useState({});
   const userCache = useRef({});
-  const bottomRef = useRef(null);
 
   const fetchUserInfo = async (userId) => {
     if (userCache.current[userId]) return userCache.current[userId];
-    try {
-      const docRef = doc(db, "users", userId);
-      const snap = await getDoc(docRef);
-      if (snap.exists()) {
-        const { screenName = "Anonymous", avatarUrl = "" } = snap.data();
-        const info = { screenName, avatarUrl };
-        userCache.current[userId] = info;
-        return info;
-      }
-    } catch (err) {
-      console.error("Error fetching user info:", err);
+    const docRef = doc(db, "users", userId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const { screenName = "Anonymous", avatarUrl = "" } = snap.data();
+      const info = { screenName, avatarUrl };
+      userCache.current[userId] = info;
+      return info;
     }
     return { screenName: "Unknown", avatarUrl: "" };
   };
 
+  const loadPosts = async () => {
+    const postsRef = ref(rtdb, "posts");
+    onValue(postsRef, async (snapshot) => {
+      const data = snapshot.val() || {};
+      const postList = await Promise.all(
+        Object.entries(data).map(async ([id, post]) => {
+          const author = await fetchUserInfo(post.userId);
+          const comments = await Promise.all(
+            Object.entries(post.comments || {}).map(async ([cid, comment]) => {
+              const commenter = await fetchUserInfo(comment.userId);
+              return { id: cid, ...comment, ...commenter };
+            })
+          );
+          return {
+            id,
+            ...post,
+            ...author,
+            comments
+          };
+        })
+      );
+      setPosts(postList.reverse());
+    });
+
+    return () => off(postsRef);
+  };
+
   useEffect(() => {
-    const messagesRef = ref(rtdb, "chatMessages");
-
-    const handleNewMessage = async (snapshot) => {
-      const data = snapshot.val();
-      const id = snapshot.key;
-      if (!data) return;
-      const userInfo = await fetchUserInfo(data.userId);
-      setMessages((prev) =>
-        prev.some((msg) => msg.id === id)
-          ? prev
-          : [...prev, { id, ...data, ...userInfo }]
-      );
-    };
-
-    const handleUpdate = async (snapshot) => {
-      const data = snapshot.val();
-      const id = snapshot.key;
-      const userInfo = await fetchUserInfo(data.userId);
-      setMessages((prev) =>
-        prev.map((msg) => (msg.id === id ? { ...msg, ...data, ...userInfo } : msg))
-      );
-    };
-
-    const handleDelete = (snapshot) => {
-      const id = snapshot.key;
-      setMessages((prev) => prev.filter((msg) => msg.id !== id));
-    };
-
-    onChildAdded(messagesRef, handleNewMessage);
-    onChildChanged(messagesRef, handleUpdate);
-    onChildRemoved(messagesRef, handleDelete);
-
-    return () => {
-      off(messagesRef);
-    };
+    loadPosts();
   }, []);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-    try {
-      await push(ref(rtdb, "chatMessages"), {
-        text: input,
-        userId: user.uid,
-        createdAt: Date.now()
-      });
-      setInput("");
-    } catch (err) {
-      console.error("Failed to send message:", err);
-    }
-  };
-
-  const startEditing = (msg) => {
-    setEditingId(msg.id);
-    setEditingText(msg.text);
-  };
-
-  const confirmEdit = async () => {
-    if (!editingText.trim()) return;
-    try {
-      await update(ref(rtdb, `chatMessages/${editingId}`), {
-        text: editingText
-      });
-      setEditingId(null);
-      setEditingText("");
-    } catch (err) {
-      console.error("Edit failed:", err);
-    }
-  };
-
-  const deleteMessage = async (id) => {
-    try {
-      await remove(ref(rtdb, `chatMessages/${id}`));
-    } catch (err) {
-      console.error("Delete failed:", err);
-    }
-  };
-
-  const formatTime = (timestamp) => {
-    if (!timestamp) return "";
-    return new Date(timestamp).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit"
+  const handlePost = async () => {
+    if (!newPost.trim()) return;
+    await push(ref(rtdb, "posts"), {
+      text: newPost,
+      userId: user.uid,
+      createdAt: Date.now(),
+      likes: 0,
+      comments: {}
     });
+    setNewPost("");
   };
 
-  const handleEmojiClick = (emoji) => {
-    setInput((prev) => prev + emoji.native);
-    setAnchorEl(null);
+  const handleComment = async (postId) => {
+    const comment = commentInputs[postId];
+    if (!comment?.trim()) return;
+    await push(ref(rtdb, `posts/${postId}/comments`), {
+      text: comment,
+      userId: user.uid,
+      createdAt: Date.now()
+    });
+    setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
   };
 
-  // ⏳ Wait for user to be ready
-  if (!user) {
-    return <Typography textAlign="center" mt={4}>Loading user...</Typography>;
-  }
+  const handleLike = async (postId, currentLikes = 0) => {
+    await update(ref(rtdb, `posts/${postId}`), { likes: currentLikes + 1 });
+  };
+
+  const formatTime = (timestamp) =>
+    new Date(timestamp).toLocaleString();
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-      <Typography
-        variant="h5"
-        sx={{
-          backgroundColor: "#1F3F3A",
-          color: "#fff",
-          p: 2,
-          textAlign: "center"
-        }}
-      >
-        Group Chat
+    <Box sx={{ p: 2 }}>
+      <Typography variant="h4" textAlign="center" mb={2}>
+        Message Board
       </Typography>
 
-      <Paper sx={{ flexGrow: 1, overflowY: "auto", px: 2, py: 1 }}>
-        {messages.length === 0 && (
-          <Typography variant="body2" sx={{ color: "gray", textAlign: "center", mt: 4 }}>
-            No messages yet...
-          </Typography>
-        )}
-        {messages.map((msg) => {
-          const isOwn = msg.userId === user.uid;
-          return (
-            <Stack
-              key={msg.id}
-              direction="row"
-              justifyContent={isOwn ? "flex-end" : "flex-start"}
-              alignItems="flex-end"
-              spacing={1}
-              sx={{ mb: 2 }}
-            >
-              {!isOwn && <Avatar src={msg.avatarUrl} />}
-              <Box
-                sx={{
-                  backgroundColor: isOwn ? "#1F3F3A" : "#e0f2f1",
-                  color: isOwn ? "white" : "black",
-                  p: 1.5,
-                  borderRadius: 2,
-                  maxWidth: "70%",
-                  position: "relative"
-                }}
-              >
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    {msg.screenName}
-                  </Typography>
-                  {isOwn && editingId !== msg.id && (
-                    <Stack direction="row" spacing={0}>
-                      <IconButton size="small" onClick={() => startEditing(msg)}><Edit fontSize="small" /></IconButton>
-                      <IconButton size="small" onClick={() => deleteMessage(msg.id)}><Delete fontSize="small" /></IconButton>
-                    </Stack>
-                  )}
-                </Stack>
-                {editingId === msg.id ? (
-                  <Stack direction="row" spacing={1} mt={1}>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={editingText}
-                      onChange={(e) => setEditingText(e.target.value)}
-                    />
-                    <Button onClick={confirmEdit} size="small" variant="contained">Save</Button>
-                  </Stack>
-                ) : (
-                  <Typography mt={1}>{msg.text}</Typography>
-                )}
-                <Typography variant="caption" sx={{ position: "absolute", bottom: -18, right: 8 }}>
-                  {formatTime(msg.createdAt)}
-                </Typography>
-              </Box>
-              {isOwn && <Avatar src={msg.avatarUrl} />}
-            </Stack>
-          );
-        })}
-        <div ref={bottomRef} />
+      <Paper sx={{ p: 2, mb: 4 }}>
+        <TextField
+          label="What's on your mind?"
+          multiline
+          rows={3}
+          fullWidth
+          value={newPost}
+          onChange={(e) => setNewPost(e.target.value)}
+        />
+        <Button onClick={handlePost} variant="contained" sx={{ mt: 2 }}>
+          Post
+        </Button>
       </Paper>
 
-      <Box
-        component="form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          sendMessage();
-        }}
-        sx={{
-          display: "flex",
-          gap: 1,
-          p: 1,
-          borderTop: "1px solid #ccc",
-          backgroundColor: "#fff",
-          position: "sticky",
-          bottom: 0
-        }}
-      >
-        <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
-          <EmojiEmotions />
-        </IconButton>
-        <Popover
-          open={Boolean(anchorEl)}
-          anchorEl={anchorEl}
-          onClose={() => setAnchorEl(null)}
-          anchorOrigin={{ vertical: "top", horizontal: "left" }}
-        >
-          <Picker data={data} onEmojiSelect={handleEmojiClick} />
-        </Popover>
-        <TextField
-          fullWidth
-          size="small"
-          placeholder="Type a message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-        />
-        <Button type="submit" variant="contained" sx={{ backgroundColor: "#1F3F3A" }}>
-          Send
-        </Button>
-      </Box>
+      {posts.map((post) => (
+        <Paper key={post.id} sx={{ p: 2, mb: 3 }}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Avatar src={post.avatarUrl} />
+            <Box>
+              <Typography fontWeight="bold">{post.screenName}</Typography>
+              <Typography variant="caption">{formatTime(post.createdAt)}</Typography>
+            </Box>
+          </Stack>
+          <Typography sx={{ mt: 2 }}>{post.text}</Typography>
+
+          <Stack direction="row" spacing={1} alignItems="center" mt={1}>
+            <IconButton onClick={() => handleLike(post.id, post.likes)}>
+              <ThumbUp />
+            </IconButton>
+            <Typography>{post.likes || 0}</Typography>
+          </Stack>
+
+          <Divider sx={{ my: 2 }} />
+
+          <Typography variant="subtitle2" mb={1}>Comments:</Typography>
+          {post.comments.map((comment) => (
+            <Box key={comment.id} sx={{ mb: 1 }}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Avatar src={comment.avatarUrl} sx={{ width: 24, height: 24 }} />
+                <Box>
+                  <Typography fontSize="small" fontWeight="bold">{comment.screenName}</Typography>
+                  <Typography fontSize="small">{comment.text}</Typography>
+                  <Typography variant="caption">{formatTime(comment.createdAt)}</Typography>
+                </Box>
+              </Stack>
+            </Box>
+          ))}
+
+          <Stack direction="row" spacing={1} alignItems="center" mt={2}>
+            <TextField
+              size="small"
+              fullWidth
+              placeholder="Write a comment..."
+              value={commentInputs[post.id] || ""}
+              onChange={(e) =>
+                setCommentInputs((prev) => ({
+                  ...prev,
+                  [post.id]: e.target.value
+                }))
+              }
+            />
+            <IconButton onClick={() => handleComment(post.id)}>
+              <Send />
+            </IconButton>
+          </Stack>
+        </Paper>
+      ))}
     </Box>
   );
 };

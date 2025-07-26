@@ -242,7 +242,7 @@ const Profile = () => {
           
 
           <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
-          <BottomNavigationAction label="Messages" icon={<MessageIcon />} />
+          <BottomNavigationAction label="Message Board" icon={<MessageIcon />} />
           <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
         </BottomNavigation>
       </Paper>
