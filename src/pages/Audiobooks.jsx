@@ -53,51 +53,51 @@ const naChapters = [
 
 const howItWorksChapters = [
   {
-    title: "Chapter 1",
+    title: "Chapter 1 - Step One",
     url: "https://www.youtube.com/embed/w_gixHePwDw",
   },
   {
-    title: "Chapter 2",
+    title: "Chapter 2 - Step Two",
     url: "https://www.youtube.com/embed/F3d6B94epnA",
   },
   {
-    title: "Chapter 3",
+    title: "Chapter 3 - Step Three",
     url: "https://www.youtube.com/embed/5Ry42KZp7F8",
   },
   {
-    title: "Chapter 4",
+    title: "Chapter 4 - Step Four",
     url: "https://www.youtube.com/embed/8jgzWuH3vVI",
   },
   {
-    title: "Chapter 5",
+    title: "Chapter 5 - Step Five",
     url: "https://www.youtube.com/embed/PrulUCK1Pks",
   },
   {
-    title: "Chapter 6",
+    title: "Chapter 6 - Step Six",
     url: "https://www.youtube.com/embed/A9JkVk6wblo",
   },
   {
-    title: "Chapter 7",
+    title: "Chapter 7 - Step Seven",
     url: "https://www.youtube.com/embed/ouirRX2n-To",
   },
   {
-    title: "Chapter 8",
+    title: "Chapter 8 - Step Eight",
     url: "https://www.youtube.com/embed/s4ur7jnTWwo",
   },
   {
-    title: "Chapter 9",
+    title: "Chapter 9 - Step Nine",
     url: "https://www.youtube.com/embed/MHkW_YDuuOI",
   },
   {
-    title: "Chapter 10",
+    title: "Chapter 10 - Step Ten",
     url: "https://www.youtube.com/embed/IGmFrBERbY8",
   },
   {
-    title: "Chapter 11",
+    title: "Chapter 11 - Step Eleven",
     url: "https://www.youtube.com/embed/CLNlwYAmD-M",
   },
   {
-    title: "Chapter 12",
+    title: "Chapter 12 - Step Twelve",
     url: "https://www.youtube.com/embed/Ti3oCQt5svM",
   },
 ];
