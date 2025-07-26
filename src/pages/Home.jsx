@@ -26,7 +26,8 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import ArticleIcon from "@mui/icons-material/Article";
-import HeadphonesIcon from "@mui/icons-material/Headphones"; // ✅ New icon for Audiobooks
+import HeadphonesIcon from "@mui/icons-material/Headphones";
+import PeopleIcon from "@mui/icons-material/People"; // ✅ Icon for Members
 
 const Home = () => {
   const { user, screenName } = useAuth();
@@ -108,6 +109,7 @@ const Home = () => {
               component="a"
               href="https://na.org/daily-meditations/spad/"
               target="_blank"
+              rel="noopener noreferrer"
             >
               <ListItemIcon><OpenInNewIcon /></ListItemIcon>
               <ListItemText primary="SPAD Meditation" />
@@ -116,9 +118,13 @@ const Home = () => {
               <ListItemIcon><ArticleIcon /></ListItemIcon>
               <ListItemText primary="STM GSR Report" />
             </MenuItem>
-            <MenuItem onClick={() => handleCloseMenu("/audiobooks")}> {/* ✅ New menu item */}
+            <MenuItem onClick={() => handleCloseMenu("/audiobooks")}>
               <ListItemIcon><HeadphonesIcon /></ListItemIcon>
               <ListItemText primary="Audiobooks" />
+            </MenuItem>
+            <MenuItem onClick={() => handleCloseMenu("/members")}> {/* ✅ New Members Page */}
+              <ListItemIcon><PeopleIcon /></ListItemIcon>
+              <ListItemText primary="Members" />
             </MenuItem>
           </Menu>
         </Stack>
