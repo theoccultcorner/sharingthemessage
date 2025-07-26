@@ -1,163 +1,104 @@
+// /pages/Audiobooks.jsx
 import React from "react";
 import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Typography,
-  Box
+  Typography
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-const naChapters = [
+const books = [
   {
-    title: "Chapter 1 – Who Is an Addict?",
-    url: "https://www.youtube.com/embed/qGf1r3XVzqY",
+    title: "Narcotics Anonymous Basic Text",
+    chapters: [
+      { title: "Chapter 1 – Who Is an Addict?", url: "https://www.youtube.com/embed/qGf1r3XVzqY" },
+      { title: "Chapter 2 – What Is the Narcotics Anonymous Program?", url: "https://www.youtube.com/embed/2Us7CZ6WXKE" },
+      { title: "Chapter 3 – Why Are We Here?", url: "https://www.youtube.com/embed/4YEQhYNFlkQ" },
+      { title: "Chapter 4 – How It Works", url: "https://www.youtube.com/embed/4e9LHY5Xltc" },
+      { title: "Chapter 5 – What Can I Do?", url: "https://www.youtube.com/embed/a-l2S639CdM" },
+      { title: "Chapter 6 – The Twelve Traditions of NA", url: "https://www.youtube.com/embed/yopAPnimAew" },
+      { title: "Chapter 7 – Recovery and Relapse", url: "https://www.youtube.com/embed/l5FbRbv_0A0" },
+      { title: "Chapter 8 – We Do Recover", url: "https://www.youtube.com/embed/fqnq90dL2DA" },
+      { title: "Chapter 9 – Just for Today – Living the Program", url: "https://www.youtube.com/embed/eAi0ntTPcfE" },
+      { title: "Chapter 10 – More Will Be Revealed", url: "https://www.youtube.com/embed/c0xFQNkr4f8" }
+    ]
   },
   {
-    title: "Chapter 2 – What Is the Narcotics Anonymous Program?",
-    url: "https://www.youtube.com/embed/2Us7CZ6WXKE",
+    title: "It Works: How and Why",
+    chapters: [
+      { title: "Step One", url: "https://www.youtube.com/embed/w_gixHePwDw" },
+      { title: "Step Two", url: "https://www.youtube.com/embed/F3d6B94epnA" },
+      { title: "Step Three", url: "https://www.youtube.com/embed/5Ry42KZp7F8" },
+      { title: "Step Four", url: "https://www.youtube.com/embed/8jgzWuH3vVI" },
+      { title: "Step Five", url: "https://www.youtube.com/embed/PrulUCK1Pks" },
+      { title: "Step Six", url: "https://www.youtube.com/embed/A9JkVk6wblo" },
+      { title: "Step Seven", url: "https://www.youtube.com/embed/ouirRX2n-To" },
+      { title: "Step Eight", url: "https://www.youtube.com/embed/s4ur7jnTWwo" },
+      { title: "Step Nine", url: "https://www.youtube.com/embed/MHkW_YDuuOI" },
+      { title: "Step Ten", url: "https://www.youtube.com/embed/IGmFrBERbY8" },
+      { title: "Step Eleven", url: "https://www.youtube.com/embed/CLNlwYAmD-M" },
+      { title: "Step Twelve", url: "https://www.youtube.com/embed/Ti3oCQt5svM" }
+    ]
   },
   {
-    title: "Chapter 3 – Why Are We Here?",
-    url: "https://www.youtube.com/embed/4YEQhYNFlkQ",
-  },
-  {
-    title: "Chapter 4 – How It Works",
-    url: "https://www.youtube.com/embed/4e9LHY5Xltc",
-  },
-  {
-    title: "Chapter 5 – What Can I Do?",
-    url: "https://www.youtube.com/embed/a-l2S639CdM",
-  },
-  {
-    title: "Chapter 6 – The Twelve Traditions of NA",
-    url: "https://www.youtube.com/embed/yopAPnimAew",
-  },
-  {
-    title: "Chapter 7 – Recovery and Relapse",
-    url: "https://www.youtube.com/embed/l5FbRbv_0A0",
-  },
-  {
-    title: "Chapter 8 – We Do Recover",
-    url: "https://www.youtube.com/embed/fqnq90dL2DA",
-  },
-  {
-    title: "Chapter 9 – Just for Today – Living the Program",
-    url: "https://www.youtube.com/embed/eAi0ntTPcfE",
-  },
-  {
-    title: "Chapter 10 – More Will Be Revealed",
-    url: "https://www.youtube.com/embed/c0xFQNkr4f8",
-  },
+    title: "Living Clean",
+    chapters: [
+      { title: "Preface", url: "https://www.youtube.com/embed/oZIfAxGpAJA" },
+      { title: "Chapter 1 (Living Clean)", url: "https://www.youtube.com/embed/Ke6QpyZiJZU" },
+      { title: "Chapter 2 (The Ties That Bind)", url: "https://www.youtube.com/embed/YJYybAY6hT4" },
+      { title: "Chapter 3 (A Spiritual Path)", url: "https://www.youtube.com/embed/bbYt9rqrgZ8" },
+      { title: "Chapter 4 (Our Physical Selves)", url: "https://www.youtube.com/embed/ZTeJnVBvqcc" },
+      { title: "Chapter 5 (Relationships)", url: "https://www.youtube.com/embed/yX1YWEP2erI" },
+      { title: "Chapter 7 (The Journey Continues)", url: "https://www.youtube.com/embed/UOD-dweq5pg" }
+    ]
+  }
 ];
-
-const howItWorksChapters = [
-  {
-    title: "Chapter 1 - Step One",
-    url: "https://www.youtube.com/embed/w_gixHePwDw",
-  },
-  {
-    title: "Chapter 2 - Step Two",
-    url: "https://www.youtube.com/embed/F3d6B94epnA",
-  },
-  {
-    title: "Chapter 3 - Step Three",
-    url: "https://www.youtube.com/embed/5Ry42KZp7F8",
-  },
-  {
-    title: "Chapter 4 - Step Four",
-    url: "https://www.youtube.com/embed/8jgzWuH3vVI",
-  },
-  {
-    title: "Chapter 5 - Step Five",
-    url: "https://www.youtube.com/embed/PrulUCK1Pks",
-  },
-  {
-    title: "Chapter 6 - Step Six",
-    url: "https://www.youtube.com/embed/A9JkVk6wblo",
-  },
-  {
-    title: "Chapter 7 - Step Seven",
-    url: "https://www.youtube.com/embed/ouirRX2n-To",
-  },
-  {
-    title: "Chapter 8 - Step Eight",
-    url: "https://www.youtube.com/embed/s4ur7jnTWwo",
-  },
-  {
-    title: "Chapter 9 - Step Nine",
-    url: "https://www.youtube.com/embed/MHkW_YDuuOI",
-  },
-  {
-    title: "Chapter 10 - Step Ten",
-    url: "https://www.youtube.com/embed/IGmFrBERbY8",
-  },
-  {
-    title: "Chapter 11 - Step Eleven",
-    url: "https://www.youtube.com/embed/CLNlwYAmD-M",
-  },
-  {
-    title: "Chapter 12 - Step Twelve",
-    url: "https://www.youtube.com/embed/Ti3oCQt5svM",
-  },
-];
-
-const renderChapters = (chapters) => (
-  <Box sx={{ mt: 2 }}>
-    {chapters.map((chapter, index) => (
-      <Accordion key={index}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>{chapter.title}</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box
-            sx={{
-              position: "relative",
-              paddingBottom: "56.25%",
-              height: 0,
-              overflow: "hidden",
-            }}
-          >
-            <iframe
-              src={chapter.url}
-              title={chapter.title}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-              }}
-            ></iframe>
-          </Box>
-        </AccordionDetails>
-      </Accordion>
-    ))}
-  </Box>
-);
 
 const Audiobooks = () => {
   return (
     <div style={{ padding: "1rem", maxWidth: "900px", margin: "0 auto" }}>
-      <h1>Narcotics Anonymous Audiobooks</h1>
-      <p>Listen to NA literature below:</p>
-
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Basic Text – Narcotics Anonymous</Typography>
-        </AccordionSummary>
-        <AccordionDetails>{renderChapters(naChapters)}</AccordionDetails>
-      </Accordion>
-
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">It Works: How and Why</Typography>
-        </AccordionSummary>
-        <AccordionDetails>{renderChapters(howItWorksChapters)}</AccordionDetails>
-      </Accordion>
+      <h1>NA Audiobooks Library</h1>
+      <p>Select a book to view and listen to its chapters:</p>
+      {books.map((book, bookIndex) => (
+        <Accordion key={bookIndex} defaultExpanded={bookIndex === 0}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">{book.title}</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {book.chapters.map((chapter, index) => (
+              <div key={index} style={{ marginBottom: "2rem" }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  {chapter.title}
+                </Typography>
+                <div
+                  style={{
+                    position: "relative",
+                    paddingBottom: "56.25%",
+                    height: 0,
+                    overflow: "hidden"
+                  }}
+                >
+                  <iframe
+                    src={chapter.url}
+                    title={chapter.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%"
+                    }}
+                  ></iframe>
+                </div>
+              </div>
+            ))}
+          </AccordionDetails>
+        </Accordion>
+      ))}
     </div>
   );
 };
