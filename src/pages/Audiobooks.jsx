@@ -1,7 +1,14 @@
-// /pages/Audiobooks.jsx
 import React from "react";
+import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
+  Box
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-const chapters = [
+const naChapters = [
   {
     title: "Chapter 1 – Who Is an Addict?",
     url: "https://www.youtube.com/embed/qGf1r3XVzqY",
@@ -44,17 +51,67 @@ const chapters = [
   },
 ];
 
-const Audiobooks = () => {
-  return (
-    <div style={{ padding: "1rem", maxWidth: "900px", margin: "0 auto" }}>
-      <h1>Narcotics Anonymous Basic Text</h1>
-      <p>Listen to each chapter of the Basic Text of NA below:</p>
+const howItWorksChapters = [
+  {
+    title: "Chapter 1",
+    url: "https://www.youtube.com/embed/w_gixHePwDw",
+  },
+  {
+    title: "Chapter 2",
+    url: "https://www.youtube.com/embed/F3d6B94epnA",
+  },
+  {
+    title: "Chapter 3",
+    url: "https://www.youtube.com/embed/5Ry42KZp7F8",
+  },
+  {
+    title: "Chapter 4",
+    url: "https://www.youtube.com/embed/8jgzWuH3vVI",
+  },
+  {
+    title: "Chapter 5",
+    url: "https://www.youtube.com/embed/PrulUCK1Pks",
+  },
+  {
+    title: "Chapter 6",
+    url: "https://www.youtube.com/embed/A9JkVk6wblo",
+  },
+  {
+    title: "Chapter 7",
+    url: "https://www.youtube.com/embed/ouirRX2n-To",
+  },
+  {
+    title: "Chapter 8",
+    url: "https://www.youtube.com/embed/s4ur7jnTWwo",
+  },
+  {
+    title: "Chapter 9",
+    url: "https://www.youtube.com/embed/MHkW_YDuuOI",
+  },
+  {
+    title: "Chapter 10",
+    url: "https://www.youtube.com/embed/IGmFrBERbY8",
+  },
+  {
+    title: "Chapter 11",
+    url: "https://www.youtube.com/embed/CLNlwYAmD-M",
+  },
+  {
+    title: "Chapter 12",
+    url: "https://www.youtube.com/embed/Ti3oCQt5svM",
+  },
+];
 
-      {chapters.map((chapter, index) => (
-        <div key={index} style={{ marginBottom: "3rem" }}>
-          <h2>{chapter.title}</h2>
-          <div
-            style={{
+const renderChapters = (chapters) => (
+  <Box sx={{ mt: 2 }}>
+    {chapters.map((chapter, index) => (
+      <Accordion key={index}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>{chapter.title}</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box
+            sx={{
               position: "relative",
               paddingBottom: "56.25%",
               height: 0,
@@ -75,9 +132,32 @@ const Audiobooks = () => {
                 height: "100%",
               }}
             ></iframe>
-          </div>
-        </div>
-      ))}
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+    ))}
+  </Box>
+);
+
+const Audiobooks = () => {
+  return (
+    <div style={{ padding: "1rem", maxWidth: "900px", margin: "0 auto" }}>
+      <h1>Narcotics Anonymous Audiobooks</h1>
+      <p>Listen to NA literature below:</p>
+
+      <Accordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">Basic Text – Narcotics Anonymous</Typography>
+        </AccordionSummary>
+        <AccordionDetails>{renderChapters(naChapters)}</AccordionDetails>
+      </Accordion>
+
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">It Works: How and Why</Typography>
+        </AccordionSummary>
+        <AccordionDetails>{renderChapters(howItWorksChapters)}</AccordionDetails>
+      </Accordion>
     </div>
   );
 };

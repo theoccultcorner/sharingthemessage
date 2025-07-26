@@ -26,19 +26,36 @@ const Login = () => {
   const green = "#1F3F3A";
 
   const handleGoogleLogin = async () => {
-    await setPersistence(auth, browserLocalPersistence);
-    const result = await signInWithPopup(auth, provider);
-    const docRef = doc(db, "users", result.user.uid);
-    const snap = await getDoc(docRef);
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+      const result = await signInWithPopup(auth, provider);
 
-    const screenName = snap.exists() ? snap.data().screenName : null;
-    navigate(screenName && screenName.trim() !== "" ? "/home" : "/create-screen-name");
+      // ✅ Ensure user info is saved in Firestore
+      const userRef = doc(db, "users", result.user.uid);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) {
+        await setDoc(userRef, {
+          screenName: "",
+          email: result.user.email,
+          photoURL: result.user.photoURL,
+          avatarUrl: result.user.photoURL,
+          role: "member"
+        });
+      }
+
+      const screenName = snap.exists() ? snap.data().screenName : null;
+      navigate(screenName && screenName.trim() !== "" ? "/home" : "/create-screen-name");
+    } catch (err) {
+      console.error("Google login failed:", err);
+      alert("Google login failed: " + err.message);
+    }
   };
 
   const handleEmailLogin = async () => {
     try {
       await setPersistence(auth, browserLocalPersistence);
       const result = await signInWithEmailAndPassword(auth, email, password);
+
       const docRef = doc(db, "users", result.user.uid);
       const snap = await getDoc(docRef);
 
@@ -55,6 +72,9 @@ const Login = () => {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       await setDoc(doc(db, "users", result.user.uid), {
         screenName: "",
+        email: result.user.email,
+        photoURL: null,
+        avatarUrl: "",
         role: "member"
       });
       navigate("/create-screen-name");
@@ -146,8 +166,9 @@ const Login = () => {
           Sign in with Google
         </Button>
       </Stack>
+
       <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: green }}>
-      The only requirement for membership is a desire to stop using.
+        The only requirement for membership is a desire to stop using.
       </Typography>
     </Container>
   );
