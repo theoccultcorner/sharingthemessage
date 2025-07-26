@@ -1,161 +1,159 @@
-import React, { useEffect, useState, useRef } from "react";
-import {
-  Box, Typography, TextField, Button, Paper, Stack, IconButton, Avatar
-} from "@mui/material";
-import { Edit, Delete, ThumbUp } from "@mui/icons-material";
-import {
-  ref, onValue, push, remove, update, set, off
-} from "firebase/database";
-import { doc, getDoc } from "firebase/firestore";
-import { db, rtdb } from "../firebase";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { auth } from "../firebase";
+import { signOut } from "firebase/auth";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Container,
+  Box,
+  BottomNavigation,
+  BottomNavigationAction,
+  Paper,
+  Stack,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText
+} from "@mui/material";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import GroupIcon from "@mui/icons-material/Group";
+import MessageIcon from "@mui/icons-material/Message";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import LogoutIcon from "@mui/icons-material/Logout";
+import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
+import ArticleIcon from "@mui/icons-material/Article";
+import HeadphonesIcon from "@mui/icons-material/Headphones";
+import PeopleIcon from "@mui/icons-material/People"; // ✅ Icon for Members
 
-const MessageBoard = () => {
-  const { user } = useAuth();
-  const [posts, setPosts] = useState([]);
-  const [newPost, setNewPost] = useState("");
-  const userCache = useRef({});
-  const bottomRef = useRef(null);
+const Home = () => {
+  const { user, screenName } = useAuth();
+  const navigate = useNavigate();
+  const [navValue, setNavValue] = useState(0);
+  const [anchorEl, setAnchorEl] = useState(null);
 
-  const fetchUserInfo = async (userId) => {
-    if (userCache.current[userId]) return userCache.current[userId];
-    try {
-      const docRef = doc(db, "users", userId);
-      const snap = await getDoc(docRef);
-      if (snap.exists()) {
-        const { screenName = "Anonymous", avatarUrl = "" } = snap.data();
-        const info = { screenName, avatarUrl };
-        userCache.current[userId] = info;
-        return info;
-      }
-    } catch (err) {
-      console.error("Error fetching user info:", err);
-    }
-    return { screenName: "Unknown", avatarUrl: "" };
+  const handleLogout = () => {
+    signOut(auth);
   };
 
-  useEffect(() => {
-    const postsRef = ref(rtdb, "posts");
-    const handleValue = async (snapshot) => {
-      const data = snapshot.val() || {};
-      const entries = await Promise.all(
-        Object.entries(data).map(async ([id, post]) => {
-          const userInfo = await fetchUserInfo(post.userId);
-          return { id, ...post, ...userInfo };
-        })
-      );
-      setPosts(entries);
-    };
-    onValue(postsRef, handleValue);
-    return () => off(postsRef);
-  }, []);
-
-  const addPost = async () => {
-    if (!newPost.trim()) return;
-    await push(ref(rtdb, "posts"), {
-      text: newPost,
-      userId: user.uid,
-      createdAt: Date.now(),
-      likes: 0,
-      comments: {}
-    });
-    setNewPost("");
+  const handleOpenMenu = (event) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  const deletePost = async (id) => {
-    await remove(ref(rtdb, `posts/${id}`));
+  const handleCloseMenu = (path) => {
+    setAnchorEl(null);
+    if (path) navigate(path);
   };
-
-  const editPost = async (id, newText) => {
-    await update(ref(rtdb, `posts/${id}`), { text: newText });
-  };
-
-  const addComment = async (postId, commentText) => {
-    const commentId = Date.now().toString();
-    await set(ref(rtdb, `posts/${postId}/comments/${commentId}`), {
-      text: commentText,
-      userId: user.uid,
-      createdAt: Date.now()
-    });
-  };
-
-  const deleteComment = async (postId, commentId) => {
-    await remove(ref(rtdb, `posts/${postId}/comments/${commentId}`));
-  };
-
-  const formatTime = (ts) => new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <Box p={2}>
-      <Typography variant="h5" gutterBottom>Message Board</Typography>
+    <Box>
+      <AppBar position="static" sx={{ backgroundColor: "#1F3F3A" }}>
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Sharing the Message
+          </Typography>
+          <Button color="inherit" onClick={handleLogout} startIcon={<LogoutIcon />}>
+            Logout
+          </Button>
+        </Toolbar>
+      </AppBar>
 
-      <Stack spacing={2} mb={3}>
-        <TextField
-          multiline
-          fullWidth
-          rows={3}
-          value={newPost}
-          onChange={(e) => setNewPost(e.target.value)}
-          placeholder="Share something..."
-        />
-        <Button variant="contained" onClick={addPost}>Post</Button>
-      </Stack>
+      <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
+        <Stack spacing={2} sx={{ mt: 4 }}>
+          <Typography variant="h4" gutterBottom>
+            Welcome, {screenName || user?.displayName}!
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            To the "Sharing the Message" group of Narcotics Anonymous Community Homepage.
+          </Typography>
+          <Typography variant="h5" gutterBottom>
+            NA Service Prayer
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            GOD, grant us knowledge that we may serve according to Your Divine precepts.
+            Instill in us a sense of Your purpose.
+            Make us servants of Your will and grant us a bond of selflessness that this may truly
+            be Your work, not ours, in order that no addict, anywhere, need die from the horrors
+            of addiction.
+          </Typography>
 
-      {posts.map((post) => (
-        <Paper key={post.id} sx={{ p: 2, mb: 3 }}>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Avatar src={post.avatarUrl} />
-            <Box flexGrow={1}>
-              <Typography variant="subtitle1">{post.screenName}</Typography>
-              <Typography variant="caption">{formatTime(post.createdAt)}</Typography>
-            </Box>
-            {post.userId === user.uid && (
-              <>
-                <IconButton onClick={() => editPost(post.id, prompt("Edit your post:", post.text))}><Edit /></IconButton>
-                <IconButton onClick={() => deletePost(post.id)}><Delete /></IconButton>
-              </>
-            )}
-          </Stack>
-          <Typography sx={{ mt: 2 }}>{post.text}</Typography>
+          <Button
+            variant="contained"
+            onClick={handleOpenMenu}
+            sx={{ backgroundColor: "#1F3F3A", "&:hover": { backgroundColor: "#16302D" } }}
+          >
+            Navigate
+          </Button>
 
-          <Box mt={2}>
-            <Typography variant="subtitle2">Comments:</Typography>
-            <Stack spacing={1} mt={1}>
-              {post.comments && Object.entries(post.comments).map(([cid, comment]) => (
-                <Box key={cid} sx={{ pl: 2 }}>
-                  <Typography variant="body2">
-                    {userCache.current[comment.userId]?.screenName || "User"}: {comment.text}
-                  </Typography>
-                  <Typography variant="caption">{formatTime(comment.createdAt)}</Typography>
-                  {comment.userId === user.uid && (
-                    <>
-                      <IconButton size="small" onClick={() => deleteComment(post.id, cid)}><Delete fontSize="small" /></IconButton>
-                    </>
-                  )}
-                </Box>
-              ))}
-              <Box>
-                <TextField
-                  size="small"
-                  fullWidth
-                  placeholder="Add a comment..."
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addComment(post.id, e.target.value);
-                      e.target.value = "";
-                    }
-                  }}
-                />
-              </Box>
-            </Stack>
-          </Box>
-        </Paper>
-      ))}
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => handleCloseMenu(null)}>
+            <MenuItem onClick={() => handleCloseMenu("/meetings")}>
+              <ListItemIcon><GroupIcon /></ListItemIcon>
+              <ListItemText primary="Find a Meeting" />
+            </MenuItem>
+            <MenuItem onClick={() => handleCloseMenu("/phone-list")}>
+              <ListItemIcon><MessageIcon /></ListItemIcon>
+              <ListItemText primary="Phone List" />
+            </MenuItem>
+            <MenuItem onClick={() => handleCloseMenu("/service")}>
+              <ListItemIcon><VolunteerActivismIcon /></ListItemIcon>
+              <ListItemText primary="Service Opportunities" />
+            </MenuItem>
+            <MenuItem onClick={() => handleCloseMenu("/meditation")}>
+              <ListItemIcon><ArticleIcon /></ListItemIcon>
+              <ListItemText primary="JFT Meditation" />
+            </MenuItem>
+            <MenuItem
+              component="a"
+              href="https://na.org/daily-meditations/spad/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ListItemIcon><OpenInNewIcon /></ListItemIcon>
+              <ListItemText primary="SPAD Meditation" />
+            </MenuItem>
+            <MenuItem onClick={() => handleCloseMenu("/gsr-report")}>
+              <ListItemIcon><ArticleIcon /></ListItemIcon>
+              <ListItemText primary="STM GSR Report" />
+            </MenuItem>
+            <MenuItem onClick={() => handleCloseMenu("/audiobooks")}>
+              <ListItemIcon><HeadphonesIcon /></ListItemIcon>
+              <ListItemText primary="Audiobooks" />
+            </MenuItem>
+            <MenuItem onClick={() => handleCloseMenu("/members")}> {/* ✅ New Members Page */}
+              <ListItemIcon><PeopleIcon /></ListItemIcon>
+              <ListItemText primary="Members" />
+            </MenuItem>
+          </Menu>
+        </Stack>
+      </Container>
 
-      <div ref={bottomRef} />
+      <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
+        <BottomNavigation
+          showLabels
+          value={navValue}
+          onChange={(event, newValue) => {
+            setNavValue(newValue);
+            if (newValue === 0) navigate("/meetings");
+            if (newValue === 1) navigate("/chatroom");
+            if (newValue === 2) navigate("/profile");
+          }}
+          sx={{
+            backgroundColor: "#f5f5f5",
+            "& .Mui-selected, & .Mui-selected > svg": {
+              color: "#1F3F3A"
+            }
+          }}
+        >
+          <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
+          <BottomNavigationAction label="Message Board" icon={<MessageIcon />} />
+          <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
+        </BottomNavigation>
+      </Paper>
     </Box>
   );
 };
 
-export default MessageBoard;
+export default Home;
