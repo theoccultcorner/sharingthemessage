@@ -29,20 +29,11 @@ import ArticleIcon from "@mui/icons-material/Article";
 import HeadphonesIcon from "@mui/icons-material/Headphones";
 import PeopleIcon from "@mui/icons-material/People"; // ✅ Icon for Members
 
-<<<<<<< HEAD
 const Home = () => {
   const { user, screenName } = useAuth();
   const navigate = useNavigate();
   const [navValue, setNavValue] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
-=======
-const ChatRoom = () => {
-  const { user } = useAuth();
-  const [posts, setPosts] = useState([]);
-  const [newPost, setNewPost] = useState("");
-  const userCache = useRef({});
-  const bottomRef = useRef(null);
->>>>>>> 99bbabe84d68bce0738417561132e96848760b6a
 
   const handleLogout = () => {
     signOut(auth);
@@ -165,8 +156,4 @@ const ChatRoom = () => {
   );
 };
 
-<<<<<<< HEAD
 export default Home;
-=======
-export default ChatRoom;
->>>>>>> 99bbabe84d68bce0738417561132e96848760b6a
