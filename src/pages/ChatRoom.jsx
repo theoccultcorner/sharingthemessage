@@ -1,11 +1,10 @@
-// /pages/MessageBoard.jsx
 import React, { useEffect, useState, useRef } from "react";
 import {
   Box, Typography, TextField, Button, Paper, Stack, Avatar, IconButton, Divider
 } from "@mui/material";
-import { ThumbUp, Send } from "@mui/icons-material";
+import { ThumbUp, Send, Edit, Delete } from "@mui/icons-material";
 import {
-  ref, onValue, push, update, off
+  ref, onValue, push, update, remove, off
 } from "firebase/database";
 import { db, rtdb } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -15,7 +14,10 @@ const ChatRoom = () => {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState("");
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editingPostText, setEditingPostText] = useState("");
   const [commentInputs, setCommentInputs] = useState({});
+  const [editingComment, setEditingComment] = useState({});
   const userCache = useRef({});
 
   const fetchUserInfo = async (userId) => {
@@ -74,6 +76,17 @@ const ChatRoom = () => {
     setNewPost("");
   };
 
+  const handleEditPost = async (postId) => {
+    if (!editingPostText.trim()) return;
+    await update(ref(rtdb, `posts/${postId}`), { text: editingPostText });
+    setEditingPostId(null);
+    setEditingPostText("");
+  };
+
+  const handleDeletePost = async (postId) => {
+    await remove(ref(rtdb, `posts/${postId}`));
+  };
+
   const handleComment = async (postId) => {
     const comment = commentInputs[postId];
     if (!comment?.trim()) return;
@@ -83,6 +96,17 @@ const ChatRoom = () => {
       createdAt: Date.now()
     });
     setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
+  };
+
+  const handleEditComment = async (postId, commentId) => {
+    const text = editingComment[commentId];
+    if (!text?.trim()) return;
+    await update(ref(rtdb, `posts/${postId}/comments/${commentId}`), { text });
+    setEditingComment((prev) => ({ ...prev, [commentId]: "" }));
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    await remove(ref(rtdb, `posts/${postId}/comments/${commentId}`));
   };
 
   const handleLike = async (postId, currentLikes = 0) => {
@@ -121,7 +145,31 @@ const ChatRoom = () => {
               <Typography variant="caption">{formatTime(post.createdAt)}</Typography>
             </Box>
           </Stack>
-          <Typography sx={{ mt: 2 }}>{post.text}</Typography>
+
+          {editingPostId === post.id ? (
+            <Box sx={{ mt: 2 }}>
+              <TextField
+                fullWidth
+                multiline
+                rows={2}
+                value={editingPostText}
+                onChange={(e) => setEditingPostText(e.target.value)}
+              />
+              <Stack direction="row" spacing={1} mt={1}>
+                <Button variant="contained" onClick={() => handleEditPost(post.id)}>Save</Button>
+                <Button onClick={() => setEditingPostId(null)}>Cancel</Button>
+              </Stack>
+            </Box>
+          ) : (
+            <Typography sx={{ mt: 2 }}>{post.text}</Typography>
+          )}
+
+          {user.uid === post.userId && editingPostId !== post.id && (
+            <Stack direction="row" spacing={1} mt={1}>
+              <IconButton onClick={() => { setEditingPostId(post.id); setEditingPostText(post.text); }}><Edit /></IconButton>
+              <IconButton onClick={() => handleDeletePost(post.id)}><Delete /></IconButton>
+            </Stack>
+          )}
 
           <Stack direction="row" spacing={1} alignItems="center" mt={1}>
             <IconButton onClick={() => handleLike(post.id, post.likes)}>
@@ -139,8 +187,31 @@ const ChatRoom = () => {
                 <Avatar src={comment.avatarUrl} sx={{ width: 24, height: 24 }} />
                 <Box>
                   <Typography fontSize="small" fontWeight="bold">{comment.screenName}</Typography>
-                  <Typography fontSize="small">{comment.text}</Typography>
-                  <Typography variant="caption">{formatTime(comment.createdAt)}</Typography>
+                  {editingComment[comment.id] !== undefined ? (
+                    <Box>
+                      <TextField
+                        size="small"
+                        fullWidth
+                        value={editingComment[comment.id]}
+                        onChange={(e) => setEditingComment((prev) => ({ ...prev, [comment.id]: e.target.value }))}
+                      />
+                      <Stack direction="row" spacing={1} mt={1}>
+                        <Button size="small" onClick={() => handleEditComment(post.id, comment.id)}>Save</Button>
+                        <Button size="small" onClick={() => setEditingComment((prev) => ({ ...prev, [comment.id]: undefined }))}>Cancel</Button>
+                      </Stack>
+                    </Box>
+                  ) : (
+                    <>
+                      <Typography fontSize="small">{comment.text}</Typography>
+                      <Typography variant="caption">{formatTime(comment.createdAt)}</Typography>
+                      {user.uid === comment.userId && (
+                        <Stack direction="row" spacing={1}>
+                          <IconButton size="small" onClick={() => setEditingComment((prev) => ({ ...prev, [comment.id]: comment.text }))}><Edit fontSize="small" /></IconButton>
+                          <IconButton size="small" onClick={() => handleDeleteComment(post.id, comment.id)}><Delete fontSize="small" /></IconButton>
+                        </Stack>
+                      )}
+                    </>
+                  )}
                 </Box>
               </Stack>
             </Box>
