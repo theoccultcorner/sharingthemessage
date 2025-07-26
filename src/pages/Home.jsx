@@ -10,7 +10,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db, rtdb } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 
-const MessageBoard = () => {
+const ChatRoom = () => {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState("");
@@ -158,4 +158,4 @@ const MessageBoard = () => {
   );
 };
 
-export default MessageBoard;
+export default ChatRoom;
