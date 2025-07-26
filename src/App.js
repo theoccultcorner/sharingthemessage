@@ -9,7 +9,8 @@ import Meditation from "./pages/Meditation";
 import Chatroom from "./pages/ChatRoom";
 import PhoneList from "./pages/PhoneList";
 import StmGsrReportPage from "./pages/StmGsrReportPage";
-import Audiobooks from "./pages/Audiobooks"; // ✅ Import Audiobooks
+import Audiobooks from "./pages/Audiobooks";
+import MembersList from "./pages/MembersList"; // ✅ Import MembersList
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading, screenName } = useAuth();
@@ -30,70 +31,15 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/create-screen-name" element={<CreateScreenName />} />
-          <Route
-            path="/home"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/meetings"
-            element={
-              <ProtectedRoute>
-                <Meetings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/meditation"
-            element={
-              <ProtectedRoute>
-                <Meditation />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/chatroom"
-            element={
-              <ProtectedRoute>
-                <Chatroom />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/gsr-report"
-            element={
-              <ProtectedRoute>
-                <StmGsrReportPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/phone-list"
-            element={
-              <ProtectedRoute>
-                <PhoneList />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/audiobooks" // ✅ New protected route
-            element={
-              <ProtectedRoute>
-                <Audiobooks />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/meetings" element={<ProtectedRoute><Meetings /></ProtectedRoute>} />
+          <Route path="/meditation" element={<ProtectedRoute><Meditation /></ProtectedRoute>} />
+          <Route path="/chatroom" element={<ProtectedRoute><Chatroom /></ProtectedRoute>} />
+          <Route path="/gsr-report" element={<ProtectedRoute><StmGsrReportPage /></ProtectedRoute>} />
+          <Route path="/phone-list" element={<ProtectedRoute><PhoneList /></ProtectedRoute>} />
+          <Route path="/audiobooks" element={<ProtectedRoute><Audiobooks /></ProtectedRoute>} />
+          <Route path="/members" element={<ProtectedRoute><MembersList /></ProtectedRoute>} /> {/* ✅ New route */}
         </Routes>
       </Router>
     </AuthProvider>
