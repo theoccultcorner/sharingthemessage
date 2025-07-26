@@ -145,7 +145,7 @@ const Audiobooks = () => {
       <h1>Narcotics Anonymous Audiobooks</h1>
       <p>Listen to NA literature below:</p>
 
-      <Accordion defaultExpanded>
+      <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h6">Basic Text – Narcotics Anonymous</Typography>
         </AccordionSummary>
