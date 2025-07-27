@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 
 const existingMeetings = {
-  Sunday: [[{ time: "12 PM", host: "Jon T." }],
+  Sunday: [{ time: "12 PM", host: "Jon T." },
     { time: "8 PM", host: "GREGORY" }
   
   ],
