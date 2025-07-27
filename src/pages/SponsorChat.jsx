@@ -1,18 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { rtdb } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 import { ref, push, onValue } from "firebase/database";
 import OpenAI from "openai";
+import {
+  Box,
+  Typography,
+  Paper,
+  Stack,
+  TextField,
+  Button,
+  Container
+} from "@mui/material";
 
 const openai = new OpenAI({
-  apiKey: process.env.REACT_APP_OPENAI_API_KEY, // ✅ Securely loaded
-  dangerouslyAllowBrowser: true
+  apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true,
 });
 
 const SponsorChat = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const messagesEndRef = useRef(null);
 
   const messagesRef = ref(rtdb, `na_chats/${user.uid}`);
 
@@ -25,6 +35,10 @@ const SponsorChat = () => {
 
     return () => unsubscribe();
   }, [user.uid]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -57,21 +71,69 @@ const SponsorChat = () => {
   };
 
   return (
-    <div style={{ padding: "1rem", maxWidth: "600px", margin: "auto" }}>
-      <h2>Welcome, {user.displayName}</h2>
-      <div style={{ height: 300, overflowY: "scroll", border: "1px solid #ccc", padding: "1rem" }}>
-        {messages.map((m, i) => (
-          <p key={i}><strong>{m.sender === "user" ? "You" : "Sponsor"}:</strong> {m.text}</p>
-        ))}
-      </div>
-      <input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Type your message..."
-        style={{ width: "80%", marginTop: "1rem" }}
-      />
-      <button onClick={sendMessage}>Send</button>
-    </div>
+    <Container maxWidth="sm" sx={{ pt: 4, pb: 10 }}>
+      <Typography variant="h5" align="center" gutterBottom>
+        Welcome, {user.displayName}
+      </Typography>
+
+      <Paper
+        elevation={3}
+        sx={{
+          height: "60vh",
+          overflowY: "auto",
+          p: 2,
+          borderRadius: 2,
+          mb: 2,
+          backgroundColor: "#f9f9f9",
+        }}
+      >
+        <Stack spacing={2}>
+          {messages.map((m, i) => (
+            <Box
+              key={i}
+              sx={{
+                alignSelf: m.sender === "user" ? "flex-end" : "flex-start",
+                maxWidth: "80%",
+              }}
+            >
+              <Paper
+                sx={{
+                  p: 1.5,
+                  backgroundColor: m.sender === "user" ? "#1F3F3A" : "#e0e0e0",
+                  color: m.sender === "user" ? "#fff" : "#000",
+                  borderRadius: 2,
+                }}
+              >
+                <Typography variant="body2">
+                  <strong>{m.sender === "user" ? "You" : "Sponsor"}:</strong> {m.text}
+                </Typography>
+              </Paper>
+            </Box>
+          ))}
+          <div ref={messagesEndRef} />
+        </Stack>
+      </Paper>
+
+      <Stack direction="row" spacing={1}>
+        <TextField
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message..."
+          fullWidth
+          size="small"
+        />
+        <Button
+          variant="contained"
+          onClick={sendMessage}
+          sx={{
+            backgroundColor: "#1F3F3A",
+            "&:hover": { backgroundColor: "#16302D" },
+          }}
+        >
+          Send
+        </Button>
+      </Stack>
+    </Container>
   );
 };
 
