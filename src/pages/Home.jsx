@@ -155,7 +155,7 @@ const Home = () => {
           <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
           <BottomNavigationAction label="Message Board" icon={<MessageIcon />} />
           <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
-          <BottomNavigationAction label="AI Sponsor" icon={<VolunteerActivismIcon />} /> {/* ✅ */}
+          <BottomNavigationAction label="A.I. Sponsor" icon={<VolunteerActivismIcon />} /> {/* ✅ */}
         </BottomNavigation>
       </Paper>
     </Box>
