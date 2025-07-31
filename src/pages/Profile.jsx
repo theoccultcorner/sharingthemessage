@@ -242,15 +242,7 @@ const Profile = () => {
                   <Typography variant="h6">
                     {profileData.screenName || "Unnamed"}
                   </Typography>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<EditIcon />}
-                    onClick={() => setEditMode(true)}
-                    sx={{ color: "#1F3F3A", borderColor: "#1F3F3A" }}
-                  >
-                    Edit Screen Name
-                  </Button>
+                 
                 </Stack>
               )}
 
@@ -338,11 +330,7 @@ const Profile = () => {
                 </Stack>
               ) : (
                 <Stack spacing={2} width="100%">
-                  {profileData.screenName && (
-                    <Typography>
-                      <strong>Screen Name:</strong> {profileData.screenName}
-                    </Typography>
-                  )}
+                  
 
                   {profileData.cleanDate && (
                     <>
