@@ -30,19 +30,33 @@ const Login = () => {
       await setPersistence(auth, browserLocalPersistence);
       const result = await signInWithPopup(auth, provider);
 
-      // ✅ Ensure user info is saved in Firestore
+      // ✅ Save or update user info in Firestore
       const userRef = doc(db, "users", result.user.uid);
       const snap = await getDoc(userRef);
+
       if (!snap.exists()) {
+        // New user: create the Firestore document with profile photo
         await setDoc(userRef, {
           screenName: "",
           email: result.user.email,
-          photoURL: result.user.photoURL,
-          avatarUrl: result.user.photoURL,
+          photoURL: result.user.photoURL || "",
           role: "member"
         });
+      } else {
+        // Existing user: update photoURL if it changed or was missing
+        const userData = snap.data();
+        if (userData.photoURL !== result.user.photoURL) {
+          await setDoc(
+            userRef,
+            {
+              photoURL: result.user.photoURL || ""
+            },
+            { merge: true }
+          );
+        }
       }
 
+      // Navigate based on screenName presence
       const screenName = snap.exists() ? snap.data().screenName : null;
       navigate(screenName && screenName.trim() !== "" ? "/home" : "/create-screen-name");
     } catch (err) {
@@ -70,13 +84,15 @@ const Login = () => {
   const handleEmailSignup = async () => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
+
+      // New user: create Firestore document with empty photoURL
       await setDoc(doc(db, "users", result.user.uid), {
         screenName: "",
         email: result.user.email,
-        photoURL: null,
-        avatarUrl: "",
+        photoURL: "", // email users won't have a photo initially
         role: "member"
       });
+
       navigate("/create-screen-name");
     } catch (err) {
       console.error(err);
