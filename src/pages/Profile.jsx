@@ -211,7 +211,7 @@ const Profile = () => {
             My NA Profile
           </Typography>
 
-          {/* ✅ Delete button added in AppBar */}
+          {/* Delete button added in AppBar */}
           <Button 
             color="error" 
             variant="outlined"
@@ -232,8 +232,13 @@ const Profile = () => {
         <Card>
           <CardContent>
             <Stack alignItems="center" spacing={2}>
-              <Avatar sx={{ width: 80, height: 80, bgcolor: "#1F3F3A" }}>
-                {profileData.screenName?.[0]?.toUpperCase() || "U"}
+              {/* ✅ Use Gmail photo if available */}
+              <Avatar
+                sx={{ width: 80, height: 80 }}
+                src={user?.photoURL || undefined}
+              >
+                {/* Fallback to first letter if no photo */}
+                {(!user?.photoURL && profileData.screenName?.[0]?.toUpperCase()) || "U"}
               </Avatar>
 
               {/* Quick screen name edit shortcut when not in full edit mode */}
@@ -242,7 +247,6 @@ const Profile = () => {
                   <Typography variant="h6">
                     {profileData.screenName || "Unnamed"}
                   </Typography>
-                 
                 </Stack>
               )}
 
@@ -330,8 +334,6 @@ const Profile = () => {
                 </Stack>
               ) : (
                 <Stack spacing={2} width="100%">
-                  
-
                   {profileData.cleanDate && (
                     <>
                       <Typography>
