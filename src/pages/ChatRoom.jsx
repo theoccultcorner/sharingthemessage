@@ -151,7 +151,7 @@ const ChatRoom = () => {
     await remove(ref(rtdb, `posts/${postId}/comments/${commentId}`));
   };
 
-  // Single-like per user with denormalized liker profile including photoURL
+  // Toggle like/unlike with denormalized liker profile including photoURL
   const handleLike = async (postId) => {
     const postRef = ref(rtdb, `posts/${postId}`);
     await runTransaction(postRef, (current) => {
@@ -159,22 +159,32 @@ const ChatRoom = () => {
       const now = Date.now();
       current.likedBy = current.likedBy || {};
 
-      // migrate old numeric likes once
+      // Ensure likesCount exists; try to migrate from legacy "likes" or derive from likedBy
       if (typeof current.likesCount !== "number") {
-        current.likesCount = typeof current.likes === "number" ? current.likes : 0;
+        const derived = current.likedBy ? Object.keys(current.likedBy).length : 0;
+        current.likesCount =
+          typeof current.likes === "number" ? current.likes : derived;
       }
 
-      if (current.likedBy[user.uid]) return current; // already liked
+      const already = !!current.likedBy[user.uid];
 
-      current.likedBy[user.uid] = {
-        userId: user.uid,
-        screenName: user?.displayName || "Anonymous",
-        photoURL: user?.photoURL || "",           // <-- use photoURL
-        likedAt: now,
-      };
+      if (already) {
+        // UNLIKE: remove entry; supports both object and legacy boolean
+        delete current.likedBy[user.uid];
+        current.likesCount = Math.max(0, (current.likesCount || 0) - 1);
+      } else {
+        // LIKE: write profile
+        current.likedBy[user.uid] = {
+          userId: user.uid,
+          screenName: user?.displayName || "Anonymous",
+          photoURL: user?.photoURL || "",
+          likedAt: now,
+        };
+        current.likesCount = (current.likesCount || 0) + 1;
+      }
 
-      current.likesCount = (current.likesCount || 0) + 1;
-      if (typeof current.likes !== "undefined") delete current.likes; // clean legacy
+      // Clean legacy numeric "likes" field if present
+      if (typeof current.likes !== "undefined") delete current.likes;
       return current;
     });
   };
@@ -252,9 +262,9 @@ const ChatRoom = () => {
             )}
 
             <Stack direction="row" spacing={1} alignItems="center" mt={1}>
-              <Tooltip title={hasLiked ? "You already liked this" : "Like"}>
+              <Tooltip title={hasLiked ? "Unlike" : "Like"}>
                 <span>
-                  <IconButton onClick={() => handleLike(post.id)} disabled={hasLiked}>
+                  <IconButton onClick={() => handleLike(post.id)}>
                     <ThumbUp color={hasLiked ? "primary" : undefined} />
                   </IconButton>
                 </span>
