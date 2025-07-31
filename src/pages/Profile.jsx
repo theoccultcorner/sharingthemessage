@@ -1,5 +1,3 @@
-// Additions are marked with ✅ comments
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { db, auth, rtdb } from "../firebase";
@@ -35,7 +33,7 @@ import MessageIcon from "@mui/icons-material/Message";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever"; // ✅
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
@@ -59,7 +57,6 @@ const Profile = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
-  // ✅ Load profile data
   useEffect(() => {
     const loadProfile = async () => {
       const userRef = doc(db, "users", user.uid);
@@ -80,26 +77,31 @@ const Profile = () => {
     loadProfile();
   }, [user]);
 
-  // ✅ Countdown calculation
   useEffect(() => {
     if (!profileData.cleanDate) return;
+
     const nextMilestone = getNextYearMilestone(profileData.cleanDate);
+
     const interval = setInterval(() => {
       const now = new Date();
       const remainingTime = nextMilestone - now;
       setCountdown(formatCountdown(remainingTime));
     }, 1000);
+
     return () => clearInterval(interval);
   }, [profileData.cleanDate]);
 
   const getNextYearMilestone = (cleanDateString) => {
     const cleanDate = new Date(cleanDateString);
     const today = new Date();
+
     let nextAnniversary = new Date(cleanDate);
     nextAnniversary.setFullYear(cleanDate.getFullYear() + 1);
+
     while (nextAnniversary <= today) {
       nextAnniversary.setFullYear(nextAnniversary.getFullYear() + 1);
     }
+
     return nextAnniversary;
   };
 
@@ -110,6 +112,7 @@ const Profile = () => {
     const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
+
     return `${days}d ${hours}h ${minutes}m ${seconds}s`;
   };
 
@@ -125,21 +128,30 @@ const Profile = () => {
       await updateDoc(userRef, profileData);
       setScreenName(profileData.screenName);
       setEditMode(false);
+    } catch (e) {
+      console.error("Profile update error:", e);
+      alert("There was a problem saving your profile. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = () => signOut(auth);
+  const handleLogout = () => {
+    signOut(auth);
+  };
 
   const getDaysClean = (cleanDateString) => {
     const cleanDate = new Date(cleanDateString);
     const today = new Date();
-    return Math.max(0, Math.floor((today - cleanDate) / (1000 * 60 * 60 * 24)));
+    const diffTime = today - cleanDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 ? diffDays : 0;
   };
 
-  const renderMilestones = (days) =>
-    [30, 60, 90, 180, 365, ...Array.from({ length: 10 }, (_, i) => (i + 1) * 365)]
+  const renderMilestones = (days) => {
+    const dayMilestones = [30, 60, 90, 180, 365];
+    const yearMilestones = Array.from({ length: 10 }, (_, i) => (i + 1) * 365);
+    return [...dayMilestones, ...yearMilestones]
       .filter((m) => days >= m)
       .map((m) => (
         <Chip
@@ -150,25 +162,41 @@ const Profile = () => {
           sx={{ mr: 1, mb: 1 }}
         />
       ));
+  };
 
-  // ✅ Delete confirmation
-  const openDeleteDialog = () => setConfirmOpen(true);
-  const closeDeleteDialog = () => setConfirmOpen(false);
+  // Open confirmation dialog
+  const openDeleteDialog = () => {
+    setDeleteError("");
+    setConfirmOpen(true);
+  };
 
+  const closeDeleteDialog = () => {
+    setConfirmOpen(false);
+  };
+
+  // Perform account deletion: remove user doc + RTDB chats, then delete auth user
   const confirmDeleteAccount = async () => {
     setDeleteError("");
     setLoading(true);
     try {
-      // delete chat data
+      // 1) Remove RTDB chat history (optional, but recommended)
       await rtdbRemove(rtdbRef(rtdb, `na_chats/${user.uid}`)).catch(() => {});
-      // delete Firestore user
+
+      // 2) Remove Firestore user profile
       await deleteDoc(doc(db, "users", user.uid)).catch(() => {});
-      // delete user auth
+
+      // 3) Delete Auth user (may require recent login)
       await deleteUser(auth.currentUser);
+
+      // If successful, user is removed; navigate to login (safety)
       navigate("/");
     } catch (err) {
-      console.error(err);
-      setDeleteError("Please log out and log in again, then retry.");
+      console.error("Delete account error:", err);
+      if (err?.code === "auth/requires-recent-login") {
+        setDeleteError("For your security, please log out and sign back in, then try deleting your account again.");
+      } else {
+        setDeleteError("We couldn’t delete your account. Please try again or contact support.");
+      }
     } finally {
       setLoading(false);
       setConfirmOpen(false);
@@ -179,7 +207,21 @@ const Profile = () => {
     <Box minHeight="100vh" display="flex" flexDirection="column" bgcolor="#f0f0f0">
       <AppBar position="static" sx={{ backgroundColor: "#1F3F3A" }}>
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>My NA Profile</Typography>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            My NA Profile
+          </Typography>
+
+          {/* ✅ Delete button added in AppBar */}
+          <Button 
+            color="error" 
+            variant="outlined"
+            onClick={openDeleteDialog}
+            startIcon={<DeleteForeverIcon />}
+            sx={{ mr: 1 }}
+          >
+            Delete
+          </Button>
+
           <Button color="inherit" onClick={handleLogout} startIcon={<LogoutIcon />}>
             Logout
           </Button>
@@ -194,7 +236,29 @@ const Profile = () => {
                 {profileData.screenName?.[0]?.toUpperCase() || "U"}
               </Avatar>
 
-              {deleteError && <Alert severity="error">{deleteError}</Alert>}
+              {/* Quick screen name edit shortcut when not in full edit mode */}
+              {!editMode && (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography variant="h6">
+                    {profileData.screenName || "Unnamed"}
+                  </Typography>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<EditIcon />}
+                    onClick={() => setEditMode(true)}
+                    sx={{ color: "#1F3F3A", borderColor: "#1F3F3A" }}
+                  >
+                    Edit Screen Name
+                  </Button>
+                </Stack>
+              )}
+
+              {deleteError && (
+                <Alert severity="error" sx={{ width: "100%" }}>
+                  {deleteError}
+                </Alert>
+              )}
 
               {editMode ? (
                 <Stack spacing={2} width="100%">
@@ -202,41 +266,142 @@ const Profile = () => {
                     label="Screen Name"
                     value={profileData.screenName}
                     onChange={handleChange("screenName")}
+                    helperText="How others will see you"
                     fullWidth
                   />
-                  {/* ... other fields */}
-                  <Stack direction="row" spacing={2}>
-                    <Button variant="contained" onClick={handleSave} disabled={loading}>
-                      {loading ? "Saving..." : "Save"}
-                    </Button>
-                    <Button variant="outlined" onClick={() => setEditMode(false)}>Cancel</Button>
+                  <TextField
+                    label="Clean Date"
+                    type="date"
+                    value={profileData.cleanDate}
+                    onChange={handleChange("cleanDate")}
+                    InputLabelProps={{ shrink: true }}
+                    helperText="Your recovery start date"
+                    fullWidth
+                  />
+                  <TextField
+                    label="Sponsor Name"
+                    value={profileData.sponsorName}
+                    onChange={handleChange("sponsorName")}
+                    helperText="Your NA sponsor's name"
+                    fullWidth
+                  />
+                  <TextField
+                    label="Phone Number"
+                    value={profileData.phone}
+                    onChange={handleChange("phone")}
+                    helperText="Tap-to-call contact info (optional)"
+                    fullWidth
+                  />
+                  <TextField
+                    label="Meeting Role"
+                    value={profileData.meetingRole}
+                    onChange={handleChange("meetingRole")}
+                    helperText="E.g., Chairperson, Greeter, Secretary"
+                    fullWidth
+                  />
+                  <TextField
+                    label="Service Commitment"
+                    value={profileData.serviceCommitment}
+                    onChange={handleChange("serviceCommitment")}
+                    helperText="E.g., Setup crew, Literature, Treasurer"
+                    fullWidth
+                  />
+                  <TextField
+                    label="Bio / Motto"
+                    value={profileData.bio}
+                    onChange={handleChange("bio")}
+                    helperText="Personal message, motto, or quote"
+                    fullWidth
+                    multiline
+                    minRows={3}
+                  />
+
+                  <Stack direction="row" spacing={2} justifyContent="space-between">
+                    <Stack direction="row" spacing={2}>
+                      <Button
+                        variant="contained"
+                        onClick={handleSave}
+                        disabled={loading}
+                        sx={{ backgroundColor: "#1F3F3A" }}
+                      >
+                        {loading ? "Saving..." : "Save"}
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={() => setEditMode(false)}
+                        sx={{ color: "#1F3F3A", borderColor: "#1F3F3A" }}
+                      >
+                        Cancel
+                      </Button>
+                    </Stack>
                   </Stack>
                 </Stack>
               ) : (
                 <Stack spacing={2} width="100%">
-                  <Typography><strong>Screen Name:</strong> {profileData.screenName}</Typography>
-                  {/* ... other info */}
-                  <Divider />
-                  <Stack direction="row" spacing={2} justifyContent="space-between">
-                    <Button
-                      variant="contained"
-                      onClick={() => setEditMode(true)}
-                      startIcon={<EditIcon />}
-                      sx={{ backgroundColor: "#1F3F3A" }}
-                    >
-                      Edit Profile
-                    </Button>
+                  {profileData.screenName && (
+                    <Typography>
+                      <strong>Screen Name:</strong> {profileData.screenName}
+                    </Typography>
+                  )}
 
-                    {/* ✅ Delete Account Button */}
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      startIcon={<DeleteForeverIcon />}
-                      onClick={openDeleteDialog}
-                    >
-                      Delete Account
-                    </Button>
-                  </Stack>
+                  {profileData.cleanDate && (
+                    <>
+                      <Typography>
+                        <strong>Clean Date:</strong>{" "}
+                        {`${profileData.cleanDate} (${getDaysClean(profileData.cleanDate)} days clean)`}
+                      </Typography>
+                      <Stack direction="row" spacing={1} flexWrap="wrap">
+                        {renderMilestones(getDaysClean(profileData.cleanDate))}
+                      </Stack>
+                      <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                        Next Anniversary in: {countdown}
+                      </Typography>
+                    </>
+                  )}
+
+                  {profileData.sponsorName && (
+                    <Typography>
+                      <strong>Sponsor:</strong> {profileData.sponsorName}
+                    </Typography>
+                  )}
+
+                  {profileData.phone && (
+                    <Typography>
+                      <strong>Phone:</strong>{" "}
+                      <Link href={`tel:${profileData.phone}`} underline="hover">
+                        {profileData.phone}
+                      </Link>
+                    </Typography>
+                  )}
+
+                  {profileData.meetingRole && (
+                    <Typography>
+                      <strong>Meeting Role:</strong> {profileData.meetingRole}
+                    </Typography>
+                  )}
+
+                  {profileData.serviceCommitment && (
+                    <Typography>
+                      <strong>Service Commitment:</strong> {profileData.serviceCommitment}
+                    </Typography>
+                  )}
+
+                  {profileData.bio && (
+                    <Typography>
+                      <strong>Bio:</strong> {profileData.bio}
+                    </Typography>
+                  )}
+
+                  <Divider sx={{ my: 2 }} />
+
+                  <Button
+                    variant="contained"
+                    onClick={() => setEditMode(true)}
+                    sx={{ backgroundColor: "#1F3F3A" }}
+                    startIcon={<EditIcon />}
+                  >
+                    Edit Profile
+                  </Button>
                 </Stack>
               )}
             </Stack>
@@ -244,16 +409,21 @@ const Profile = () => {
         </Card>
       </Container>
 
-      {/* Bottom Navigation */}
       <Paper sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }} elevation={3}>
         <BottomNavigation
           showLabels
           value={navValue}
-          onChange={(e, newValue) => {
+          onChange={(event, newValue) => {
             setNavValue(newValue);
             if (newValue === 0) navigate("/meetings");
             if (newValue === 1) navigate("/chatroom");
             if (newValue === 2) navigate("/profile");
+          }}
+          sx={{
+            backgroundColor: "#f5f5f5",
+            "& .Mui-selected, & .Mui-selected > svg": {
+              color: "#1F3F3A"
+            }
           }}
         >
           <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
@@ -262,16 +432,26 @@ const Profile = () => {
         </BottomNavigation>
       </Paper>
 
-      {/* ✅ Confirmation Dialog */}
+      {/* Delete confirmation dialog */}
       <Dialog open={confirmOpen} onClose={closeDeleteDialog}>
         <DialogTitle>Are you sure?</DialogTitle>
         <DialogContent>
-          <Typography>Deleting your account will remove your data permanently. This cannot be undone.</Typography>
+          <Typography>
+            Deleting your account will remove your profile and chat history. This action cannot be undone.
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDeleteDialog}>No</Button>
-          <Button color="error" variant="contained" onClick={confirmDeleteAccount} disabled={loading}>
-            Yes, Delete
+          <Button onClick={closeDeleteDialog} disabled={loading}>
+            No
+          </Button>
+          <Button
+            onClick={confirmDeleteAccount}
+            color="error"
+            variant="contained"
+            startIcon={<DeleteForeverIcon />}
+            disabled={loading}
+          >
+            Yes, delete
           </Button>
         </DialogActions>
       </Dialog>
