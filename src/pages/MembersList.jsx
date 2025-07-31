@@ -1,5 +1,3 @@
-// MembersList.jsx
-
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -56,18 +54,25 @@ const MembersList = () => {
             <Card key={member.id} sx={{ mb: 2 }}>
               <CardContent>
                 <Stack direction="row" spacing={2} alignItems="center">
-                  <Avatar sx={{ bgcolor: "#1F3F3A" }}>
-                    {member.screenName?.[0]?.toUpperCase() || "U"}
+                  {/* ✅ Use photoURL if available */}
+                  <Avatar
+                    sx={{ bgcolor: "#1F3F3A" }}
+                    src={member.photoURL || undefined}
+                  >
+                    {(!member.photoURL && member.screenName?.[0]?.toUpperCase()) || "U"}
                   </Avatar>
+
                   <Box>
                     <Typography variant="subtitle1" fontWeight="bold">
                       {member.screenName || "Unnamed"}
                     </Typography>
+
                     {member.phone && (
                       <Typography variant="body2">
                         📞 <Link href={`tel:${member.phone}`} underline="hover">{member.phone}</Link>
                       </Typography>
                     )}
+
                     {member.cleanDate && (
                       <Typography variant="body2">
                         Clean Date: {member.cleanDate}
