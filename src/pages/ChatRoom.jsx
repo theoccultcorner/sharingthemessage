@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import {
-  Box, Typography, TextField, Button, Paper, Stack, Avatar, IconButton, Divider
+  Box, Typography, TextField, Button, Paper, Stack, Avatar, IconButton, Divider, Tooltip
 } from "@mui/material";
 import { ThumbUp, Send, Edit, Delete } from "@mui/icons-material";
 import {
-  ref, onValue, push, update, remove, off
-} from "firebase/database";
+  ref, onValue, push, update, remove, off, runTransaction
+} from "firebase/database"; // ⬅️ added runTransaction
 import { db, rtdb } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
@@ -26,42 +26,48 @@ const ChatRoom = () => {
     const snap = await getDoc(docRef);
     if (snap.exists()) {
       const { screenName = "Anonymous", avatarUrl = "" } = snap.data();
-      const info = { screenName, avatarUrl };
+      const info = { screenName, avatarUrl, userId };
       userCache.current[userId] = info;
       return info;
     }
-    return { screenName: "Unknown", avatarUrl: "" };
+    return { screenName: "Unknown", avatarUrl: "", userId };
   };
 
-  const loadPosts = async () => {
+  useEffect(() => {
     const postsRef = ref(rtdb, "posts");
-    onValue(postsRef, async (snapshot) => {
+    const unsub = onValue(postsRef, async (snapshot) => {
       const data = snapshot.val() || {};
       const postList = await Promise.all(
         Object.entries(data).map(async ([id, post]) => {
           const author = await fetchUserInfo(post.userId);
+
+          // Build comments array with commenter info
           const comments = await Promise.all(
             Object.entries(post.comments || {}).map(async ([cid, comment]) => {
               const commenter = await fetchUserInfo(comment.userId);
               return { id: cid, ...comment, ...commenter };
             })
           );
+
+          // Build likedBy users list
+          const likedByIds = Object.keys(post.likedBy || {});
+          const likedByUsers = await Promise.all(
+            likedByIds.map(async (uid) => fetchUserInfo(uid))
+          );
+
           return {
             id,
             ...post,
             ...author,
-            comments
+            comments,
+            likedByUsers, // [{screenName, avatarUrl, userId}]
           };
         })
       );
-      setPosts(postList.reverse());
+      setPosts(postList.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
     });
 
     return () => off(postsRef);
-  };
-
-  useEffect(() => {
-    loadPosts();
   }, []);
 
   const handlePost = async () => {
@@ -70,7 +76,8 @@ const ChatRoom = () => {
       text: newPost,
       userId: user.uid,
       createdAt: Date.now(),
-      likes: 0,
+      likesCount: 0,        // ⬅️ new
+      likedBy: {},          // ⬅️ new
       comments: {}
     });
     setNewPost("");
@@ -109,8 +116,26 @@ const ChatRoom = () => {
     await remove(ref(rtdb, `posts/${postId}/comments/${commentId}`));
   };
 
-  const handleLike = async (postId, currentLikes = 0) => {
-    await update(ref(rtdb, `posts/${postId}`), { likes: currentLikes + 1 });
+  // Like exactly once per user. Uses a transaction on the post to atomically update likedBy and likesCount.
+  const handleLike = async (postId) => {
+    const postRef = ref(rtdb, `posts/${postId}`);
+    await runTransaction(postRef, (current) => {
+      if (!current) return current;
+      if (!current.likedBy) current.likedBy = {};
+      if (!current.likesCount && current.likesCount !== 0) {
+        // Backwards compat: if only "likes" existed, initialize likesCount from it.
+        current.likesCount = typeof current.likes === "number" ? current.likes : 0;
+      }
+      if (current.likedBy[user.uid]) {
+        // already liked; do nothing
+        return current;
+      }
+      current.likedBy[user.uid] = true;
+      current.likesCount = (current.likesCount || 0) + 1;
+      // Optional: remove old "likes" field if present to avoid confusion
+      if (typeof current.likes !== "undefined") delete current.likes;
+      return current;
+    });
   };
 
   const formatTime = (timestamp) =>
@@ -136,106 +161,135 @@ const ChatRoom = () => {
         </Button>
       </Paper>
 
-      {posts.map((post) => (
-        <Paper key={post.id} sx={{ p: 2, mb: 3 }}>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Avatar src={post.avatarUrl} />
-            <Box>
-              <Typography fontWeight="bold">{post.screenName}</Typography>
-              <Typography variant="caption">{formatTime(post.createdAt)}</Typography>
-            </Box>
-          </Stack>
+      {posts.map((post) => {
+        const hasLiked = !!(post.likedBy && post.likedBy[user.uid]);
+        const likeCount =
+          typeof post.likesCount === "number"
+            ? post.likesCount
+            : (post.likedByUsers?.length || post.likes || 0);
 
-          {editingPostId === post.id ? (
-            <Box sx={{ mt: 2 }}>
-              <TextField
-                fullWidth
-                multiline
-                rows={2}
-                value={editingPostText}
-                onChange={(e) => setEditingPostText(e.target.value)}
-              />
-              <Stack direction="row" spacing={1} mt={1}>
-                <Button variant="contained" onClick={() => handleEditPost(post.id)}>Save</Button>
-                <Button onClick={() => setEditingPostId(null)}>Cancel</Button>
-              </Stack>
-            </Box>
-          ) : (
-            <Typography sx={{ mt: 2 }}>{post.text}</Typography>
-          )}
-
-          {user.uid === post.userId && editingPostId !== post.id && (
-            <Stack direction="row" spacing={1} mt={1}>
-              <IconButton onClick={() => { setEditingPostId(post.id); setEditingPostText(post.text); }}><Edit /></IconButton>
-              <IconButton onClick={() => handleDeletePost(post.id)}><Delete /></IconButton>
+        return (
+          <Paper key={post.id} sx={{ p: 2, mb: 3 }}>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Avatar src={post.avatarUrl} />
+              <Box>
+                <Typography fontWeight="bold">{post.screenName}</Typography>
+                <Typography variant="caption">{formatTime(post.createdAt)}</Typography>
+              </Box>
             </Stack>
-          )}
 
-          <Stack direction="row" spacing={1} alignItems="center" mt={1}>
-            <IconButton onClick={() => handleLike(post.id, post.likes)}>
-              <ThumbUp />
-            </IconButton>
-            <Typography>{post.likes || 0}</Typography>
-          </Stack>
+            {editingPostId === post.id ? (
+              <Box sx={{ mt: 2 }}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={2}
+                  value={editingPostText}
+                  onChange={(e) => setEditingPostText(e.target.value)}
+                />
+                <Stack direction="row" spacing={1} mt={1}>
+                  <Button variant="contained" onClick={() => handleEditPost(post.id)}>Save</Button>
+                  <Button onClick={() => setEditingPostId(null)}>Cancel</Button>
+                </Stack>
+              </Box>
+            ) : (
+              <Typography sx={{ mt: 2 }}>{post.text}</Typography>
+            )}
 
-          <Divider sx={{ my: 2 }} />
-
-          <Typography variant="subtitle2" mb={1}>Comments:</Typography>
-          {post.comments.map((comment) => (
-            <Box key={comment.id} sx={{ mb: 1 }}>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Avatar src={comment.avatarUrl} sx={{ width: 24, height: 24 }} />
-                <Box>
-                  <Typography fontSize="small" fontWeight="bold">{comment.screenName}</Typography>
-                  {editingComment[comment.id] !== undefined ? (
-                    <Box>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={editingComment[comment.id]}
-                        onChange={(e) => setEditingComment((prev) => ({ ...prev, [comment.id]: e.target.value }))}
-                      />
-                      <Stack direction="row" spacing={1} mt={1}>
-                        <Button size="small" onClick={() => handleEditComment(post.id, comment.id)}>Save</Button>
-                        <Button size="small" onClick={() => setEditingComment((prev) => ({ ...prev, [comment.id]: undefined }))}>Cancel</Button>
-                      </Stack>
-                    </Box>
-                  ) : (
-                    <>
-                      <Typography fontSize="small">{comment.text}</Typography>
-                      <Typography variant="caption">{formatTime(comment.createdAt)}</Typography>
-                      {user.uid === comment.userId && (
-                        <Stack direction="row" spacing={1}>
-                          <IconButton size="small" onClick={() => setEditingComment((prev) => ({ ...prev, [comment.id]: comment.text }))}><Edit fontSize="small" /></IconButton>
-                          <IconButton size="small" onClick={() => handleDeleteComment(post.id, comment.id)}><Delete fontSize="small" /></IconButton>
-                        </Stack>
-                      )}
-                    </>
-                  )}
-                </Box>
+            {user.uid === post.userId && editingPostId !== post.id && (
+              <Stack direction="row" spacing={1} mt={1}>
+                <IconButton onClick={() => { setEditingPostId(post.id); setEditingPostText(post.text); }}><Edit /></IconButton>
+                <IconButton onClick={() => handleDeletePost(post.id)}><Delete /></IconButton>
               </Stack>
-            </Box>
-          ))}
+            )}
 
-          <Stack direction="row" spacing={1} alignItems="center" mt={2}>
-            <TextField
-              size="small"
-              fullWidth
-              placeholder="Write a comment..."
-              value={commentInputs[post.id] || ""}
-              onChange={(e) =>
-                setCommentInputs((prev) => ({
-                  ...prev,
-                  [post.id]: e.target.value
-                }))
-              }
-            />
-            <IconButton onClick={() => handleComment(post.id)}>
-              <Send />
-            </IconButton>
-          </Stack>
-        </Paper>
-      ))}
+            <Stack direction="row" spacing={1} alignItems="center" mt={1}>
+              <Tooltip title={hasLiked ? "You already liked this" : "Like"}>
+                <span>
+                  <IconButton
+                    onClick={() => handleLike(post.id)}
+                    disabled={hasLiked} // ⬅️ block multiple likes
+                  >
+                    <ThumbUp color={hasLiked ? "primary" : undefined} />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Typography>{likeCount}</Typography>
+              {/* Show who liked: tiny avatars with tooltip names */}
+              {!!(post.likedByUsers && post.likedByUsers.length) && (
+                <Stack direction="row" spacing={0.5} ml={1}>
+                  {post.likedByUsers.map((u) => (
+                    <Tooltip key={u.userId} title={u.screenName}>
+                      <Avatar
+                        src={u.avatarUrl}
+                        sx={{ width: 20, height: 20 }}
+                        alt={u.screenName}
+                      />
+                    </Tooltip>
+                  ))}
+                </Stack>
+              )}
+            </Stack>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="subtitle2" mb={1}>Comments:</Typography>
+            {post.comments.map((comment) => (
+              <Box key={comment.id} sx={{ mb: 1 }}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Avatar src={comment.avatarUrl} sx={{ width: 24, height: 24 }} />
+                  <Box>
+                    <Typography fontSize="small" fontWeight="bold">{comment.screenName}</Typography>
+                    {editingComment[comment.id] !== undefined ? (
+                      <Box>
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={editingComment[comment.id]}
+                          onChange={(e) => setEditingComment((prev) => ({ ...prev, [comment.id]: e.target.value }))}
+                        />
+                        <Stack direction="row" spacing={1} mt={1}>
+                          <Button size="small" onClick={() => handleEditComment(post.id, comment.id)}>Save</Button>
+                          <Button size="small" onClick={() => setEditingComment((prev) => ({ ...prev, [comment.id]: undefined }))}>Cancel</Button>
+                        </Stack>
+                      </Box>
+                    ) : (
+                      <>
+                        <Typography fontSize="small">{comment.text}</Typography>
+                        <Typography variant="caption">{formatTime(comment.createdAt)}</Typography>
+                        {user.uid === comment.userId && (
+                          <Stack direction="row" spacing={1}>
+                            <IconButton size="small" onClick={() => setEditingComment((prev) => ({ ...prev, [comment.id]: comment.text }))}><Edit fontSize="small" /></IconButton>
+                            <IconButton size="small" onClick={() => handleDeleteComment(post.id, comment.id)}><Delete fontSize="small" /></IconButton>
+                          </Stack>
+                        )}
+                      </>
+                    )}
+                  </Box>
+                </Stack>
+              </Box>
+            ))}
+
+            <Stack direction="row" spacing={1} alignItems="center" mt={2}>
+              <TextField
+                size="small"
+                fullWidth
+                placeholder="Write a comment..."
+                value={commentInputs[post.id] || ""}
+                onChange={(e) =>
+                  setCommentInputs((prev) => ({
+                    ...prev,
+                    [post.id]: e.target.value
+                  }))
+                }
+              />
+              <IconButton onClick={() => handleComment(post.id)}>
+                <Send />
+              </IconButton>
+            </Stack>
+          </Paper>
+        );
+      })}
     </Box>
   );
 };
