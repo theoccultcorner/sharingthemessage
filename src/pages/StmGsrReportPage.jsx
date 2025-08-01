@@ -13,17 +13,19 @@ const authorizedEmails = [
   "theoccultcorner@gmail.com"
 ];
 
-const defaultTitle = "STM GSR REPORT JULY 2025";
+const defaultTitle = "STM GSR REPORT August 2025";
 
 const defaultText = `
 Positions Available
-STM Group Service Elections: August 9th @ 11am. Chair, Vice-Chair, Secretary, GSR, Literature & Treasurer Positions Open. Please support STM.
+
+STM Group Service Elections: August 9th @ 11am. Vice-Chair, Secretary, GSR & Literature Positions Open. Please support STM.
 
 Tuesday 6:30 Men’s Stag Secretary Position Open.
 
 Greeters, Coffee Persons & Meeting Service Reps (MSRs) needed for ALL STM Meetings.
 
 Meeting News
+
 STM Women’s Meeting: Thursdays @ 6:30pm needs support. Keytags 1st Thursday.
 
 STM Men’s Stag Meeting: Tuesdays @ 6:30pm needs support & a Meeting Secretary.
@@ -32,39 +34,39 @@ Guad Squad: Wednesday @ 7pm, 950A Guadalupe St.
 
 Survivors Bday/Speaker Mtgs:
 
-Saturday, July 19th – Vanessa R.
+o Saturday August 16th Monica D. - Bakersfield & Wednesday August 27th Seth - AG @ 6pm
 
-Wednesday, July 30th – Hilda R. @ 6pm
+STM Birthday/Speaker Meeting Saturday, August 30th @ 8pm. Speaker Bart K. w/15 yrs
 
-STM Birthday/Speaker Meeting: Saturday, July 26th @ 8pm. Speaker Gilbert AKA Peanut.
+STM Activities Committee Meeting August 9th @ 9am. Support upcoming STM Activities.
 
-STM Activities Committee Meeting: August 9th @ 9am. Support upcoming STM Activities.
-
-STM Group Service Committee Meeting: August 9th @ 10am. ALL Meeting Secretaries or Meeting Representatives required to attend. Come support STM & attend Group Service.
+STM Group Service Committee Meeting August 9th @ 10am. ALL Meeting Secretaries or Meeting Representatives required to attend. Come support STM & attend Group Service.
 
 Activities Flyers Posted
-New Attitudes Family Game Night, 129 N. I Street: July 26th 7:30pm. Free Event.
 
-New Attitudes Campout @ Lopez Lake: August 8th–10th $50 per person. $15 Saturday only.
+New Attitudes Campout @ Lopez Lake: August 8th-10th $50 per person. $15 Saturday only
 
-Hot Summer Nights @ Atascadero: August 9th 5–10pm. $20 a plate.
+Hot Summer Nights @ Atascadero: August 9th 5-10pm. $20 a plate.
 
-Men’s Retreat @ Lopez Lake: August 21st–24th $175 each – Campsite, T-shirt & Food.
+Men’s Retreat @ Lopez Lake: August 21st-24th $175 each - Campsite, T-shirt & Food.
 
-SB Activities Campout @ Lopez Lake: September 4th–7th $75 per person. $50 for 12 & under.
+38th Annual H&I PigRoast: August 23rd 11am - 4pm. Buckeye Pavillion Toro Park near Monterey
+
+Activities Campout @ Lopez Lake: September 4th-7th $75 per person. $50 for 12 & under
 
 Other NA Announcements
+
 STM Spanish NA Literature for sale now.
 
 STM Venmo & CashApp: Please tag $ w/info.
 
-STM MERCH. for sale. Order sheet posted.
+STM GEAR for sale. Order sheet posted.
 
 Celebrating a milestone in your recovery? Put your name & clean time on board.
 
 PR, H&I & Behind the Walls Sponsorship needs volunteers. Info posted.
 
-NA Area Information @ centralcoastna.org
+NA Area Information @centralcoastna.org
 `;
 
 const knownHeaders = [
