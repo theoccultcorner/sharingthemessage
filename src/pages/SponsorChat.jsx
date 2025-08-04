@@ -83,6 +83,16 @@ const SponsorChat = () => {
     speechSynthesis.speak(utterance);
   };
 
+  const captureImage = () => {
+    const canvas = document.createElement('canvas');
+    const video = videoRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg');
+  };
+
   const handleSendMessage = async (messageText) => {
     if (!messageText.trim()) return;
 
@@ -94,13 +104,16 @@ const SponsorChat = () => {
       .map(m => `${m.sender === "user" ? user.displayName : "Sponsor"}: ${m.text}`)
       .join("\n");
 
+    const imageBase64 = captureImage();
+
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system: "You're a supportive Narcotics Anonymous sponsor. Be empathetic, encouraging.",
-          history: chatHistory
+          system: "You're a supportive Narcotics Anonymous sponsor. Describe the person kindly if you can see them, then respond with empathy.",
+          history: chatHistory,
+          imageBase64
         })
       });
 
@@ -119,7 +132,7 @@ const SponsorChat = () => {
 
     } catch (err) {
       console.error("Fetch error:", err);
-      speak("Something went wrong. Please try again later.");
+      speak("Something went wrong processing the image.");
     }
   };
 
