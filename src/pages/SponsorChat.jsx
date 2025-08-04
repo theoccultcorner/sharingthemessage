@@ -1,37 +1,20 @@
 // === FRONTEND: SponsorChat.jsx ===
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { rtdb } from "../firebase";
 import { useAuth } from "../context/AuthContext";
-import { ref, push, onValue } from "firebase/database";
-import {
-  Box, Typography, Paper, Stack, Container, useMediaQuery
-} from "@mui/material";
+import { ref, push } from "firebase/database";
+import { Box, Typography, Container, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import * as faceapi from "face-api.js";
 
 const SponsorChat = () => {
   const { user } = useAuth();
-  const [messages, setMessages] = useState([]);
-  const messagesEndRef = useRef(null);
   const videoRef = useRef(null);
   const recognitionRef = useRef(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const messagesRef = ref(rtdb, `na_chats/${user.uid}`);
-
-  useEffect(() => {
-    const unsubscribe = onValue(messagesRef, (snapshot) => {
-      const data = snapshot.val();
-      const parsed = data ? Object.values(data) : [];
-      setMessages(parsed);
-    });
-    return () => unsubscribe();
-  }, [user.uid]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
   useEffect(() => {
     const loadModels = async () => {
@@ -56,8 +39,8 @@ const SponsorChat = () => {
         if (detections) {
           const expressions = detections.expressions;
           const maxExp = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
-          const feedback = `You seem ${maxExp}`;
-          const botMsg = { sender: "sponsor", text: feedback, timestamp: Date.now() };
+          const feedback = `I see you're feeling ${maxExp}. I'm here with you.`;
+          const botMsg = { sender: "M.A.T.T.", text: feedback, timestamp: Date.now() };
           await push(messagesRef, botMsg);
           speak(feedback);
         }
@@ -114,11 +97,6 @@ const SponsorChat = () => {
     const userMsg = { sender: "user", text: messageText, timestamp: Date.now() };
     await push(messagesRef, userMsg);
 
-    const limitedHistory = [...messages.slice(-10), userMsg];
-    const chatHistory = limitedHistory
-      .map(m => `${m.sender === "user" ? user.displayName : "Sponsor"}: ${m.text}`)
-      .join("\n");
-
     const imageBase64 = captureImage();
 
     try {
@@ -126,48 +104,31 @@ const SponsorChat = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system: "You're a supportive Narcotics Anonymous sponsor. Respond with empathy. If an image is provided, describe the user kindly.",
-          history: chatHistory,
+          system: "You are M.A.T.T. (My Anchor Through Turmoil), a virtual Narcotics Anonymous sponsor. Respond with empathy. Describe the user if an image is provided.",
+          history: `User: ${messageText}`,
           imageBase64
         })
       });
 
       const data = await res.json();
-      const sponsorMsg = { sender: "sponsor", text: data.reply, timestamp: Date.now() };
+      const sponsorMsg = { sender: "M.A.T.T.", text: data.reply, timestamp: Date.now() };
       await push(messagesRef, sponsorMsg);
       speak(data.reply);
 
     } catch (err) {
       console.error("Fetch error:", err);
-      speak("Something went wrong processing the image.");
+      speak("I'm having trouble responding right now.");
     }
   };
 
   return (
-    <Container maxWidth="sm" sx={{ pt: 2, pb: 6, px: isMobile ? 1 : 4 }}>
-      <Typography variant={isMobile ? "h6" : "h5"} align="center" gutterBottom>
-        Welcome, {user.displayName}
-      </Typography>
-
-      <Paper elevation={3} sx={{ height: isMobile ? "50vh" : "60vh", overflowY: "auto", p: 1.5, borderRadius: 2, mb: 2, backgroundColor: "#f9f9f9" }}>
-        <Stack spacing={1.5}>
-          {messages.map((m, i) => (
-            <Box key={i} sx={{ alignSelf: m.sender === "user" ? "flex-end" : "flex-start", maxWidth: "85%" }}>
-              <Paper sx={{ p: 1, backgroundColor: m.sender === "user" ? "#1F3F3A" : "#e0e0e0", color: m.sender === "user" ? "#fff" : "#000", borderRadius: 2 }}>
-                <Typography variant="body2">
-                  <strong>{m.sender === "user" ? "You" : "Sponsor"}:</strong> {m.text}
-                </Typography>
-              </Paper>
-            </Box>
-          ))}
-          <div ref={messagesEndRef} />
-        </Stack>
-      </Paper>
-
-      <Box mt={2} sx={{ textAlign: "center" }}>
-        <Typography variant="subtitle2">Camera View</Typography>
-        <video ref={videoRef} autoPlay muted style={{ width: "100%", borderRadius: 8, maxHeight: isMobile ? "200px" : "300px" }} />
+    <Container maxWidth={false} disableGutters sx={{ width: "100vw", height: "100vh", overflow: "hidden", position: "relative" }}>
+      <Box sx={{ position: "absolute", top: 0, left: 0, width: "100%", textAlign: "center", zIndex: 10, p: 2 }}>
+        <Typography variant={isMobile ? "h6" : "h5"} sx={{ color: "white", textShadow: "1px 1px 3px black" }}>
+          M.A.T.T. – My Anchor Through Turmoil
+        </Typography>
       </Box>
+      <video ref={videoRef} autoPlay muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
     </Container>
   );
 };
