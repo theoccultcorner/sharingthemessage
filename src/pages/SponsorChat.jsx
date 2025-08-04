@@ -52,34 +52,10 @@ const SponsorChat = () => {
     const userMsg = { sender: "user", text: messageText, timestamp: Date.now() };
     await push(messagesRef, userMsg);
 
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system: "You are M.A.T.T. (My Anchor Through Turmoil), a virtual Narcotics Anonymous sponsor. Respond with empathy.",
-          history: `User: ${messageText}`
-        })
-      });
-
-      const contentType = res.headers.get("content-type");
-      if (!res.ok || !contentType || !contentType.includes("application/json")) {
-        const errText = await res.text();
-        console.error("API error:", errText);
-        throw new Error("Invalid JSON response from API");
-      }
-
-      const data = await res.json();
-      if (!data.reply) throw new Error("No reply from Gemini");
-
-      const sponsorMsg = { sender: "M.A.T.T.", text: data.reply, timestamp: Date.now() };
-      await push(messagesRef, sponsorMsg);
-      speak(data.reply);
-
-    } catch (err) {
-      console.error("Fetch error:", err);
-      speak("I'm having trouble responding right now.");
-    }
+    const replyText = `Thank you for sharing. Stay strong. I’m here for you.`;
+    const sponsorMsg = { sender: "M.A.T.T.", text: replyText, timestamp: Date.now() };
+    await push(messagesRef, sponsorMsg);
+    speak(replyText);
   };
 
   return (
