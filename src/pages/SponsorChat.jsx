@@ -4,16 +4,14 @@ import { rtdb } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 import { ref, push, onValue } from "firebase/database";
 import {
-  Box, Typography, Paper, Stack, Container, IconButton, Button, useMediaQuery
+  Box, Typography, Paper, Stack, Container, useMediaQuery
 } from "@mui/material";
-import { Mic, MicOff } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import * as faceapi from "face-api.js";
 
 const SponsorChat = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
-  const [listening, setListening] = useState(false);
   const messagesEndRef = useRef(null);
   const videoRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -52,27 +50,6 @@ const SponsorChat = () => {
   }, []);
 
   useEffect(() => {
-    const isSpeechRecognitionSupported = 'webkitSpeechRecognition' in window;
-    if (!isSpeechRecognitionSupported) {
-      alert("Voice input is not supported on your browser. Try Chrome for full functionality.");
-      return;
-    }
-
-    const SpeechRecognition = window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      handleSendMessage(transcript);
-    };
-
-    recognitionRef.current = recognition;
-  }, []);
-
-  useEffect(() => {
     const interval = setInterval(async () => {
       if (videoRef.current && faceapi.nets.tinyFaceDetector.params) {
         const detections = await faceapi.detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
@@ -89,15 +66,29 @@ const SponsorChat = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleListen = () => {
-    if (listening) {
-      recognitionRef.current.stop();
-      setListening(false);
-    } else {
-      recognitionRef.current.start();
-      setListening(true);
+  useEffect(() => {
+    const isSpeechRecognitionSupported = 'webkitSpeechRecognition' in window;
+    if (!isSpeechRecognitionSupported) {
+      alert("Voice input is not supported on your browser. Try Chrome for full functionality.");
+      return;
     }
-  };
+
+    const SpeechRecognition = window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[event.results.length - 1][0].transcript;
+      handleSendMessage(transcript);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+
+    return () => recognition.stop();
+  }, []);
 
   const speak = (text) => {
     if (speechSynthesis.speaking) {
@@ -115,28 +106,6 @@ const SponsorChat = () => {
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     return canvas.toDataURL('image/jpeg');
-  };
-
-  const handleDescribeMe = async () => {
-    const imageBase64 = captureImage();
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system: "Describe in detail what the user looks like. Be kind and respectful.",
-          history: "",
-          imageBase64
-        })
-      });
-      const data = await res.json();
-      const sponsorMsg = { sender: "sponsor", text: data.reply, timestamp: Date.now() };
-      await push(messagesRef, sponsorMsg);
-      speak(data.reply);
-    } catch (err) {
-      console.error("DescribeMe error:", err);
-      speak("I couldn't analyze the image.");
-    }
   };
 
   const handleSendMessage = async (messageText) => {
@@ -194,19 +163,6 @@ const SponsorChat = () => {
           <div ref={messagesEndRef} />
         </Stack>
       </Paper>
-
-      <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
-        <IconButton onClick={handleListen} color={listening ? "primary" : "default"}>
-          {listening ? <Mic /> : <MicOff />}
-        </IconButton>
-        <Typography variant="body2">
-          {listening ? "Listening..." : "Tap mic to talk"}
-        </Typography>
-      </Stack>
-
-      <Button onClick={handleDescribeMe} variant="outlined" sx={{ mt: 2 }}>
-        What do I look like?
-      </Button>
 
       <Box mt={2} sx={{ textAlign: "center" }}>
         <Typography variant="subtitle2">Camera View</Typography>
