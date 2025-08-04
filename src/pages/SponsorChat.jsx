@@ -43,6 +43,9 @@ const SponsorChat = () => {
       speechSynthesis.cancel();
     }
     const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
     speechSynthesis.speak(utterance);
   };
 
@@ -61,12 +64,12 @@ const SponsorChat = () => {
   return (
     <Container maxWidth={false} disableGutters sx={{ width: "100vw", height: "100vh", overflow: "hidden", position: "relative", backgroundColor: "black" }}>
       <Box sx={{ position: "absolute", top: 0, left: 0, width: "100%", textAlign: "center", zIndex: 10, p: 1, backgroundColor: "rgba(0,0,0,0.4)" }}>
-        <Typography variant={isMobile ? "h6" : "h5"} sx={{ color: "white", textShadow: "1px 1px 3px black" }}>
+        <Typography variant={isMobile ? "h6" : "h4"} sx={{ color: "white", textShadow: "1px 1px 3px black" }}>
           M.A.T.T. – My Anchor Through Turmoil
         </Typography>
       </Box>
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-        <Typography variant="body1" sx={{ color: "white", textAlign: "center" }}>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", px: 2 }}>
+        <Typography variant="body1" sx={{ color: "white", textAlign: "center", fontSize: isMobile ? "1rem" : "1.25rem" }}>
           Voice chat active. Speak to M.A.T.T.
         </Typography>
       </Box>
