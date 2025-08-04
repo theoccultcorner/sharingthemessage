@@ -4,14 +4,13 @@ import { rtdb } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 import { ref, push, onValue } from "firebase/database";
 import {
-  Box, Typography, Paper, Stack, TextField, Button, Container, IconButton
+  Box, Typography, Paper, Stack, Container, IconButton
 } from "@mui/material";
 import { Mic, MicOff } from "@mui/icons-material";
 
 const SponsorChat = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
   const [listening, setListening] = useState(false);
   const messagesEndRef = useRef(null);
   const videoRef = useRef(null);
@@ -51,7 +50,6 @@ const SponsorChat = () => {
 
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      setInput(transcript);
       handleSendMessage(transcript);
     };
 
@@ -73,13 +71,11 @@ const SponsorChat = () => {
     speechSynthesis.speak(utterance);
   };
 
-  const handleSendMessage = async (overrideInput = null) => {
-    const messageText = overrideInput || input.trim();
-    if (!messageText) return;
+  const handleSendMessage = async (messageText) => {
+    if (!messageText.trim()) return;
 
     const userMsg = { sender: "user", text: messageText, timestamp: Date.now() };
     await push(messagesRef, userMsg);
-    setInput("");
 
     const chatHistory = [...messages, userMsg]
       .map(m => `${m.sender === "user" ? user.displayName : "Sponsor"}: ${m.text}`)
@@ -122,19 +118,12 @@ const SponsorChat = () => {
       </Paper>
 
       <Stack direction="row" spacing={1} alignItems="center">
-        <TextField
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message..."
-          fullWidth
-          size="small"
-        />
         <IconButton onClick={handleListen} color={listening ? "primary" : "default"}>
           {listening ? <Mic /> : <MicOff />}
         </IconButton>
-        <Button variant="contained" onClick={() => handleSendMessage()} sx={{ backgroundColor: "#1F3F3A", '&:hover': { backgroundColor: "#16302D" } }}>
-          Send
-        </Button>
+        <Typography variant="body2">
+          {listening ? "Listening..." : "Click mic to talk"}
+        </Typography>
       </Stack>
 
       <Box mt={3} sx={{ textAlign: "center" }}>
