@@ -1,3 +1,4 @@
+
 // === BACKEND: pages/api/chat.js ===
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -31,6 +32,13 @@ export default async function handler(req, res) {
         ]
       })
     });
+
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await response.text();
+      console.error("Unexpected non-JSON response:", text);
+      return res.status(500).json({ error: "Invalid response format", raw: text });
+    }
 
     const data = await response.json();
     console.log("Gemini response:", JSON.stringify(data));

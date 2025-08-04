@@ -111,10 +111,11 @@ const SponsorChat = () => {
         })
       });
 
-      if (!res.ok) {
+      const contentType = res.headers.get("content-type");
+      if (!res.ok || !contentType || !contentType.includes("application/json")) {
         const errText = await res.text();
         console.error("API error:", errText);
-        throw new Error(errText);
+        throw new Error("Invalid JSON response from API");
       }
 
       const data = await res.json();
