@@ -89,19 +89,32 @@ const SponsorChat = () => {
       .map(m => `${m.sender === "user" ? user.displayName : "Sponsor"}: ${m.text}`)
       .join("\n");
 
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        system: "You're a supportive Narcotics Anonymous sponsor. Be empathetic, encouraging.",
-        history: chatHistory
-      })
-    });
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system: "You're a supportive Narcotics Anonymous sponsor. Be empathetic, encouraging.",
+          history: chatHistory
+        })
+      });
 
-    const data = await res.json();
-    const sponsorMsg = { sender: "sponsor", text: data.reply, timestamp: Date.now() };
-    await push(messagesRef, sponsorMsg);
-    speak(data.reply);
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("API Error:", errorText);
+        speak("I'm having trouble responding right now.");
+        return;
+      }
+
+      const data = await res.json();
+      const sponsorMsg = { sender: "sponsor", text: data.reply, timestamp: Date.now() };
+      await push(messagesRef, sponsorMsg);
+      speak(data.reply);
+
+    } catch (err) {
+      console.error("Fetch error:", err);
+      speak("Something went wrong. Please try again later.");
+    }
   };
 
   return (

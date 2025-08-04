@@ -1,3 +1,5 @@
+
+// === BACKEND: /api/chat.js ===
 import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
@@ -19,7 +21,13 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't respond.";
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!reply) {
+      console.error("Gemini reply missing:", data);
+      return res.status(500).json({ error: "No reply from Gemini" });
+    }
+
     res.status(200).json({ reply });
 
   } catch (error) {
