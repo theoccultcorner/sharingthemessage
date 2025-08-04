@@ -122,13 +122,13 @@ const SponsorChat = () => {
   };
 
   return (
-    <Container maxWidth={false} disableGutters sx={{ width: "100vw", height: "100vh", overflow: "hidden", position: "relative" }}>
-      <Box sx={{ position: "absolute", top: 0, left: 0, width: "100%", textAlign: "center", zIndex: 10, p: 2 }}>
+    <Container maxWidth={false} disableGutters sx={{ width: "100vw", height: "100vh", overflow: "hidden", position: "relative", backgroundColor: "black" }}>
+      <Box sx={{ position: "absolute", top: 0, left: 0, width: "100%", textAlign: "center", zIndex: 10, p: 1, backgroundColor: "rgba(0,0,0,0.4)" }}>
         <Typography variant={isMobile ? "h6" : "h5"} sx={{ color: "white", textShadow: "1px 1px 3px black" }}>
           M.A.T.T. – My Anchor Through Turmoil
         </Typography>
       </Box>
-      <video ref={videoRef} autoPlay muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      <video ref={videoRef} autoPlay muted playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} />
     </Container>
   );
 };
