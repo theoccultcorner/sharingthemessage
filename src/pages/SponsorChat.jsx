@@ -41,7 +41,12 @@ const SponsorChat = () => {
   }, []);
 
   useEffect(() => {
-    if (!('webkitSpeechRecognition' in window)) return;
+    const isSpeechRecognitionSupported = 'webkitSpeechRecognition' in window;
+    if (!isSpeechRecognitionSupported) {
+      alert("Voice input is not supported on your browser. Try Chrome for full functionality.");
+      return;
+    }
+
     const SpeechRecognition = window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
@@ -67,6 +72,9 @@ const SponsorChat = () => {
   };
 
   const speak = (text) => {
+    if (speechSynthesis.speaking) {
+      speechSynthesis.cancel();
+    }
     const utterance = new SpeechSynthesisUtterance(text);
     speechSynthesis.speak(utterance);
   };
