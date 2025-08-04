@@ -1,3 +1,5 @@
+
+// === BACKEND: pages/api/chat.js ===
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -17,7 +19,7 @@ export default async function handler(req, res) {
               {
                 inline_data: {
                   mime_type: "image/jpeg",
-                  data: imageBase64.split(',')[1] // Remove base64 prefix
+                  data: imageBase64.split(',')[1]
                 }
               }
             ]
@@ -27,10 +29,10 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    console.log("Gemini response:", data);
-
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
     if (!reply) {
+      console.error("Gemini API no reply:", data);
       return res.status(500).json({ error: "No reply from Gemini" });
     }
 

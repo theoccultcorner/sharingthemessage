@@ -111,6 +111,8 @@ const SponsorChat = () => {
       });
 
       const data = await res.json();
+      if (!data.reply) throw new Error("No reply from API");
+
       const sponsorMsg = { sender: "M.A.T.T.", text: data.reply, timestamp: Date.now() };
       await push(messagesRef, sponsorMsg);
       speak(data.reply);
