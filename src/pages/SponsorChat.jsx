@@ -85,7 +85,8 @@ const SponsorChat = () => {
     const userMsg = { sender: "user", text: messageText, timestamp: Date.now() };
     await push(messagesRef, userMsg);
 
-    const chatHistory = [...messages, userMsg]
+    const limitedHistory = [...messages.slice(-10), userMsg];
+    const chatHistory = limitedHistory
       .map(m => `${m.sender === "user" ? user.displayName : "Sponsor"}: ${m.text}`)
       .join("\n");
 
@@ -107,6 +108,7 @@ const SponsorChat = () => {
       }
 
       const data = await res.json();
+      console.log("Bot reply:", data);
       const sponsorMsg = { sender: "sponsor", text: data.reply, timestamp: Date.now() };
       await push(messagesRef, sponsorMsg);
       speak(data.reply);

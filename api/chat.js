@@ -21,17 +21,19 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+    console.log("Gemini raw response:", JSON.stringify(data, null, 2));
+
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!reply) {
-      console.error("Gemini reply missing:", data);
+      console.error("Gemini API did not return a reply:", data);
       return res.status(500).json({ error: "No reply from Gemini" });
     }
 
     res.status(200).json({ reply });
 
   } catch (error) {
-    console.error('Gemini API error:', error);
+    console.error('Gemini API fetch error:', error);
     res.status(500).json({ error: 'Failed to get response from Gemini' });
   }
 }
