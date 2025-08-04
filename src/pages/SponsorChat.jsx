@@ -5,49 +5,14 @@ import { useAuth } from "../context/AuthContext";
 import { ref, push } from "firebase/database";
 import { Box, Typography, Container, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import * as faceapi from "face-api.js";
 
 const SponsorChat = () => {
   const { user } = useAuth();
-  const videoRef = useRef(null);
   const recognitionRef = useRef(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const messagesRef = ref(rtdb, `na_chats/${user.uid}`);
-
-  useEffect(() => {
-    const loadModels = async () => {
-      await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-      await faceapi.nets.faceExpressionNet.loadFromUri('/models');
-    };
-
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      }).catch(err => console.error("Camera error:", err));
-
-    loadModels();
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      if (videoRef.current && faceapi.nets.tinyFaceDetector.params) {
-        const detections = await faceapi.detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
-        if (detections) {
-          const expressions = detections.expressions;
-          const maxExp = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
-          const feedback = `I see you're feeling ${maxExp}. I'm here with you.`;
-          const botMsg = { sender: "M.A.T.T.", text: feedback, timestamp: Date.now() };
-          await push(messagesRef, botMsg);
-          speak(feedback);
-        }
-      }
-    }, 10000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const isSpeechRecognitionSupported = 'webkitSpeechRecognition' in window;
@@ -81,54 +46,16 @@ const SponsorChat = () => {
     speechSynthesis.speak(utterance);
   };
 
-  const captureImage = () => {
-    const canvas = document.createElement('canvas');
-    const video = videoRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL('image/jpeg');
-  };
-
   const handleSendMessage = async (messageText) => {
     if (!messageText.trim()) return;
 
     const userMsg = { sender: "user", text: messageText, timestamp: Date.now() };
     await push(messagesRef, userMsg);
 
-    const imageBase64 = captureImage();
-    console.log("Captured image size:", imageBase64.length);
-
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system: "You are M.A.T.T. (My Anchor Through Turmoil), a virtual Narcotics Anonymous sponsor. Respond with empathy. Describe the user if an image is provided.",
-          history: `User: ${messageText}`,
-          imageBase64
-        })
-      });
-
-      const contentType = res.headers.get("content-type");
-      if (!res.ok || !contentType || !contentType.includes("application/json")) {
-        const errText = await res.text();
-        console.error("API error:", errText);
-        throw new Error("Invalid JSON response from API");
-      }
-
-      const data = await res.json();
-      if (!data.reply) throw new Error("No reply from Gemini");
-
-      const sponsorMsg = { sender: "M.A.T.T.", text: data.reply, timestamp: Date.now() };
-      await push(messagesRef, sponsorMsg);
-      speak(data.reply);
-
-    } catch (err) {
-      console.error("Fetch error:", err);
-      speak("I'm having trouble responding right now.");
-    }
+    const replyText = `Thank you for sharing. Stay strong. I’m here for you.`;
+    const sponsorMsg = { sender: "M.A.T.T.", text: replyText, timestamp: Date.now() };
+    await push(messagesRef, sponsorMsg);
+    speak(replyText);
   };
 
   return (
@@ -138,7 +65,11 @@ const SponsorChat = () => {
           M.A.T.T. – My Anchor Through Turmoil
         </Typography>
       </Box>
-      <video ref={videoRef} autoPlay muted playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+        <Typography variant="body1" sx={{ color: "white", textAlign: "center" }}>
+          Voice chat active. Speak to M.A.T.T.
+        </Typography>
+      </Box>
     </Container>
   );
 };
