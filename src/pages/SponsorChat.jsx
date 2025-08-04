@@ -4,10 +4,11 @@ import { rtdb } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 import { ref, push, onValue } from "firebase/database";
 import {
-  Box, Typography, Paper, Stack, Container, IconButton, useMediaQuery
+  Box, Typography, Paper, Stack, Container, IconButton, Button, useMediaQuery
 } from "@mui/material";
 import { Mic, MicOff } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
+import * as faceapi from "face-api.js";
 
 const SponsorChat = () => {
   const { user } = useAuth();
@@ -16,7 +17,6 @@ const SponsorChat = () => {
   const messagesEndRef = useRef(null);
   const videoRef = useRef(null);
   const recognitionRef = useRef(null);
-
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -36,12 +36,19 @@ const SponsorChat = () => {
   }, [messages]);
 
   useEffect(() => {
+    const loadModels = async () => {
+      await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+      await faceapi.nets.faceExpressionNet.loadFromUri('/models');
+    };
+
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
       }).catch(err => console.error("Camera error:", err));
+
+    loadModels();
   }, []);
 
   useEffect(() => {
@@ -63,6 +70,23 @@ const SponsorChat = () => {
     };
 
     recognitionRef.current = recognition;
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (videoRef.current && faceapi.nets.tinyFaceDetector.params) {
+        const detections = await faceapi.detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+        if (detections) {
+          const expressions = detections.expressions;
+          const maxExp = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
+          const feedback = `You seem ${maxExp}`;
+          const botMsg = { sender: "sponsor", text: feedback, timestamp: Date.now() };
+          await push(messagesRef, botMsg);
+          speak(feedback);
+        }
+      }
+    }, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleListen = () => {
@@ -93,6 +117,28 @@ const SponsorChat = () => {
     return canvas.toDataURL('image/jpeg');
   };
 
+  const handleDescribeMe = async () => {
+    const imageBase64 = captureImage();
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system: "Describe in detail what the user looks like. Be kind and respectful.",
+          history: "",
+          imageBase64
+        })
+      });
+      const data = await res.json();
+      const sponsorMsg = { sender: "sponsor", text: data.reply, timestamp: Date.now() };
+      await push(messagesRef, sponsorMsg);
+      speak(data.reply);
+    } catch (err) {
+      console.error("DescribeMe error:", err);
+      speak("I couldn't analyze the image.");
+    }
+  };
+
   const handleSendMessage = async (messageText) => {
     if (!messageText.trim()) return;
 
@@ -111,21 +157,13 @@ const SponsorChat = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system: "You're a supportive Narcotics Anonymous sponsor. Describe the person kindly if you can see them, then respond with empathy.",
+          system: "You're a supportive Narcotics Anonymous sponsor. Respond with empathy. If an image is provided, describe the user kindly.",
           history: chatHistory,
           imageBase64
         })
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("API Error:", errorText);
-        speak("I'm having trouble responding right now.");
-        return;
-      }
-
       const data = await res.json();
-      console.log("Bot reply:", data);
       const sponsorMsg = { sender: "sponsor", text: data.reply, timestamp: Date.now() };
       await push(messagesRef, sponsorMsg);
       speak(data.reply);
@@ -165,6 +203,10 @@ const SponsorChat = () => {
           {listening ? "Listening..." : "Tap mic to talk"}
         </Typography>
       </Stack>
+
+      <Button onClick={handleDescribeMe} variant="outlined" sx={{ mt: 2 }}>
+        What do I look like?
+      </Button>
 
       <Box mt={2} sx={{ textAlign: "center" }}>
         <Typography variant="subtitle2">Camera View</Typography>
