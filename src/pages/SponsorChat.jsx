@@ -4,9 +4,10 @@ import { rtdb } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 import { ref, push, onValue } from "firebase/database";
 import {
-  Box, Typography, Paper, Stack, Container, IconButton
+  Box, Typography, Paper, Stack, Container, IconButton, useMediaQuery
 } from "@mui/material";
 import { Mic, MicOff } from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
 
 const SponsorChat = () => {
   const { user } = useAuth();
@@ -15,6 +16,9 @@ const SponsorChat = () => {
   const messagesEndRef = useRef(null);
   const videoRef = useRef(null);
   const recognitionRef = useRef(null);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const messagesRef = ref(rtdb, `na_chats/${user.uid}`);
 
@@ -120,16 +124,16 @@ const SponsorChat = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ pt: 4, pb: 10 }}>
-      <Typography variant="h5" align="center" gutterBottom>
+    <Container maxWidth="sm" sx={{ pt: 2, pb: 6, px: isMobile ? 1 : 4 }}>
+      <Typography variant={isMobile ? "h6" : "h5"} align="center" gutterBottom>
         Welcome, {user.displayName}
       </Typography>
 
-      <Paper elevation={3} sx={{ height: "60vh", overflowY: "auto", p: 2, borderRadius: 2, mb: 2, backgroundColor: "#f9f9f9" }}>
-        <Stack spacing={2}>
+      <Paper elevation={3} sx={{ height: isMobile ? "50vh" : "60vh", overflowY: "auto", p: 1.5, borderRadius: 2, mb: 2, backgroundColor: "#f9f9f9" }}>
+        <Stack spacing={1.5}>
           {messages.map((m, i) => (
-            <Box key={i} sx={{ alignSelf: m.sender === "user" ? "flex-end" : "flex-start", maxWidth: "80%" }}>
-              <Paper sx={{ p: 1.5, backgroundColor: m.sender === "user" ? "#1F3F3A" : "#e0e0e0", color: m.sender === "user" ? "#fff" : "#000", borderRadius: 2 }}>
+            <Box key={i} sx={{ alignSelf: m.sender === "user" ? "flex-end" : "flex-start", maxWidth: "85%" }}>
+              <Paper sx={{ p: 1, backgroundColor: m.sender === "user" ? "#1F3F3A" : "#e0e0e0", color: m.sender === "user" ? "#fff" : "#000", borderRadius: 2 }}>
                 <Typography variant="body2">
                   <strong>{m.sender === "user" ? "You" : "Sponsor"}:</strong> {m.text}
                 </Typography>
@@ -140,18 +144,18 @@ const SponsorChat = () => {
         </Stack>
       </Paper>
 
-      <Stack direction="row" spacing={1} alignItems="center">
+      <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
         <IconButton onClick={handleListen} color={listening ? "primary" : "default"}>
           {listening ? <Mic /> : <MicOff />}
         </IconButton>
         <Typography variant="body2">
-          {listening ? "Listening..." : "Click mic to talk"}
+          {listening ? "Listening..." : "Tap mic to talk"}
         </Typography>
       </Stack>
 
-      <Box mt={3} sx={{ textAlign: "center" }}>
-        <Typography variant="subtitle1">Camera View</Typography>
-        <video ref={videoRef} autoPlay muted style={{ width: "100%", borderRadius: 8 }} />
+      <Box mt={2} sx={{ textAlign: "center" }}>
+        <Typography variant="subtitle2">Camera View</Typography>
+        <video ref={videoRef} autoPlay muted style={{ width: "100%", borderRadius: 8, maxHeight: isMobile ? "200px" : "300px" }} />
       </Box>
     </Container>
   );
