@@ -98,6 +98,7 @@ const SponsorChat = () => {
     await push(messagesRef, userMsg);
 
     const imageBase64 = captureImage();
+    console.log("Captured image size:", imageBase64.length);
 
     try {
       const res = await fetch("/api/chat", {
@@ -110,8 +111,14 @@ const SponsorChat = () => {
         })
       });
 
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("API error:", errText);
+        throw new Error(errText);
+      }
+
       const data = await res.json();
-      if (!data.reply) throw new Error("No reply from API");
+      if (!data.reply) throw new Error("No reply from Gemini");
 
       const sponsorMsg = { sender: "M.A.T.T.", text: data.reply, timestamp: Date.now() };
       await push(messagesRef, sponsorMsg);
