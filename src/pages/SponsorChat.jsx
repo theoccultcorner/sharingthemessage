@@ -1,28 +1,21 @@
+// === FRONTEND: SponsorChat.jsx ===
 import React, { useState, useEffect, useRef } from "react";
 import { rtdb } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 import { ref, push, onValue } from "firebase/database";
-import OpenAI from "openai";
 import {
-  Box,
-  Typography,
-  Paper,
-  Stack,
-  TextField,
-  Button,
-  Container
+  Box, Typography, Paper, Stack, TextField, Button, Container, IconButton
 } from "@mui/material";
-
-const openai = new OpenAI({
-  apiKey: process.env.REACT_APP_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true,
-});
+import { Mic, MicOff } from "@mui/icons-material";
 
 const SponsorChat = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [listening, setListening] = useState(false);
   const messagesEndRef = useRef(null);
+  const videoRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   const messagesRef = ref(rtdb, `na_chats/${user.uid}`);
 
@@ -32,7 +25,6 @@ const SponsorChat = () => {
       const parsed = data ? Object.values(data) : [];
       setMessages(parsed);
     });
-
     return () => unsubscribe();
   }, [user.uid]);
 
@@ -40,34 +32,72 @@ const SponsorChat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
+  useEffect(() => {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      }).catch(err => console.error("Camera error:", err));
+  }, []);
 
-    const userMsg = { sender: "user", text: input, timestamp: Date.now() };
+  useEffect(() => {
+    if (!('webkitSpeechRecognition' in window)) return;
+    const SpeechRecognition = window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+      handleSendMessage(transcript);
+    };
+
+    recognitionRef.current = recognition;
+  }, []);
+
+  const handleListen = () => {
+    if (listening) {
+      recognitionRef.current.stop();
+      setListening(false);
+    } else {
+      recognitionRef.current.start();
+      setListening(true);
+    }
+  };
+
+  const speak = (text) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    speechSynthesis.speak(utterance);
+  };
+
+  const handleSendMessage = async (overrideInput = null) => {
+    const messageText = overrideInput || input.trim();
+    if (!messageText) return;
+
+    const userMsg = { sender: "user", text: messageText, timestamp: Date.now() };
     await push(messagesRef, userMsg);
     setInput("");
 
     const chatHistory = [...messages, userMsg]
-      .map((m) => `${m.sender === "user" ? user.displayName : "Sponsor"}: ${m.text}`)
+      .map(m => `${m.sender === "user" ? user.displayName : "Sponsor"}: ${m.text}`)
       .join("\n");
 
-    const aiResponse = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You're a supportive Narcotics Anonymous sponsor. Be encouraging, empathetic, and helpful.`,
-        },
-        {
-          role: "user",
-          content: chatHistory,
-        },
-      ],
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system: "You're a supportive Narcotics Anonymous sponsor. Be empathetic, encouraging.",
+        history: chatHistory
+      })
     });
 
-    const reply = aiResponse.choices[0].message.content;
-    const sponsorMsg = { sender: "sponsor", text: reply, timestamp: Date.now() };
+    const data = await res.json();
+    const sponsorMsg = { sender: "sponsor", text: data.reply, timestamp: Date.now() };
     await push(messagesRef, sponsorMsg);
+    speak(data.reply);
   };
 
   return (
@@ -76,34 +106,11 @@ const SponsorChat = () => {
         Welcome, {user.displayName}
       </Typography>
 
-      <Paper
-        elevation={3}
-        sx={{
-          height: "60vh",
-          overflowY: "auto",
-          p: 2,
-          borderRadius: 2,
-          mb: 2,
-          backgroundColor: "#f9f9f9",
-        }}
-      >
+      <Paper elevation={3} sx={{ height: "60vh", overflowY: "auto", p: 2, borderRadius: 2, mb: 2, backgroundColor: "#f9f9f9" }}>
         <Stack spacing={2}>
           {messages.map((m, i) => (
-            <Box
-              key={i}
-              sx={{
-                alignSelf: m.sender === "user" ? "flex-end" : "flex-start",
-                maxWidth: "80%",
-              }}
-            >
-              <Paper
-                sx={{
-                  p: 1.5,
-                  backgroundColor: m.sender === "user" ? "#1F3F3A" : "#e0e0e0",
-                  color: m.sender === "user" ? "#fff" : "#000",
-                  borderRadius: 2,
-                }}
-              >
+            <Box key={i} sx={{ alignSelf: m.sender === "user" ? "flex-end" : "flex-start", maxWidth: "80%" }}>
+              <Paper sx={{ p: 1.5, backgroundColor: m.sender === "user" ? "#1F3F3A" : "#e0e0e0", color: m.sender === "user" ? "#fff" : "#000", borderRadius: 2 }}>
                 <Typography variant="body2">
                   <strong>{m.sender === "user" ? "You" : "Sponsor"}:</strong> {m.text}
                 </Typography>
@@ -114,7 +121,7 @@ const SponsorChat = () => {
         </Stack>
       </Paper>
 
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row" spacing={1} alignItems="center">
         <TextField
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -122,17 +129,18 @@ const SponsorChat = () => {
           fullWidth
           size="small"
         />
-        <Button
-          variant="contained"
-          onClick={sendMessage}
-          sx={{
-            backgroundColor: "#1F3F3A",
-            "&:hover": { backgroundColor: "#16302D" },
-          }}
-        >
+        <IconButton onClick={handleListen} color={listening ? "primary" : "default"}>
+          {listening ? <Mic /> : <MicOff />}
+        </IconButton>
+        <Button variant="contained" onClick={() => handleSendMessage()} sx={{ backgroundColor: "#1F3F3A", '&:hover': { backgroundColor: "#16302D" } }}>
           Send
         </Button>
       </Stack>
+
+      <Box mt={3} sx={{ textAlign: "center" }}>
+        <Typography variant="subtitle1">Camera View</Typography>
+        <video ref={videoRef} autoPlay muted style={{ width: "100%", borderRadius: 8 }} />
+      </Box>
     </Container>
   );
 };
