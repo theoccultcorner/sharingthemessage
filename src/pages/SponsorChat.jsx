@@ -1,8 +1,15 @@
-// === FRONTEND: SponsorChat.jsx ===
+// === FRONTEND ONLY — SponsorChat.jsx ===
+// No backend. Uses GEMINI_API_KEY and the browser's best TTS voice.
+// If you don't use Firebase, simply remove the RTDB lines noted below.
+
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { rtdb } from "../firebase";
-import { useAuth } from "../context/AuthContext";
-import { ref as rtdbRef, push } from "firebase/database";
+
+// OPTIONAL: Comment out these 3 lines if you're not saving messages.
+// ---------- FIREBASE (OPTIONAL LOGGING OF CHAT) ----------
+import { rtdb } from "../firebase"; // remove if not using
+import { ref as rtdbRef, push } from "firebase/database"; // remove if not using
+// --------------------------------------------------------
+
 import {
   Box,
   Typography,
@@ -23,14 +30,84 @@ import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice";
 import StopCircleIcon from "@mui/icons-material/StopCircle";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 
+// Gemini browser SDK
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
 const LS_KEYS = {
   voice: "mattVoiceName",
   rate: "mattVoiceRate",
   pitch: "mattVoicePitch",
 };
 
-const SponsorChat = () => {
-  const { user } = useAuth();
+// ---- API KEY (frontend) ----
+// Only uses the variable name you supplied: GEMINI_API_KEY.
+// Exposed via your bundler or set at runtime on window.GEMINI_API_KEY.
+function getGeminiApiKey() {
+  const k =
+    (typeof import.meta !== "undefined" && import.meta.env?.GEMINI_API_KEY) ||
+    (typeof process !== "undefined" && process.env?.GEMINI_API_KEY) ||
+    (typeof window !== "undefined" && window.GEMINI_API_KEY);
+  if (!k) {
+    throw new Error(
+      "GEMINI_API_KEY is not set. Provide import.meta.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY, or window.GEMINI_API_KEY."
+    );
+  }
+  return k;
+}
+
+// Lazy client init
+let _genAI = null;
+function getGeminiClient() {
+  if (_genAI) return _genAI;
+  _genAI = new GoogleGenerativeAI(getGeminiApiKey());
+  return _genAI;
+}
+
+async function getMATTReplyGemini(userText) {
+  const genAI = getGeminiClient();
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  const system = [
+    "You are M.A.T.T. (My Anchor Through Turmoil), a calm, compassionate NA-style sponsor.",
+    "Reply in 1–3 short sentences. Be supportive, non-judgmental, practical.",
+    "Suggest one gentle next step (e.g., drink water, text a friend/sponsor, step outside, breathe).",
+    "Avoid medical/clinical claims. If the user sounds in crisis, suggest local resources or 988 (U.S.).",
+    "No emojis. Warm, grounded, concise.",
+  ].join(" ");
+
+  const prompt = `User said: "${userText}". Respond as M.A.T.T. now (1–3 short sentences).`;
+
+  const result = await model.generateContent({
+    contents: [
+      { role: "user", parts: [{ text: system }] },
+      { role: "user", parts: [{ text: prompt }] },
+    ],
+    generationConfig: { temperature: 0.7, maxOutputTokens: 140 },
+  });
+
+  const text =
+    result?.response?.text?.() ||
+    result?.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
+    "";
+  return text?.trim() ||
+    "I hear you. You’re not alone. Let’s take one small step—slow breath in, slow breath out.";
+}
+
+// Helper: pick a “better” voice: Google/Microsoft/Natural/Neural, English, desktop
+function pickBestVoice(voices) {
+  if (!voices || !voices.length) return null;
+  const eno = (v) => /^en(-|_)?(US|GB|AU|CA|NZ)/i.test(v.lang || "");
+  const score = (v) => {
+    let s = 0;
+    if (/google|microsoft|natural|neural/i.test(v.name)) s += 3;
+    if (eno(v)) s += 2;
+    if (/female|male/i.test(v.name)) s += 1;
+    return s;
+  };
+  return [...voices].sort((a, b) => score(b) - score(a))[0] || voices[0];
+}
+
+const SponsorChat = ({ saveToFirebase = true, userId = "local-user" }) => {
   const recognitionRef = useRef(null);
   const restartTimerRef = useRef(null);
   const isMountedRef = useRef(false);
@@ -39,35 +116,32 @@ const SponsorChat = () => {
   const [lastHeard, setLastHeard] = useState("");
   const [statusText, setStatusText] = useState("Idle");
 
-  // TTS voice state
+  // Voice controls
   const [voices, setVoices] = useState([]);
   const [voiceName, setVoiceName] = useState(
     localStorage.getItem(LS_KEYS.voice) || ""
   );
-  const [rate, setRate] = useState(Number(localStorage.getItem(LS_KEYS.rate)) || 1);
-  const [pitch, setPitch] = useState(Number(localStorage.getItem(LS_KEYS.pitch)) || 1);
+  const [rate, setRate] = useState(
+    Number(localStorage.getItem(LS_KEYS.rate)) || 1
+  );
+  const [pitch, setPitch] = useState(
+    Number(localStorage.getItem(LS_KEYS.pitch)) || 1
+  );
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const messagesRef = user ? rtdbRef(rtdb, `na_chats/${user.uid}`) : null;
+  // OPTIONAL: remove these two if not saving chat
+  const messagesRef =
+    saveToFirebase && rtdb ? rtdbRef(rtdb, `na_chats/${userId}`) : null;
 
-  // ----- Voice management -----
+  // ---------- VOICE MGMT ----------
   const loadVoices = useCallback(() => {
     if (!window.speechSynthesis) return [];
     const v = window.speechSynthesis.getVoices() || [];
     setVoices(v);
-
-    // If no saved choice, pick a "best" default
     if (!voiceName && v.length) {
-      // Prefer high-quality voices (Chrome often labels them "Google ...")
-      const preferred = v.find(
-        (vv) =>
-          /google|natural|neural|microsoft/i.test(vv.name) &&
-          /^en(-|_)?(US|GB)/i.test(vv.lang)
-      );
-      const fallback = v.find((vv) => /^en(-|_)?(US|GB)/i.test(vv.lang)) || v[0];
-      const chosen = preferred || fallback;
+      const chosen = pickBestVoice(v);
       setVoiceName(chosen?.name || "");
       if (chosen?.name) localStorage.setItem(LS_KEYS.voice, chosen.name);
     }
@@ -76,8 +150,8 @@ const SponsorChat = () => {
 
   useEffect(() => {
     if (!window.speechSynthesis) return;
+    // Chrome sometimes loads voices async
     loadVoices();
-    // Some browsers populate voices async
     const onChange = () => loadVoices();
     window.speechSynthesis.onvoiceschanged = onChange;
     return () => {
@@ -88,72 +162,82 @@ const SponsorChat = () => {
   const getSelectedVoice = useCallback(() => {
     if (!window.speechSynthesis) return null;
     const list = window.speechSynthesis.getVoices() || voices;
-    return list.find((v) => v.name === voiceName) || null;
+    return list.find((v) => v.name === voiceName) || pickBestVoice(list);
   }, [voiceName, voices]);
 
-  // ----- TTS -----
+  // ---------- TTS ----------
   const speak = useCallback(
     (text) => {
+      if (!window.speechSynthesis) return;
       try {
-        if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
-
-        const utterance = new SpeechSynthesisUtterance(text);
+        const utter = new SpeechSynthesisUtterance(text);
         const v = getSelectedVoice();
-        if (v) utterance.voice = v;
-        utterance.lang = v?.lang || "en-US";
-        utterance.rate = rate;   // 0.1–10
-        utterance.pitch = pitch; // 0–2
-        utterance.volume = 1;
+        if (v) utter.voice = v;
+        utter.lang = v?.lang || "en-US";
+        utter.rate = rate;
+        utter.pitch = pitch;
+        utter.volume = 1;
 
-        utterance.onend = () => {
-          if (isMountedRef.current && isListening) {
-            safeStartRecognition();
-          }
+        // After speaking, resume mic if we’re in “auto” mode
+        utter.onend = () => {
+          if (isMountedRef.current && isListening) safeStartRecognition();
         };
-
-        window.speechSynthesis.speak(utterance);
-      } catch { /* no-op */ }
+        window.speechSynthesis.speak(utter);
+      } catch (e) {
+        console.warn("TTS error:", e);
+      }
     },
     [getSelectedVoice, rate, pitch, isListening]
   );
 
-  // ----- DB send & reply -----
+  // ---------- CHAT FLOW (Gemini; no backend) ----------
+  const pushOptional = async (payload) => {
+    if (!messagesRef) return;
+    try {
+      await push(messagesRef, payload);
+    } catch (e) {
+      console.warn("RTDB push failed (non-fatal):", e);
+    }
+  };
+
   const handleSendMessage = useCallback(
     async (messageText) => {
       const text = (messageText || "").trim();
-      if (!text || !messagesRef) return;
+      if (!text) return;
 
+      // Log user message (optional)
+      await pushOptional({ sender: "user", text, timestamp: Date.now() });
+
+      // Get Gemini reply
+      let replyText =
+        "I hear you. You’re not alone. Let’s take one small step—slow breath in, slow breath out.";
       try {
-        await push(messagesRef, { sender: "user", text, timestamp: Date.now() });
+        replyText = await getMATTReplyGemini(text);
       } catch (e) {
-        console.error("Failed to push user message:", e);
+        console.warn("Gemini failed; using fallback:", e?.message || e);
       }
 
-      // TODO: wire in AI backend; this is placeholder
-      const replyText = "Thank you for sharing. Stay strong. I’m here for you.";
-      try {
-        await push(messagesRef, {
-          sender: "M.A.T.T.",
-          text: replyText,
-          timestamp: Date.now(),
-        });
-      } catch (e) {
-        console.error("Failed to push sponsor message:", e);
-      }
+      // Log assistant reply (optional)
+      await pushOptional({
+        sender: "M.A.T.T.",
+        text: replyText,
+        timestamp: Date.now(),
+      });
 
+      // Speak it
       speak(replyText);
     },
-    [messagesRef, speak]
+    [speak]
   );
 
-  // ----- Speech recognition -----
+  // ---------- SPEECH RECOGNITION ----------
   const createRecognition = useCallback(() => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return null;
 
     const rec = new SR();
-    rec.continuous = false;
+    rec.continuous = false; // single utterance
     rec.interimResults = false;
     rec.lang = "en-US";
 
@@ -173,12 +257,15 @@ const SponsorChat = () => {
     };
 
     rec.onspeechend = () => {
-      try { rec.stop(); } catch {}
+      try {
+        rec.stop();
+      } catch {}
     };
 
     rec.onend = () => {
       setStatusText("Idle");
       setIsListening(false);
+      // If we’re still supposed to listen, soft-restart after a tiny pause
       if (isMountedRef.current && recognitionRef.current && isListening) {
         clearTimeout(restartTimerRef.current);
         restartTimerRef.current = setTimeout(() => {
@@ -205,38 +292,47 @@ const SponsorChat = () => {
   const safeStartRecognition = useCallback(() => {
     const rec = recognitionRef.current || createRecognition();
     if (!rec) {
-      alert("Voice input isn’t supported here. Try Chrome/Edge desktop.");
+      alert("Voice input isn’t supported in this browser. Try Chrome or Edge.");
       return;
     }
     recognitionRef.current = rec;
-    try { rec.start(); } catch {}
+    try {
+      rec.start();
+    } catch {
+      /* already started */
+    }
   }, [createRecognition]);
 
   const stopRecognition = useCallback(() => {
     const rec = recognitionRef.current;
     if (rec) {
-      try { rec.stop(); } catch {}
+      try {
+        rec.stop();
+      } catch {}
     }
     setIsListening(false);
     setStatusText("Idle");
   }, []);
 
-  // Lifecycle
+  // ---------- LIFECYCLE ----------
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       clearTimeout(restartTimerRef.current);
-      try { recognitionRef.current?.stop(); } catch {}
-      try { window.speechSynthesis?.cancel(); } catch {}
+      try {
+        recognitionRef.current?.stop();
+      } catch {}
+      try {
+        window.speechSynthesis?.cancel();
+      } catch {}
     };
   }, []);
 
-  // UI handlers
+  // ---------- UI HANDLERS ----------
   const handleStartClick = async () => {
-    if (!user) { alert("Please sign in to use voice chat."); return; }
+    // Prime TTS permission on first gesture (mobile)
     try {
-      // Prime TTS permissions on first gesture
       const u = new SpeechSynthesisUtterance(" ");
       u.volume = 0;
       window.speechSynthesis?.speak(u);
@@ -300,7 +396,7 @@ const SponsorChat = () => {
         </Typography>
       </Box>
 
-      {/* Center content */}
+      {/* Center */}
       <Box
         sx={{
           display: "flex",
@@ -343,7 +439,9 @@ const SponsorChat = () => {
           >
             <Stack spacing={2}>
               <FormControl fullWidth size="small">
-                <InputLabel sx={{ color: "rgba(255,255,255,0.9)" }}>Voice</InputLabel>
+                <InputLabel sx={{ color: "rgba(255,255,255,0.9)" }}>
+                  Voice
+                </InputLabel>
                 <Select
                   value={voiceName}
                   label="Voice"
@@ -360,7 +458,10 @@ const SponsorChat = () => {
               </FormControl>
 
               <Stack spacing={1}>
-                <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.8)" }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: "rgba(255,255,255,0.8)" }}
+                >
                   Rate ({rate.toFixed(2)})
                 </Typography>
                 <Slider
@@ -373,7 +474,10 @@ const SponsorChat = () => {
               </Stack>
 
               <Stack spacing={1}>
-                <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.8)" }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: "rgba(255,255,255,0.8)" }}
+                >
                   Pitch ({pitch.toFixed(2)})
                 </Typography>
                 <Slider
@@ -432,10 +536,16 @@ const SponsorChat = () => {
                 border: "1px solid rgba(255,255,255,0.12)",
               }}
             >
-              <Typography variant="overline" sx={{ color: "rgba(255,255,255,0.8)" }}>
+              <Typography
+                variant="overline"
+                sx={{ color: "rgba(255,255,255,0.8)" }}
+              >
                 Last heard
               </Typography>
-              <Typography variant="body1" sx={{ color: "white", wordBreak: "break-word" }}>
+              <Typography
+                variant="body1"
+                sx={{ color: "white", wordBreak: "break-word" }}
+              >
                 {lastHeard}
               </Typography>
             </Paper>
