@@ -11,11 +11,23 @@ import {
   Button,
   Stack,
   Chip,
-  Paper
+  Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Slider,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice";
 import StopCircleIcon from "@mui/icons-material/StopCircle";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+
+const LS_KEYS = {
+  voice: "mattVoiceName",
+  rate: "mattVoiceRate",
+  pitch: "mattVoicePitch",
+};
 
 const SponsorChat = () => {
   const { user } = useAuth();
@@ -27,85 +39,120 @@ const SponsorChat = () => {
   const [lastHeard, setLastHeard] = useState("");
   const [statusText, setStatusText] = useState("Idle");
 
+  // TTS voice state
+  const [voices, setVoices] = useState([]);
+  const [voiceName, setVoiceName] = useState(
+    localStorage.getItem(LS_KEYS.voice) || ""
+  );
+  const [rate, setRate] = useState(Number(localStorage.getItem(LS_KEYS.rate)) || 1);
+  const [pitch, setPitch] = useState(Number(localStorage.getItem(LS_KEYS.pitch)) || 1);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // Realtime DB path guarded by user presence
   const messagesRef = user ? rtdbRef(rtdb, `na_chats/${user.uid}`) : null;
 
-  // --- Speech Synthesis (TTS)
-  const speak = useCallback((text) => {
-    try {
-      if (!window.speechSynthesis) return;
-      if (speechSynthesis.speaking) speechSynthesis.cancel();
+  // ----- Voice management -----
+  const loadVoices = useCallback(() => {
+    if (!window.speechSynthesis) return [];
+    const v = window.speechSynthesis.getVoices() || [];
+    setVoices(v);
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-
-      // After speaking, restart listening (if user wants to keep listening)
-      utterance.onend = () => {
-        if (isMountedRef.current && isListening) {
-          safeStartRecognition(); // restart after TTS ends
-        }
-      };
-
-      speechSynthesis.speak(utterance);
-    } catch {
-      /* no-op */
+    // If no saved choice, pick a "best" default
+    if (!voiceName && v.length) {
+      // Prefer high-quality voices (Chrome often labels them "Google ...")
+      const preferred = v.find(
+        (vv) =>
+          /google|natural|neural|microsoft/i.test(vv.name) &&
+          /^en(-|_)?(US|GB)/i.test(vv.lang)
+      );
+      const fallback = v.find((vv) => /^en(-|_)?(US|GB)/i.test(vv.lang)) || v[0];
+      const chosen = preferred || fallback;
+      setVoiceName(chosen?.name || "");
+      if (chosen?.name) localStorage.setItem(LS_KEYS.voice, chosen.name);
     }
-  }, [isListening]);
+    return v;
+  }, [voiceName]);
 
-  // --- Send message to RTDB and reply
+  useEffect(() => {
+    if (!window.speechSynthesis) return;
+    loadVoices();
+    // Some browsers populate voices async
+    const onChange = () => loadVoices();
+    window.speechSynthesis.onvoiceschanged = onChange;
+    return () => {
+      if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, [loadVoices]);
+
+  const getSelectedVoice = useCallback(() => {
+    if (!window.speechSynthesis) return null;
+    const list = window.speechSynthesis.getVoices() || voices;
+    return list.find((v) => v.name === voiceName) || null;
+  }, [voiceName, voices]);
+
+  // ----- TTS -----
+  const speak = useCallback(
+    (text) => {
+      try {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        const v = getSelectedVoice();
+        if (v) utterance.voice = v;
+        utterance.lang = v?.lang || "en-US";
+        utterance.rate = rate;   // 0.1–10
+        utterance.pitch = pitch; // 0–2
+        utterance.volume = 1;
+
+        utterance.onend = () => {
+          if (isMountedRef.current && isListening) {
+            safeStartRecognition();
+          }
+        };
+
+        window.speechSynthesis.speak(utterance);
+      } catch { /* no-op */ }
+    },
+    [getSelectedVoice, rate, pitch, isListening]
+  );
+
+  // ----- DB send & reply -----
   const handleSendMessage = useCallback(
     async (messageText) => {
       const text = (messageText || "").trim();
       if (!text || !messagesRef) return;
 
-      // Push user message
-      const userMsg = {
-        sender: "user",
-        text,
-        timestamp: Date.now(),
-      };
       try {
-        await push(messagesRef, userMsg);
+        await push(messagesRef, { sender: "user", text, timestamp: Date.now() });
       } catch (e) {
         console.error("Failed to push user message:", e);
       }
 
-      // Generate reply (placeholder here — plug in your AI later)
-      const replyText =
-        "Thank you for sharing. Stay strong. I’m here for you.";
-
-      const sponsorMsg = {
-        sender: "M.A.T.T.",
-        text: replyText,
-        timestamp: Date.now(),
-      };
+      // TODO: wire in AI backend; this is placeholder
+      const replyText = "Thank you for sharing. Stay strong. I’m here for you.";
       try {
-        await push(messagesRef, sponsorMsg);
+        await push(messagesRef, {
+          sender: "M.A.T.T.",
+          text: replyText,
+          timestamp: Date.now(),
+        });
       } catch (e) {
         console.error("Failed to push sponsor message:", e);
       }
 
-      // Speak reply after it’s queued
       speak(replyText);
     },
     [messagesRef, speak]
   );
 
-  // --- Recognition lifecycle helpers
+  // ----- Speech recognition -----
   const createRecognition = useCallback(() => {
-    const SR =
-      window.SpeechRecognition || window.webkitSpeechRecognition || null;
-
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
     if (!SR) return null;
 
     const rec = new SR();
-
-    // Single-utterance mode: stop automatically when the user pauses
     rec.continuous = false;
     rec.interimResults = false;
     rec.lang = "en-US";
@@ -116,34 +163,27 @@ const SponsorChat = () => {
     };
 
     rec.onresult = (event) => {
-      // Get final transcript for this utterance
       const last = event.results[event.results.length - 1];
       const transcript = last && last[0] ? last[0].transcript : "";
       const clean = (transcript || "").trim();
-
       if (clean) {
         setLastHeard(clean);
         handleSendMessage(clean);
       }
     };
 
-    // Fires when user stops speaking (in single-utterance mode it’ll end)
     rec.onspeechend = () => {
-      try {
-        rec.stop();
-      } catch { /* ignore */ }
+      try { rec.stop(); } catch {}
     };
 
     rec.onend = () => {
       setStatusText("Idle");
       setIsListening(false);
-
-      // If component still wants to listen, restart after a short pause
       if (isMountedRef.current && recognitionRef.current && isListening) {
         clearTimeout(restartTimerRef.current);
         restartTimerRef.current = setTimeout(() => {
           safeStartRecognition();
-        }, 350); // small buffer to prevent rapid restarts
+        }, 350);
       }
     };
 
@@ -151,7 +191,6 @@ const SponsorChat = () => {
       console.warn("SpeechRecognition error:", e?.error || e);
       setStatusText(`Mic error: ${e?.error || "unknown"}`);
       setIsListening(false);
-      // Attempt gentle restart for transient issues
       if (isMountedRef.current && isListening) {
         clearTimeout(restartTimerRef.current);
         restartTimerRef.current = setTimeout(() => {
@@ -166,70 +205,66 @@ const SponsorChat = () => {
   const safeStartRecognition = useCallback(() => {
     const rec = recognitionRef.current || createRecognition();
     if (!rec) {
-      alert(
-        "Voice input is not supported in this browser. Try Chrome or Edge on desktop."
-      );
+      alert("Voice input isn’t supported here. Try Chrome/Edge desktop.");
       return;
     }
     recognitionRef.current = rec;
-    try {
-      rec.start();
-    } catch {
-      // start() can throw if already started — ignore
-    }
+    try { rec.start(); } catch {}
   }, [createRecognition]);
 
   const stopRecognition = useCallback(() => {
     const rec = recognitionRef.current;
     if (rec) {
-      try {
-        rec.stop();
-      } catch { /* ignore */ }
+      try { rec.stop(); } catch {}
     }
     setIsListening(false);
     setStatusText("Idle");
   }, []);
 
-  // --- Mount/Unmount
+  // Lifecycle
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       clearTimeout(restartTimerRef.current);
-      try {
-        recognitionRef.current?.stop();
-      } catch { /* ignore */ }
-      // Cancel any speech still playing
-      try {
-        window.speechSynthesis?.cancel();
-      } catch { /* ignore */ }
+      try { recognitionRef.current?.stop(); } catch {}
+      try { window.speechSynthesis?.cancel(); } catch {}
     };
   }, []);
 
-  // --- Optional: Auto-init mic if browser supports it (after user gesture, see below)
-  // We won’t auto-start on mount to avoid permission/UI friction on mobile.
-  // Users can tap the Start button to begin.
-
-  // --- UI handlers
+  // UI handlers
   const handleStartClick = async () => {
-    if (!user) {
-      alert("Please sign in to use voice chat.");
-      return;
-    }
-    // On first interaction, some browsers require a user gesture to allow TTS later
+    if (!user) { alert("Please sign in to use voice chat."); return; }
     try {
-      // Prime TTS with a silent utterance to unlock autoplay in some browsers
+      // Prime TTS permissions on first gesture
       const u = new SpeechSynthesisUtterance(" ");
       u.volume = 0;
       window.speechSynthesis?.speak(u);
-    } catch { /* ignore */ }
-
+    } catch {}
     setIsListening(true);
     safeStartRecognition();
   };
 
-  const handleStopClick = () => {
-    stopRecognition();
+  const handleStopClick = () => stopRecognition();
+
+  const handlePreview = () => {
+    speak("Hi, I’m M.A.T.T. This is my current voice.");
+  };
+
+  const handleVoiceChange = (e) => {
+    const name = e.target.value;
+    setVoiceName(name);
+    localStorage.setItem(LS_KEYS.voice, name);
+  };
+
+  const handleRateChange = (_, val) => {
+    setRate(val);
+    localStorage.setItem(LS_KEYS.rate, String(val));
+  };
+
+  const handlePitchChange = (_, val) => {
+    setPitch(val);
+    localStorage.setItem(LS_KEYS.pitch, String(val));
   };
 
   return (
@@ -275,13 +310,14 @@ const SponsorChat = () => {
           px: 2,
         }}
       >
-        <Stack spacing={2} alignItems="center">
+        <Stack spacing={3} alignItems="center" sx={{ width: "min(800px, 92vw)" }}>
           <Chip
             label={statusText}
             color={isListening ? "success" : "default"}
             variant="filled"
             sx={{ color: "white" }}
           />
+
           <Typography
             variant="body1"
             sx={{
@@ -295,6 +331,74 @@ const SponsorChat = () => {
               : "Tap Start to speak to M.A.T.T."}
           </Typography>
 
+          {/* Voice controls */}
+          <Paper
+            elevation={3}
+            sx={{
+              p: 2,
+              width: "100%",
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.12)",
+            }}
+          >
+            <Stack spacing={2}>
+              <FormControl fullWidth size="small">
+                <InputLabel sx={{ color: "rgba(255,255,255,0.9)" }}>Voice</InputLabel>
+                <Select
+                  value={voiceName}
+                  label="Voice"
+                  onChange={handleVoiceChange}
+                  sx={{ color: "white" }}
+                  MenuProps={{ PaperProps: { sx: { maxHeight: 320 } } }}
+                >
+                  {voices.map((v) => (
+                    <MenuItem key={v.name} value={v.name}>
+                      {v.name} — {v.lang}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <Stack spacing={1}>
+                <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.8)" }}>
+                  Rate ({rate.toFixed(2)})
+                </Typography>
+                <Slider
+                  min={0.7}
+                  max={1.3}
+                  step={0.01}
+                  value={rate}
+                  onChange={handleRateChange}
+                />
+              </Stack>
+
+              <Stack spacing={1}>
+                <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.8)" }}>
+                  Pitch ({pitch.toFixed(2)})
+                </Typography>
+                <Slider
+                  min={0.8}
+                  max={1.4}
+                  step={0.01}
+                  value={pitch}
+                  onChange={handlePitchChange}
+                />
+              </Stack>
+
+              <Stack direction="row" spacing={2}>
+                <Button
+                  onClick={handlePreview}
+                  variant="outlined"
+                  startIcon={<VolumeUpIcon />}
+                  sx={{ color: "white", borderColor: "rgba(255,255,255,0.4)" }}
+                >
+                  Preview Voice
+                </Button>
+              </Stack>
+            </Stack>
+          </Paper>
+
+          {/* Start/Stop */}
           <Stack direction="row" spacing={2}>
             {!isListening ? (
               <Button
@@ -321,23 +425,17 @@ const SponsorChat = () => {
             <Paper
               elevation={3}
               sx={{
-                mt: 2,
+                mt: 1,
                 p: 2,
-                maxWidth: 720,
+                width: "100%",
                 background: "rgba(255,255,255,0.06)",
                 border: "1px solid rgba(255,255,255,0.12)",
               }}
             >
-              <Typography
-                variant="overline"
-                sx={{ color: "rgba(255,255,255,0.8)" }}
-              >
+              <Typography variant="overline" sx={{ color: "rgba(255,255,255,0.8)" }}>
                 Last heard
               </Typography>
-              <Typography
-                variant="body1"
-                sx={{ color: "white", wordBreak: "break-word" }}
-              >
+              <Typography variant="body1" sx={{ color: "white", wordBreak: "break-word" }}>
                 {lastHeard}
               </Typography>
             </Paper>
