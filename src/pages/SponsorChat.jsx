@@ -5,13 +5,25 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // ======= API KEY DETECTION (Vercel/Browser Friendly) =======
-// Reads the public Next.js var first. Falls back to window if you manually inject it.
+// IMPORTANT: Next/Vercel inlines NEXT_PUBLIC_* at build time into process.env.
 function getApiKey() {
-  const k =
-    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_GEMINI_API_KEY) ||
-    (typeof window !== 'undefined' && window.NEXT_PUBLIC_GEMINI_API_KEY) ||
-    '';
-  return k;
+  const fromProcess =
+    (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_GEMINI_API_KEY) || '';
+  const fromWindow =
+    (typeof window !== 'undefined' && window.NEXT_PUBLIC_GEMINI_API_KEY) || '';
+  const key = fromProcess || fromWindow || '';
+
+  // Helpful one-time debug: mask the key so you can confirm where it was read from.
+  if (typeof window !== 'undefined' && !window.__MATT_API_KEY_LOGGED__) {
+    window.__MATT_API_KEY_LOGGED__ = true;
+    const src = fromProcess ? 'process.env.NEXT_PUBLIC_GEMINI_API_KEY' :
+               fromWindow ? 'window.NEXT_PUBLIC_GEMINI_API_KEY' : 'NONE';
+    const masked = key ? `${key.slice(0, 6)}…${key.slice(-4)}` : '(missing)';
+    // eslint-disable-next-line no-console
+    console.info(`[M.A.T.T.] Gemini key source: ${src} | value: ${masked}`);
+  }
+
+  return key;
 }
 
 // ======= GEMINI CALL (REST) =======
@@ -76,7 +88,7 @@ function pickBestVoice(list) {
 }
 
 const SponsorChat = () => {
-  const API_KEY = getApiKey(); // <-- now reads process.env.NEXT_PUBLIC_GEMINI_API_KEY
+  const API_KEY = getApiKey();
   const recognitionRef = useRef(null);
   const [isListening, setIsListening] = useState(false);
   const [statusText, setStatusText] = useState('Idle');
@@ -327,12 +339,12 @@ const SponsorChat = () => {
         </button>
       )}
 
-      {/* Manual input fallback (great for verifying the key quickly) */}
+      {/* Manual input fallback (quick verify) */}
       <div style={{ marginTop: 14 }}>
         <input
           value={manualText}
           onChange={(e) => setManualText(e.target.value)}
-          placeholder="Type here to test Gemini (no mic needed)..."
+          placeholder="Type here to test Gemini (no mic needed)…"
           style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #444', background: '#111', color: 'white' }}
         />
         <button
