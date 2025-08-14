@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 // ======= API KEY DETECTION (Vercel/Browser Friendly) =======
 function getApiKey() {
   
-  const k3 = typeof window !== 'undefined' && window.GEMINI_API_KEY;
+  const k3 = typeof window !== 'undefined' && window.NEXT_PUBLIC_GEMINI_API_KEY;
   return  k3 || '';
 }
 
