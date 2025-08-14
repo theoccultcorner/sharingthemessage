@@ -1,32 +1,8 @@
-// SponsorChat.jsx — Browser-only Gemini + realistic TTS. No backend.
-// Next.js client component (App Router): keep 'use client'.
-
+// app/matt/SponsorChat.jsx (or components/SponsorChat.jsx)
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-// ======= API KEY DETECTION (Vercel/Browser Friendly) =======
-// IMPORTANT: Next/Vercel inlines NEXT_PUBLIC_* at build time into process.env.
-function getApiKey() {
-  const fromProcess =
-    (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_GEMINI_API_KEY) || '';
-  const fromWindow =
-    (typeof window !== 'undefined' && window.NEXT_PUBLIC_GEMINI_API_KEY) || '';
-  const key = fromProcess || fromWindow || '';
-
-  // Helpful one-time debug: mask the key so you can confirm where it was read from.
-  if (typeof window !== 'undefined' && !window.__MATT_API_KEY_LOGGED__) {
-    window.__MATT_API_KEY_LOGGED__ = true;
-    const src = fromProcess ? 'process.env.NEXT_PUBLIC_GEMINI_API_KEY' :
-               fromWindow ? 'window.NEXT_PUBLIC_GEMINI_API_KEY' : 'NONE';
-    const masked = key ? `${key.slice(0, 6)}…${key.slice(-4)}` : '(missing)';
-    // eslint-disable-next-line no-console
-    console.info(`[M.A.T.T.] Gemini key source: ${src} | value: ${masked}`);
-  }
-
-  return key;
-}
-
-// ======= GEMINI CALL (REST) =======
+// ===== Gemini REST call =====
 async function callGemini(prompt, apiKey) {
   const url =
     'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' +
@@ -54,13 +30,7 @@ async function callGemini(prompt, apiKey) {
     body: JSON.stringify(body),
   });
 
-  let data;
-  try {
-    data = await res.json();
-  } catch {
-    throw new Error('Gemini: Invalid JSON response');
-  }
-
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const msg = data?.error?.message || `HTTP ${res.status}`;
     throw new Error(`Gemini error: ${msg}`);
@@ -73,9 +43,9 @@ async function callGemini(prompt, apiKey) {
   return (txt || '').trim();
 }
 
-// ======= VOICE HELPERS =======
+// ===== Voice helpers =====
 function pickBestVoice(list) {
-  if (!list || !list.length) return null;
+  if (!list?.length) return null;
   const isEn = (v) => /^en(-|_)?(US|GB|AU|CA|NZ)/i.test(v.lang || '');
   const score = (v) => {
     let s = 0;
@@ -87,8 +57,10 @@ function pickBestVoice(list) {
   return [...list].sort((a, b) => score(b) - score(a))[0] || list[0];
 }
 
-const SponsorChat = () => {
-  const API_KEY = getApiKey();
+export default function SponsorChat({ apiKey = '' }) {
+  // Accept key via prop (server-inlined). Fallback to window for manual hotfix.
+  const API_KEY = apiKey || (typeof window !== 'undefined' && window.NEXT_PUBLIC_GEMINI_API_KEY) || '';
+
   const recognitionRef = useRef(null);
   const [isListening, setIsListening] = useState(false);
   const [statusText, setStatusText] = useState('Idle');
@@ -100,7 +72,11 @@ const SponsorChat = () => {
   const [errorText, setErrorText] = useState('');
   const [manualText, setManualText] = useState('');
 
-  // ===== VOICE LOAD =====
+  // Show masked status so you can confirm the key is actually present
+  const keyDetected = Boolean(API_KEY);
+  const maskedKey = keyDetected ? `${API_KEY.slice(0, 6)}…${API_KEY.slice(-4)}` : '—';
+
+  // Voices
   const loadVoices = useCallback(() => {
     if (!('speechSynthesis' in window)) return;
     const v = window.speechSynthesis.getVoices() || [];
@@ -116,37 +92,32 @@ const SponsorChat = () => {
     loadVoices();
     const handler = () => loadVoices();
     window.speechSynthesis.onvoiceschanged = handler;
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
   }, [loadVoices]);
 
   const selectedVoice = useCallback(() => {
     return voices.find((v) => v.name === voiceName) || pickBestVoice(voices);
   }, [voiceName, voices]);
 
-  // ===== TTS =====
-  const speak = useCallback(
-    (text) => {
-      if (!('speechSynthesis' in window)) return;
-      try {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        const v = selectedVoice();
-        if (v) u.voice = v;
-        u.lang = v?.lang || 'en-US';
-        u.rate = rate;
-        u.pitch = pitch;
-        u.volume = 1;
-        window.speechSynthesis.speak(u);
-      } catch (e) {
-        console.warn('TTS error:', e);
-      }
-    },
-    [selectedVoice, rate, pitch]
-  );
+  // TTS
+  const speak = useCallback((text) => {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      const v = selectedVoice();
+      if (v) u.voice = v;
+      u.lang = v?.lang || 'en-US';
+      u.rate = rate;
+      u.pitch = pitch;
+      u.volume = 1;
+      window.speechSynthesis.speak(u);
+    } catch (e) {
+      console.warn('TTS error:', e);
+    }
+  }, [selectedVoice, rate, pitch]);
 
-  // ===== MIC / SR =====
+  // Speech Recognition
   function createRecognition() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
@@ -165,12 +136,9 @@ const SponsorChat = () => {
       setLastHeard(clean);
       setStatusText('Thinking…');
       try {
-        if (!API_KEY) throw new Error('Missing API key. Set NEXT_PUBLIC_GEMINI_API_KEY in Vercel.');
+        if (!API_KEY) throw new Error('Missing API key in client. Ensure NEXT_PUBLIC_GEMINI_API_KEY is set and passed.');
         const reply = await callGemini(clean, API_KEY);
-        speak(
-          reply ||
-            "I hear you. You’re not alone. Slow breath in, slow breath out. What’s one small step you can take?"
-        );
+        speak(reply || "I hear you. You’re not alone. Slow breath in, slow breath out.");
         setErrorText('');
       } catch (err) {
         console.error(err);
@@ -180,10 +148,7 @@ const SponsorChat = () => {
         setStatusText('Idle');
       }
     };
-    rec.onend = () => {
-      setIsListening(false);
-      setStatusText('Idle');
-    };
+    rec.onend = () => { setIsListening(false); setStatusText('Idle'); };
     rec.onerror = (e) => {
       console.warn('SR error:', e?.error || e);
       setErrorText(`Mic error: ${e?.error || 'unknown'}`);
@@ -195,22 +160,13 @@ const SponsorChat = () => {
 
   const startListening = async () => {
     setErrorText('');
-    // Prime TTS permission on first gesture (especially mobile)
-    try {
-      const u = new SpeechSynthesisUtterance(' ');
-      u.volume = 0;
-      window.speechSynthesis?.speak(u);
-    } catch {}
+    // Prime TTS permission (mobile)
+    try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; window.speechSynthesis?.speak(u); } catch {}
     const rec = createRecognition();
     if (!rec) return;
     recognitionRef.current = rec;
     setIsListening(true);
-    try {
-      rec.start();
-    } catch (e) {
-      setErrorText('Could not start microphone (permission or HTTPS issue).');
-      setIsListening(false);
-    }
+    try { rec.start(); } catch (e) { setErrorText('Could not start microphone. Check HTTPS and permissions.'); setIsListening(false); }
   };
 
   const stopListening = () => {
@@ -219,18 +175,15 @@ const SponsorChat = () => {
     setStatusText('Idle');
   };
 
-  // ===== MANUAL TEXT FALLBACK (for quick debugging) =====
+  // Manual text fallback
   const sendManual = async () => {
     const input = (manualText || '').trim();
     if (!input) return;
     setStatusText('Thinking…');
     try {
-      if (!API_KEY) throw new Error('Missing API key. Set NEXT_PUBLIC_GEMINI_API_KEY in Vercel.');
+      if (!API_KEY) throw new Error('Missing API key in client. Ensure NEXT_PUBLIC_GEMINI_API_KEY is set and passed.');
       const reply = await callGemini(input, API_KEY);
-      speak(
-        reply ||
-          "I hear you. You’re not alone. Slow breath in, slow breath out. What’s one small step you can take?"
-      );
+      speak(reply || "I hear you. You’re not alone. Slow breath in, slow breath out.");
       setErrorText('');
     } catch (err) {
       console.error(err);
@@ -241,10 +194,6 @@ const SponsorChat = () => {
     }
   };
 
-  // ===== Small status to confirm key is present (masked) =====
-  const keyDetected = Boolean(API_KEY);
-  const maskedKey = keyDetected ? `${API_KEY.slice(0, 6)}…${API_KEY.slice(-4)}` : '—';
-
   return (
     <div style={{ padding: 20, background: 'black', color: 'white', minHeight: '100vh' }}>
       <h2 style={{ marginTop: 0 }}>M.A.T.T. — My Anchor Through Turmoil</h2>
@@ -254,13 +203,8 @@ const SponsorChat = () => {
         <span
           title={keyDetected ? `Key detected: ${maskedKey}` : 'No key detected'}
           style={{
-            marginLeft: 8,
-            padding: '2px 8px',
-            borderRadius: 12,
-            border: '1px solid #444',
-            background: keyDetected ? '#103a1b' : '#3a1010',
-            color: keyDetected ? '#79ffa1' : '#ff8a8a',
-            fontSize: 12
+            marginLeft: 8, padding: '2px 8px', borderRadius: 12, border: '1px solid #444',
+            background: keyDetected ? '#103a1b' : '#3a1010', color: keyDetected ? '#79ffa1' : '#ff8a8a', fontSize: 12
           }}
         >
           {keyDetected ? 'Key detected' : 'No key detected'}
@@ -291,27 +235,15 @@ const SponsorChat = () => {
 
         <label>
           Rate:&nbsp;
-          <input
-            type="range"
-            min="0.7"
-            max="1.3"
-            step="0.01"
-            value={rate}
-            onChange={(e) => setRate(parseFloat(e.target.value))}
-          />
+          <input type="range" min="0.7" max="1.3" step="0.01" value={rate}
+                 onChange={(e) => setRate(parseFloat(e.target.value))}/>
           &nbsp;{rate.toFixed(2)}
         </label>
 
         <label>
           Pitch:&nbsp;
-          <input
-            type="range"
-            min="0.8"
-            max="1.4"
-            step="0.01"
-            value={pitch}
-            onChange={(e) => setPitch(parseFloat(e.target.value))}
-          />
+          <input type="range" min="0.8" max="1.4" step="0.01" value={pitch}
+                 onChange={(e) => setPitch(parseFloat(e.target.value))}/>
           &nbsp;{pitch.toFixed(2)}
         </label>
 
@@ -324,22 +256,18 @@ const SponsorChat = () => {
       </div>
 
       {!isListening ? (
-        <button
-          onClick={startListening}
-          style={{ padding: '10px 16px', background: 'green', color: 'white', borderRadius: 8, border: 'none', marginRight: 8 }}
-        >
+        <button onClick={startListening}
+                style={{ padding: '10px 16px', background: 'green', color: 'white', borderRadius: 8, border: 'none', marginRight: 8 }}>
           Start Talking
         </button>
       ) : (
-        <button
-          onClick={stopListening}
-          style={{ padding: '10px 16px', background: 'crimson', color: 'white', borderRadius: 8, border: 'none', marginRight: 8 }}
-        >
+        <button onClick={stopListening}
+                style={{ padding: '10px 16px', background: 'crimson', color: 'white', borderRadius: 8, border: 'none', marginRight: 8 }}>
           Stop
         </button>
       )}
 
-      {/* Manual input fallback (quick verify) */}
+      {/* Manual input fallback */}
       <div style={{ marginTop: 14 }}>
         <input
           value={manualText}
@@ -347,10 +275,8 @@ const SponsorChat = () => {
           placeholder="Type here to test Gemini (no mic needed)…"
           style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #444', background: '#111', color: 'white' }}
         />
-        <button
-          onClick={sendManual}
-          style={{ marginTop: 8, padding: '8px 12px', background: '#0a84ff', color: 'white', borderRadius: 6, border: 'none' }}
-        >
+        <button onClick={sendManual}
+                style={{ marginTop: 8, padding: '8px 12px', background: '#0a84ff', color: 'white', borderRadius: 6, border: 'none' }}>
           Send
         </button>
       </div>
@@ -362,6 +288,4 @@ const SponsorChat = () => {
       )}
     </div>
   );
-};
-
-export default SponsorChat;
+}
