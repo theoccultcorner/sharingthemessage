@@ -6,9 +6,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // ======= API KEY DETECTION (Vercel/Browser Friendly) =======
 function getApiKey() {
-  
-  const k3 = typeof window !== 'undefined' && window.NEXT_PUBLIC_GEMINI_API_KEY;
-  return  k3 || '';
+  return (
+    process.env.NEXT_PUBLIC_GEMINI_API_KEY || // Available at build time
+    (typeof window !== 'undefined' && window.NEXT_PUBLIC_GEMINI_API_KEY) ||
+    ''
+  );
 }
 
 // ======= GEMINI CALL (REST) =======
