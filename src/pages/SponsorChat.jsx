@@ -1,20 +1,20 @@
 // SponsorChat.jsx — Browser-only Gemini + realistic TTS. No backend.
-// Drop-in for React/Next.js ("use client" needed in Next app directory).
+// Next.js client component (App Router): keep 'use client'.
 
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // ======= API KEY DETECTION (Vercel/Browser Friendly) =======
+// Reads the public Next.js var first. Falls back to window if you manually inject it.
 function getApiKey() {
-  return (
-    process.env.NEXT_PUBLIC_GEMINI_API_KEY || // Available at build time
+  const k =
+    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_GEMINI_API_KEY) ||
     (typeof window !== 'undefined' && window.NEXT_PUBLIC_GEMINI_API_KEY) ||
-    ''
-  );
+    '';
+  return k;
 }
 
 // ======= GEMINI CALL (REST) =======
-// Uses current model + strict content shape. Returns string or throws.
 async function callGemini(prompt, apiKey) {
   const url =
     'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' +
@@ -76,7 +76,7 @@ function pickBestVoice(list) {
 }
 
 const SponsorChat = () => {
-  const API_KEY = getApiKey();
+  const API_KEY = getApiKey(); // <-- now reads process.env.NEXT_PUBLIC_GEMINI_API_KEY
   const recognitionRef = useRef(null);
   const [isListening, setIsListening] = useState(false);
   const [statusText, setStatusText] = useState('Idle');
@@ -88,7 +88,7 @@ const SponsorChat = () => {
   const [errorText, setErrorText] = useState('');
   const [manualText, setManualText] = useState('');
 
-  // ===== VOICE LOAD (reliable) =====
+  // ===== VOICE LOAD =====
   const loadVoices = useCallback(() => {
     if (!('speechSynthesis' in window)) return;
     const v = window.speechSynthesis.getVoices() || [];
@@ -102,7 +102,6 @@ const SponsorChat = () => {
   useEffect(() => {
     if (!('speechSynthesis' in window)) return;
     loadVoices();
-    // some browsers populate voices asynchronously
     const handler = () => loadVoices();
     window.speechSynthesis.onvoiceschanged = handler;
     return () => {
@@ -230,12 +229,30 @@ const SponsorChat = () => {
     }
   };
 
+  // ===== Small status to confirm key is present (masked) =====
+  const keyDetected = Boolean(API_KEY);
+  const maskedKey = keyDetected ? `${API_KEY.slice(0, 6)}…${API_KEY.slice(-4)}` : '—';
+
   return (
     <div style={{ padding: 20, background: 'black', color: 'white', minHeight: '100vh' }}>
       <h2 style={{ marginTop: 0 }}>M.A.T.T. — My Anchor Through Turmoil</h2>
 
-      <div style={{ marginBottom: 8 }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}>
         <strong>Status:</strong> {statusText}
+        <span
+          title={keyDetected ? `Key detected: ${maskedKey}` : 'No key detected'}
+          style={{
+            marginLeft: 8,
+            padding: '2px 8px',
+            borderRadius: 12,
+            border: '1px solid #444',
+            background: keyDetected ? '#103a1b' : '#3a1010',
+            color: keyDetected ? '#79ffa1' : '#ff8a8a',
+            fontSize: 12
+          }}
+        >
+          {keyDetected ? 'Key detected' : 'No key detected'}
+        </span>
       </div>
 
       {errorText && (
@@ -310,7 +327,7 @@ const SponsorChat = () => {
         </button>
       )}
 
-      {/* Manual input fallback (great for verifying the key/model quickly) */}
+      {/* Manual input fallback (great for verifying the key quickly) */}
       <div style={{ marginTop: 14 }}>
         <input
           value={manualText}
