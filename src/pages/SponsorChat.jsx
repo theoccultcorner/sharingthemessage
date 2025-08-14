@@ -8,7 +8,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 function getApiKey() {
   
   const k3 = typeof window !== 'undefined' && window.GEMINI_API_KEY;
-  return k1 || k2 || k3 || '';
+  return  k3 || '';
 }
 
 // ======= GEMINI CALL (REST) =======
