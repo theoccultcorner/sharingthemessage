@@ -13,60 +13,42 @@ const authorizedEmails = [
   "theoccultcorner@gmail.com"
 ];
 
-const defaultTitle = "STM GSR REPORT August 2025";
+const defaultTitle = "STM GSR Report October 2025";
 
 const defaultText = `
-Positions Available
 
-STM Group Service Elections: August 9th @ 11am. Vice-Chair, Secretary, GSR & Literature Positions Open. Please support STM.
+Positions Available   
 
-Tuesday 6:30 Men’s Stag Secretary Position Open.
-
+Participate in your Recovery: Sunday 8pm, Wednesday 8pm & Women’s Meeting Thursday 6:30pm Secretary Positions OPEN.
 Greeters, Coffee Persons & Meeting Service Reps (MSRs) needed for ALL STM Meetings.
-
 Meeting News
 
-STM Women’s Meeting: Thursdays @ 6:30pm needs support. Keytags 1st Thursday.
-
-STM Men’s Stag Meeting: Tuesdays @ 6:30pm needs support & a Meeting Secretary.
-
-Guad Squad: Wednesday @ 7pm, 950A Guadalupe St.
-
+STM Women’s Meeting: Thursdays@6:30pm needs support & Secretary. Keytags 1st Thurs.
+STM Men’s Stag Meeting: Tuesdays @ 6:30pm needs support.
+Guad Squad: Wednesday @ 7pm, NEW location: 4635 6th Street.
+STM Birthday/Speaker Meeting Saturday, October 25th @ 8pm. Speaker Crystal E. 
 Survivors Bday/Speaker Mtgs:
+Sat. Oct. 18th - Bob F. & Wed. Oct. 29th - Danica A. @ 6pm
+STM Activities Committee Meeting October 11th @ 9am. Help support STM Activities. 
+STM Group Service Committee Meeting October 11th @ 10am. ALL Meeting Secretaries or Meeting Representatives required to attend. Come support STM & attend Group Service.
+Activities Flyers Posted      
 
-o Saturday August 16th Monica D. - Bakersfield & Wednesday August 27th Seth - AG @ 6pm
-
-STM Birthday/Speaker Meeting Saturday, August 30th @ 8pm. Speaker Bart K. w/15 yrs
-
-STM Activities Committee Meeting August 9th @ 9am. Support upcoming STM Activities.
-
-STM Group Service Committee Meeting August 9th @ 10am. ALL Meeting Secretaries or Meeting Representatives required to attend. Come support STM & attend Group Service.
-
-Activities Flyers Posted
-
-New Attitudes Campout @ Lopez Lake: August 8th-10th $50 per person. $15 Saturday only
-
-Hot Summer Nights @ Atascadero: August 9th 5-10pm. $20 a plate.
-
-Men’s Retreat @ Lopez Lake: August 21st-24th $175 each - Campsite, T-shirt & Food.
-
-38th Annual H&I PigRoast: August 23rd 11am - 4pm. Buckeye Pavillion Toro Park near Monterey
-
-Activities Campout @ Lopez Lake: September 4th-7th $75 per person. $50 for 12 & under
-
+STM Spaghetti Feed: Friday Oct. 10 @ 6pm $10 plate. Meeting @ 8pm. Dance @ 9pm.
+Freak Fest @ Odd Fellows Hall, Morro Bay: October 25th 5 - 10pm
+Gold Coast Women’s Retreat @ Circle V Ranch Camp, SB: Oct. 3rd - 5th: $230. Text to register.
+Central Coast Women’s Retreat @ Sea Crest: Nov. 7th - 9th: $100 Registration.  
 Other NA Announcements
 
+STM Phone Lists Sign-up sheets at desk.
 STM Spanish NA Literature for sale now.
-
 STM Venmo & CashApp: Please tag $ w/info.
-
 STM GEAR for sale. Order sheet posted.
-
 Celebrating a milestone in your recovery? Put your name & clean time on board.
-
 PR, H&I & Behind the Walls Sponsorship needs volunteers. Info posted.
-
 NA Area Information @centralcoastna.org
+Are there any other NA Announcements from the floor?
+
+
 `;
 
 const knownHeaders = [
