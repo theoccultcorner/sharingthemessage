@@ -18,63 +18,63 @@ const defaultTitle = "STM GSR REPORT NOVEMBER 2025";
 const defaultText = `
 
 
- **Positions Available**
+ Positions Available
 
-* **STM GROUP POSITIONS OPEN:** Vice-Chair, GSR & Literature
-* Greeters, Coffee Persons & Meeting Service Reps (MSRs) needed for **ALL STM Meetings**
+STM GROUP POSITIONS OPEN:** Vice-Chair, GSR & Literature
+Greeters, Coffee Persons & Meeting Service Reps (MSRs) needed for ALL STM Meetings
 
 ---
 
-## **Meeting News**
+## Meeting News
 
-* **STM Men’s Stag Meeting:** Tuesdays @ 6:30pm — needs support.
-* **STM Women’s Book Study Meeting:** Thursdays @ 6:30pm — needs support.
-* **Guad Squad:** Wednesday @ 7pm, NEW location: 4635 6th Street.
-* **Survivors Bday/Speaker Mtgs:**
+STM Men’s Stag Meeting: Tuesdays @ 6:30pm — needs support.
+STM Women’s Book Study Meeting: Thursdays @ 6:30pm — needs support.
+Guad Squad: Wednesday @ 7pm, NEW location: 4635 6th Street.
+Survivors Bday/Speaker Mtgs:
 
-  * Sat. Nov. 15th – Angel L.
-  * Wed. Nov. 26th – Chris M. & Rachel M. @ 6pm
-* **STM Activities/Group Service Committee Meeting** November 8th @ 9am & 10am.
+  Sat. Nov. 15th – Angel L.
+  Wed. Nov. 26th – Chris M. & Rachel M. @ 6pm
+  STM Activities/Group Service Committee Meeting** November 8th @ 9am & 10am.
   All Meeting Secretaries required to attend Group Service @ 10am.
 
 ---
 
-## **Activities Flyers Posted**
+Activities Flyers Posted
 
-### **STM Thanksgiving Potluck/Karaoke/Birthday & Speaker Meeting**
+STM Thanksgiving Potluck/Karaoke/Birthday & Speaker Meeting
 
-* **Saturday, November 29th @ 6pm**
-* Sign-Up Sheets Posted
-* Speakers: Jon T. & Kurt S.
+Saturday, November 29th @ 6pm
+Sign-Up Sheets Posted
+Speakers: Jon T. & Kurt S.
 
-### **SBNA Turkey Bash**
+SBNA Turkey Bash
 
-* @ 305 Anapamu St.
-* **Friday, November 21st — 6–8:30pm**
-* $5 Donation
+@ 305 Anapamu St.
+Friday, November 21st — 6–8:30pm
+$5 Donation
 
-### **STM New Year Speaker Bash/Dinner/Karaoke/Dance**
+STM New Year Speaker Bash/Dinner/Karaoke/Dance
 
-* **Wednesday, December 31st**
-* Speakers @ 1:30pm, 2:30, 3:30, 4:30pm
-* Dinner/Karaoke @ 6–8pm
-* Speaker @ 8pm: “T”
-* Dance 9pm – 12:30am
-* Event is free. Plates $10. Kids eat free.
-* Sign-up sheets coming soon…
+Wednesday, December 31st
+Speakers @ 1:30pm, 2:30, 3:30, 4:30pm
+Dinner/Karaoke @ 6–8pm
+Speaker @ 8pm: “T”
+Dance 9pm – 12:30am
+Event is free. Plates $10. Kids eat free.
+Sign-up sheets coming soon…
 
 ---
 
-## **Other NA Announcements**
+Other NA Announcements
 
-* NA Literature price increase. New Prices posted.
-* **STM Spanish NA Literature** for sale now.
-* **STM Venmo & CashApp:** Please tag $ w/info.
-* **STM GEAR** for sale. Order sheet posted.
-* Celebrating a milestone in your recovery? Put your name & clean time on board.
-* PR, H&I & Behind the Walls Sponsorship needs volunteers. Info posted.
-* NA Area Information: **@centralcoastna.org**
-* Are there any other **NA Announcements** from the floor?
+NA Literature price increase. New Prices posted.
+STM Spanish NA Literature for sale now.
+STM Venmo & CashApp: Please tag $ w/info.
+STM GEAR for sale. Order sheet posted.
+Celebrating a milestone in your recovery? Put your name & clean time on board.
+PR, H&I & Behind the Walls Sponsorship needs volunteers. Info posted.
+NA Area Information: @centralcoastna.org
+Are there any other NA Announcements from the floor?
 
 `;
 
