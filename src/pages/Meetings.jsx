@@ -14,29 +14,29 @@ import {
 
 const existingMeetings = {
   Sunday: [{ time: "12 PM", host: "Jon T." },
-    { time: "8 PM", host: "GREGORY" }
+    { time: "8 PM", host: "James K." }
   
   ],
   Monday: [
     { time: "12 PM", host: "MARK" },
-    { time: "8 PM", host: "Daniel M." }
+    { time: "8 PM", host: "Julia (SPAD)" }
   ],
   Tuesday: [
-    { time: "12 PM", host: "Cierra" },
-    { time: "6:30 PM", host: "Men’s Stag – OPEN." },
+    { time: "12 PM", host: "Juan" },
+    { time: "6:30 PM", host: "Men’s Stag – Andre" },
     { time: "8 PM", host: "LORENZO" }
   ],
   Wednesday: [
-    { time: "12 PM", host: "Bart" },
-    { time: "8 PM", host: "Daniel"}
+    { time: "12 PM", host: "Angie (Stick Meeting)" },
+    { time: "8 PM", host: "Daniel M."}
   ],
   Thursday: [
     { time: "12 PM", host: "Cambria" },
-    { time: "6:30 PM", host: "Women’s Meeting – Jaclyn" },
-    { time: "8 PM", host: "Bobby" }
+    { time: "6:30 PM", host: "Women’s Meeting – Erika" },
+    { time: "8 PM", host: "Sandy K." }
   ],
   Friday: [
-    { time: "12 PM", host: "Jaunita" },
+    { time: "12 PM", host: "Cierra" },
     { time: "8 PM", host: "Joseph / Candle-light" }
   ],
   Saturday: [
