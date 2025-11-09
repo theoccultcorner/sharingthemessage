@@ -13,41 +13,68 @@ const authorizedEmails = [
   "theoccultcorner@gmail.com"
 ];
 
-const defaultTitle = "STM GSR Report October 2025";
+const defaultTitle = "STM GSR REPORT NOVEMBER 2025";
 
 const defaultText = `
 
-Positions Available   
 
-Participate in your Recovery: Sunday 8pm, Wednesday 8pm & Women’s Meeting Thursday 6:30pm Secretary Positions OPEN.
-Greeters, Coffee Persons & Meeting Service Reps (MSRs) needed for ALL STM Meetings.
-Meeting News
+ **Positions Available**
 
-STM Women’s Meeting: Thursdays@6:30pm needs support & Secretary. Keytags 1st Thurs.
-STM Men’s Stag Meeting: Tuesdays @ 6:30pm needs support.
-Guad Squad: Wednesday @ 7pm, NEW location: 4635 6th Street.
-STM Birthday/Speaker Meeting Saturday, October 25th @ 8pm. Speaker Crystal E. 
-Survivors Bday/Speaker Mtgs:
-Sat. Oct. 18th - Bob F. & Wed. Oct. 29th - Danica A. @ 6pm
-STM Activities Committee Meeting October 11th @ 9am. Help support STM Activities. 
-STM Group Service Committee Meeting October 11th @ 10am. ALL Meeting Secretaries or Meeting Representatives required to attend. Come support STM & attend Group Service.
-Activities Flyers Posted      
+* **STM GROUP POSITIONS OPEN:** Vice-Chair, GSR & Literature
+* Greeters, Coffee Persons & Meeting Service Reps (MSRs) needed for **ALL STM Meetings**
 
-STM Spaghetti Feed: Friday Oct. 10 @ 6pm $10 plate. Meeting @ 8pm. Dance @ 9pm.
-Freak Fest @ Odd Fellows Hall, Morro Bay: October 25th 5 - 10pm
-Gold Coast Women’s Retreat @ Circle V Ranch Camp, SB: Oct. 3rd - 5th: $230. Text to register.
-Central Coast Women’s Retreat @ Sea Crest: Nov. 7th - 9th: $100 Registration.  
-Other NA Announcements
+---
 
-STM Phone Lists Sign-up sheets at desk.
-STM Spanish NA Literature for sale now.
-STM Venmo & CashApp: Please tag $ w/info.
-STM GEAR for sale. Order sheet posted.
-Celebrating a milestone in your recovery? Put your name & clean time on board.
-PR, H&I & Behind the Walls Sponsorship needs volunteers. Info posted.
-NA Area Information @centralcoastna.org
-Are there any other NA Announcements from the floor?
+## **Meeting News**
 
+* **STM Men’s Stag Meeting:** Tuesdays @ 6:30pm — needs support.
+* **STM Women’s Book Study Meeting:** Thursdays @ 6:30pm — needs support.
+* **Guad Squad:** Wednesday @ 7pm, NEW location: 4635 6th Street.
+* **Survivors Bday/Speaker Mtgs:**
+
+  * Sat. Nov. 15th – Angel L.
+  * Wed. Nov. 26th – Chris M. & Rachel M. @ 6pm
+* **STM Activities/Group Service Committee Meeting** November 8th @ 9am & 10am.
+  All Meeting Secretaries required to attend Group Service @ 10am.
+
+---
+
+## **Activities Flyers Posted**
+
+### **STM Thanksgiving Potluck/Karaoke/Birthday & Speaker Meeting**
+
+* **Saturday, November 29th @ 6pm**
+* Sign-Up Sheets Posted
+* Speakers: Jon T. & Kurt S.
+
+### **SBNA Turkey Bash**
+
+* @ 305 Anapamu St.
+* **Friday, November 21st — 6–8:30pm**
+* $5 Donation
+
+### **STM New Year Speaker Bash/Dinner/Karaoke/Dance**
+
+* **Wednesday, December 31st**
+* Speakers @ 1:30pm, 2:30, 3:30, 4:30pm
+* Dinner/Karaoke @ 6–8pm
+* Speaker @ 8pm: “T”
+* Dance 9pm – 12:30am
+* Event is free. Plates $10. Kids eat free.
+* Sign-up sheets coming soon…
+
+---
+
+## **Other NA Announcements**
+
+* NA Literature price increase. New Prices posted.
+* **STM Spanish NA Literature** for sale now.
+* **STM Venmo & CashApp:** Please tag $ w/info.
+* **STM GEAR** for sale. Order sheet posted.
+* Celebrating a milestone in your recovery? Put your name & clean time on board.
+* PR, H&I & Behind the Walls Sponsorship needs volunteers. Info posted.
+* NA Area Information: **@centralcoastna.org**
+* Are there any other **NA Announcements** from the floor?
 
 `;
 
