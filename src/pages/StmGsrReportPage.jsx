@@ -1,22 +1,15 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Typography,
-  Button,
-  TextField,
-  Divider
-} from "@mui/material";
+import { Box, Typography, Button, TextField, Divider } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
 
 const authorizedEmails = [
   "nmsaucedapalacios@gmail.com",
-  "theoccultcorner@gmail.com"
+  "theoccultcorner@gmail.com",
 ];
 
 const defaultTitle = "STM GSR REPORT NOVEMBER 2025";
 
 const defaultText = `
-
 
  Positions Available
 
@@ -82,50 +75,67 @@ const knownHeaders = [
   "Positions Available",
   "Meeting News",
   "Activities Flyers Posted",
-  "Other NA Announcements"
+  "Other NA Announcements",
 ];
 
 const StmGsrReport = () => {
   const { user } = useAuth();
-  const isAuthorized = authorizedEmails.includes(user?.email);
+  const isAuthorized = authorizedEmails.includes(user?.email || "");
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(defaultTitle);
   const [reportText, setReportText] = useState(defaultText);
 
+  // Normalize a line to detect headers robustly
+  const normalizeHeader = (s) =>
+    s.trim().replace(/^#+\s*/, "").replace(/:$/, "");
+
   const renderFormattedText = (text) => {
+    const urlPattern = /(https?:\/\/[^\s]+)/g;
+
+    // Keep blank lines out but preserve structural lines like '---'
     const lines = text.split("\n").filter((line) => line.trim() !== "");
 
-    return lines.map((line, index) => {
-      const trimmed = line.trim();
+    return lines.map((rawLine, index) => {
+      const line = rawLine.trim();
 
-      if (knownHeaders.includes(trimmed)) {
+      // Divider line support (markdown style)
+      if (/^-{3,}$/.test(line)) {
+        return <Divider key={`div-${index}`} sx={{ my: 2 }} />;
+        }
+
+      // Header detection: either known headers, or markdown "## Heading"
+      const normalized = normalizeHeader(line);
+      if (knownHeaders.includes(normalized) || /^#{1,6}\s+/.test(line)) {
         return (
-          <Typography key={index} variant="h6" sx={{ mt: 3 }}>
-            {trimmed}
+          <Typography key={`h-${index}`} variant="h6" sx={{ mt: 3 }}>
+            {normalized}
           </Typography>
         );
       }
 
-      const urlRegex = /(https?:\/\/[^\s]+)/g;
-      const parts = trimmed.split(urlRegex);
+      // Split by URL and render anchors for captured parts.
+      const parts = line.split(urlPattern);
 
       return (
-        <Typography key={index} variant="body1" sx={{ ml: 2 }}>
-          {parts.map((part, i) =>
-            urlRegex.test(part) ? (
-              <a
-                key={i}
-                href={part}
-                target="_blank"
-                rel="noreferrer"
-                style={{ color: "#1F3F3A" }}
-              >
-                {part}
-              </a>
-            ) : (
-              <React.Fragment key={i}>{part}</React.Fragment>
-            )
-          )}
+        <Typography key={`p-${index}`} variant="body1" sx={{ ml: 2 }}>
+          {parts.map((part, i) => {
+            // Because split used a *capturing* group, matched URLs appear at odd indices
+            const isCapturedUrl = i % 2 === 1 && part.startsWith("http");
+            if (isCapturedUrl) {
+              return (
+                <a
+                  key={`a-${index}-${i}`}
+                  href={part}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#1F3F3A" }}
+                >
+                  {part}
+                </a>
+              );
+            }
+            return <React.Fragment key={`t-${index}-${i}`}>{part}</React.Fragment>;
+          })}
         </Typography>
       );
     });
@@ -166,10 +176,10 @@ const StmGsrReport = () => {
       {isAuthorized && (
         <Button
           variant="contained"
-          onClick={() => setEditing(!editing)}
+          onClick={() => setEditing((v) => !v)}
           sx={{
             backgroundColor: "#1F3F3A",
-            "&:hover": { backgroundColor: "#16302D" }
+            "&:hover": { backgroundColor: "#16302D" },
           }}
         >
           {editing ? "Done Editing" : "Edit GSR Report"}
@@ -180,3 +190,4 @@ const StmGsrReport = () => {
 };
 
 export default StmGsrReport;
+
