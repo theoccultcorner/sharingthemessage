@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Typography,
@@ -13,9 +13,9 @@ import {
 } from "@mui/material";
 
 const existingMeetings = {
-  Sunday: [{ time: "12 PM", host: "Jon T." },
+  Sunday: [
+    { time: "12 PM", host: "Jon T." },
     { time: "8 PM", host: "James K." }
-  
   ],
   Monday: [
     { time: "12 PM", host: "MARK" },
@@ -28,7 +28,7 @@ const existingMeetings = {
   ],
   Wednesday: [
     { time: "12 PM", host: "Angie (Stick Meeting)" },
-    { time: "8 PM", host: "Daniel M."}
+    { time: "8 PM", host: "Daniel M." }
   ],
   Thursday: [
     { time: "12 PM", host: "Cambria" },
@@ -94,13 +94,20 @@ const extraMeetings = {
 const Meetings = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const daysOfWeek = Object.keys(existingMeetings);
-  const todayIndex = new Date().getDay(); // Sunday = 0, Monday = 1, etc.
-  const [selectedTab, setSelectedTab] = useState(todayIndex);
 
-  const handleTabChange = (event, newValue) => {
+  const daysOfWeek = Object.keys(existingMeetings); // expects Sunday..Saturday
+  const todayIndexRaw = new Date().getDay(); // 0..6
+  const safeTodayIndex = Number.isInteger(todayIndexRaw)
+    ? Math.min(Math.max(todayIndexRaw, 0), daysOfWeek.length - 1)
+    : 0;
+
+  const [selectedTab, setSelectedTab] = useState(safeTodayIndex);
+
+  const handleTabChange = (_event, newValue) => {
     setSelectedTab(newValue);
   };
+
+  const dayKey = daysOfWeek[selectedTab];
 
   return (
     <Container sx={{ mt: 4, mb: 10 }}>
@@ -109,9 +116,13 @@ const Meetings = () => {
         align="center"
         gutterBottom
         sx={{ fontWeight: "bold" }}
+        component="div"
       >
         Daily NA Meetings
-        <p>upstairs in back of thrift store suite D<br/>209 W. Main St, Santa Maria, CA, 93458</p>
+      </Typography>
+      <Typography align="center" variant="body2" sx={{ mb: 2 }}>
+        upstairs in back of thrift store suite D<br />
+        209 W. Main St, Santa Maria, CA, 93458
       </Typography>
 
       <Tabs
@@ -132,11 +143,15 @@ const Meetings = () => {
           <Typography variant="h6" sx={{ fontWeight: 600, color: "#1F3F3A", mb: 1 }}>
             STM Hosts
           </Typography>
-          {existingMeetings[daysOfWeek[selectedTab]].map(({ time, host }, idx) => (
-            <Box key={idx} sx={{ mb: 1 }}>
-              <Typography variant="body1" sx={{ fontWeight: 500 }}>⏰ {time}</Typography>
-              <Typography variant="body2" sx={{ ml: 2 }}>👤 {host}</Typography>
-              {idx < existingMeetings[daysOfWeek[selectedTab]].length - 1 && <Divider sx={{ my: 1 }} />}
+          {existingMeetings[dayKey].map(({ time, host }, idx) => (
+            <Box key={`${dayKey}-host-${idx}`} sx={{ mb: 1 }}>
+              <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                ⏰ {time}
+              </Typography>
+              <Typography variant="body2" sx={{ ml: 2 }}>
+                👤 {host}
+              </Typography>
+              {idx < existingMeetings[dayKey].length - 1 && <Divider sx={{ my: 1 }} />}
             </Box>
           ))}
         </Paper>
@@ -145,10 +160,10 @@ const Meetings = () => {
           <Typography variant="h6" sx={{ fontWeight: 600, color: "#1F3F3A", mb: 1 }}>
             All NA Meetings
           </Typography>
-          {extraMeetings[daysOfWeek[selectedTab]]?.map((entry, idx) => (
-            <Box key={idx} sx={{ mb: 1 }}>
+          {extraMeetings[dayKey]?.map((entry, idx) => (
+            <Box key={`${dayKey}-extra-${idx}`} sx={{ mb: 1 }}>
               <Typography variant="body2">📍 {entry}</Typography>
-              {idx < extraMeetings[daysOfWeek[selectedTab]].length - 1 && <Divider sx={{ my: 1 }} />}
+              {idx < extraMeetings[dayKey].length - 1 && <Divider sx={{ my: 1 }} />}
             </Box>
           ))}
         </Paper>
