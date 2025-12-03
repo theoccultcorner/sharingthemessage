@@ -7,7 +7,7 @@ function getApiKey() {
 }
 
 // ======= Call ChatGPT WITH SENTIMENT =======
-async function callChatGPT(prompt: string, apiKey: string) {
+async function callChatGPT(prompt, apiKey) {
   const url = 'https://api.openai.com/v1/chat/completions';
 
   const system = [
@@ -60,12 +60,11 @@ async function callChatGPT(prompt: string, apiKey: string) {
 }
 
 // ======= Pick Best Voice =======
-function pickBestVoice(list: SpeechSynthesisVoice[] | null) {
-  if (!list?.length) return null;
+function pickBestVoice(list) {
+  if (!list || !list.length) return null;
 
-  const isEn = (v: SpeechSynthesisVoice) =>
-    /^en(-|_)?(US|GB|AU|CA|NZ)/i.test(v.lang || '');
-  const score = (v: SpeechSynthesisVoice) => {
+  const isEn = (v) => /^en(-|_)?(US|GB|AU|CA|NZ)/i.test(v.lang || '');
+  const score = (v) => {
     let s = 0;
     if (/google|microsoft|natural|neural/i.test(v.name)) s += 3;
     if (isEn(v)) s += 2;
@@ -77,7 +76,7 @@ function pickBestVoice(list: SpeechSynthesisVoice[] | null) {
 
 export default function SponsorChat() {
   const API_KEY = getApiKey();
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef(null);
 
   const [isListening, setIsListening] = useState(false);
   const [statusText, setStatusText] = useState('Idle');
@@ -86,7 +85,7 @@ export default function SponsorChat() {
   const [manualText, setManualText] = useState('');
   const [sentiment, setSentiment] = useState('');
 
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voices, setVoices] = useState([]);
   const [voiceName, setVoiceName] = useState('');
   const [rate, setRate] = useState(1);
   const [pitch, setPitch] = useState(1);
@@ -117,13 +116,13 @@ export default function SponsorChat() {
 
   // Speak
   const speak = useCallback(
-    (text: string) => {
+    (text) => {
       if (!window.speechSynthesis) return;
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       const v = selectedVoice();
       if (v) u.voice = v;
-      u.lang = v?.lang || 'en-US';
+      u.lang = (v && v.lang) || 'en-US';
       u.rate = rate;
       u.pitch = pitch;
       u.volume = 1;
@@ -133,22 +132,21 @@ export default function SponsorChat() {
   );
 
   // Speech Recognition
-  function createRecognition(): SpeechRecognition | null {
+  function createRecognition() {
     const SR =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
+      window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
       setErrorText('Speech recognition not supported.');
       return null;
     }
 
-    const rec: SpeechRecognition = new SR();
+    const rec = new SR();
     rec.lang = 'en-US';
     rec.continuous = false;
     rec.interimResults = false;
 
     rec.onstart = () => setStatusText('Listening…');
-    rec.onresult = async (e: SpeechRecognitionEvent) => {
+    rec.onresult = async (e) => {
       const transcript = e?.results?.[0]?.[0]?.transcript || '';
       setLastHeard(transcript);
       setStatusText('Thinking…');
@@ -159,7 +157,7 @@ export default function SponsorChat() {
         const { reply, sentiment } = await callChatGPT(transcript, API_KEY);
         setSentiment(sentiment);
         speak(reply || "I'm here for you.");
-      } catch (err: any) {
+      } catch (err) {
         setErrorText(err.message);
         setSentiment('unknown');
         speak("I’m here with you. Let’s take one small step together.");
@@ -168,7 +166,7 @@ export default function SponsorChat() {
       }
     };
 
-    rec.onerror = (e: any) => {
+    rec.onerror = (e) => {
       setErrorText(`Mic error: ${e?.error || 'unknown'}`);
       setIsListening(false);
       setStatusText('Idle');
@@ -212,7 +210,7 @@ export default function SponsorChat() {
       const { reply, sentiment } = await callChatGPT(manualText, API_KEY);
       setSentiment(sentiment);
       speak(reply || "I'm here for you.");
-    } catch (err: any) {
+    } catch (err) {
       setErrorText(err.message);
       setSentiment('unknown');
       speak("I’m here with you. Let’s take one small step together.");
@@ -223,7 +221,7 @@ export default function SponsorChat() {
 
   // Simple helper to color sentiment badge
   const sentimentClass = (() => {
-    const s = sentiment.toLowerCase();
+    const s = (sentiment || '').toLowerCase();
     if (s.includes('very high')) return 'sentiment-badge danger';
     if (s.includes('high')) return 'sentiment-badge warning';
     if (s.includes('low')) return 'sentiment-badge low';
@@ -247,12 +245,12 @@ export default function SponsorChat() {
               <span className="value">{statusText}</span>
             </div>
 
-            {sentiment && (
+            {sentiment ? (
               <div className={sentimentClass}>
                 <span className="label">Sentiment</span>
                 <span className="value">{sentiment}</span>
               </div>
-            )}
+            ) : null}
           </section>
 
           {errorText && <div className="error-box">Error: {errorText}</div>}
@@ -286,12 +284,15 @@ export default function SponsorChat() {
                   max="1.3"
                   step="0.01"
                   value={rate}
-                  onChange={(e) => setRate(parseFloat(e.target.value))}
+                  onChange={(e) =>
+                    setRate(parseFloat(e.target.value || '1'))
+                  }
                 />
               </div>
               <div className="slider-field">
                 <label className="field-label">
-                  Pitch <span className="slider-value">{pitch.toFixed(2)}</span>
+                  Pitch{' '}
+                  <span className="slider-value">{pitch.toFixed(2)}</span>
                 </label>
                 <input
                   type="range"
@@ -299,7 +300,9 @@ export default function SponsorChat() {
                   max="1.4"
                   step="0.01"
                   value={pitch}
-                  onChange={(e) => setPitch(parseFloat(e.target.value))}
+                  onChange={(e) =>
+                    setPitch(parseFloat(e.target.value || '1'))
+                  }
                 />
               </div>
             </div>
