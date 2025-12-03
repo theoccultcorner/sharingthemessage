@@ -2,68 +2,24 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // ==========================
-//   LOAD API KEY (PUBLIC)
+//   CALL /api/matt (no key here)
 // ==========================
-function getApiKey() {
-  return process.env.NEXT_PUBLIC_OPENAI_API_KEY || '';
-}
-
-// ==========================
-//   CALL CHATGPT WITH SENTIMENT
-// ==========================
-async function callChatGPT(prompt, apiKey) {
-  if (!apiKey) {
-    throw new Error('Missing NEXT_PUBLIC_OPENAI_API_KEY.');
-  }
-
-  const url = 'https://api.openai.com/v1/chat/completions';
-
-  const system = [
-    'You are M.A.T.T. (My Anchor Through Turmoil), a calm, compassionate NA-style sponsor.',
-    'Reply in 1–3 short sentences. Be supportive, non-judgmental, practical.',
-    'Suggest one gentle next step (drink water, text a friend, breathe).',
-    'Avoid medical claims. If user sounds in crisis, suggest calling 988 in U.S. or local help.',
-    'No emojis. Warm, grounded, concise.',
-    'ALWAYS respond as a single JSON object with two keys: "reply" and "sentiment".',
-    '"sentiment" is one of: "very low", "low", "neutral", "high", "very high" emotional distress.'
-  ].join(' ');
-
-  const body = {
-    model: 'gpt-4.1-mini',
-    response_format: { type: 'json_object' },
-    messages: [
-      { role: 'system', content: system },
-      { role: 'user', content: `User said: "${prompt}"` }
-    ],
-    temperature: 0.7,
-    max_tokens: 200
-  };
-
-  const res = await fetch(url, {
+async function callMatt(prompt) {
+  const res = await fetch('/api/matt', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt })
   });
 
   const data = await res.json();
   if (!res.ok) {
-    throw new Error(data?.error?.message || `HTTP ${res.status}`);
+    throw new Error(data?.error || `HTTP ${res.status}`);
   }
 
-  const content = data?.choices?.[0]?.message?.content || '{}';
-
-  try {
-    const parsed = JSON.parse(content);
-    return {
-      reply: parsed.reply || '',
-      sentiment: parsed.sentiment || 'unknown'
-    };
-  } catch {
-    return { reply: content.trim(), sentiment: 'unknown' };
-  }
+  return {
+    reply: data.reply || '',
+    sentiment: data.sentiment || 'unknown'
+  };
 }
 
 // ==========================
@@ -87,7 +43,6 @@ function pickBestVoice(list) {
 //   MAIN COMPONENT
 // ==========================
 function SponsorChat() {
-  const API_KEY = getApiKey();
   const recognitionRef = useRef(null);
 
   const [isListening, setIsListening] = useState(false);
@@ -171,7 +126,7 @@ function SponsorChat() {
       setStatusText('Thinking…');
 
       try {
-        const { reply, sentiment } = await callChatGPT(transcript, API_KEY);
+        const { reply, sentiment } = await callMatt(transcript);
         setSentiment(sentiment);
         speak(reply || "I'm here for you.");
       } catch (err) {
@@ -224,7 +179,7 @@ function SponsorChat() {
     setStatusText('Thinking…');
 
     try {
-      const { reply, sentiment } = await callChatGPT(manualText, API_KEY);
+      const { reply, sentiment } = await callMatt(manualText);
       setSentiment(sentiment);
       speak(reply || "I'm here for you.");
     } catch (err) {
@@ -381,7 +336,6 @@ function SponsorChat() {
         </div>
       </div>
 
-      {/* ====== STYLES (Mobile + Desktop) ====== */}
       <style jsx>{`
         :root {
           color-scheme: dark;
@@ -402,7 +356,7 @@ function SponsorChat() {
         .matt-shell {
           width: 100%;
           max-width: 480px;
-          background: rgba(10, 10, 16, 0.95);
+          background: rgba(10, 10, 16, 0.9);
           border-radius: 20px;
           padding: 18px 16px 24px;
           box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
@@ -423,7 +377,7 @@ function SponsorChat() {
 
         .matt-header h1 {
           margin: 0;
-          font-size: 2rem;
+          font-size: 1.9rem;
           letter-spacing: 0.08em;
           text-transform: uppercase;
         }
