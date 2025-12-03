@@ -7,7 +7,7 @@ function getApiKey() {
 }
 
 // ======= Call ChatGPT WITH SENTIMENT =======
-async function callChatGPT(prompt, apiKey) {
+async function callChatGPT(prompt: string, apiKey: string) {
   const url = 'https://api.openai.com/v1/chat/completions';
 
   const system = [
@@ -48,7 +48,6 @@ async function callChatGPT(prompt, apiKey) {
 
   const content = data?.choices?.[0]?.message?.content || '';
 
-  // Should already be JSON, but just in case:
   try {
     const parsed = JSON.parse(content);
     return {
@@ -56,17 +55,17 @@ async function callChatGPT(prompt, apiKey) {
       sentiment: parsed.sentiment || 'unknown'
     };
   } catch {
-    // fallback if model ever sends plain text
     return { reply: content.trim(), sentiment: 'unknown' };
   }
 }
 
 // ======= Pick Best Voice =======
-function pickBestVoice(list) {
+function pickBestVoice(list: SpeechSynthesisVoice[] | null) {
   if (!list?.length) return null;
 
-  const isEn = (v) => /^en(-|_)?(US|GB|AU|CA|NZ)/i.test(v.lang || '');
-  const score = (v) => {
+  const isEn = (v: SpeechSynthesisVoice) =>
+    /^en(-|_)?(US|GB|AU|CA|NZ)/i.test(v.lang || '');
+  const score = (v: SpeechSynthesisVoice) => {
     let s = 0;
     if (/google|microsoft|natural|neural/i.test(v.name)) s += 3;
     if (isEn(v)) s += 2;
@@ -76,9 +75,9 @@ function pickBestVoice(list) {
   return [...list].sort((a, b) => score(b) - score(a))[0] || list[0];
 }
 
-function SponsorChat() {
+export default function SponsorChat() {
   const API_KEY = getApiKey();
-  const recognitionRef = useRef(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const [isListening, setIsListening] = useState(false);
   const [statusText, setStatusText] = useState('Idle');
@@ -87,7 +86,7 @@ function SponsorChat() {
   const [manualText, setManualText] = useState('');
   const [sentiment, setSentiment] = useState('');
 
-  const [voices, setVoices] = useState([]);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [voiceName, setVoiceName] = useState('');
   const [rate, setRate] = useState(1);
   const [pitch, setPitch] = useState(1);
@@ -118,7 +117,7 @@ function SponsorChat() {
 
   // Speak
   const speak = useCallback(
-    (text) => {
+    (text: string) => {
       if (!window.speechSynthesis) return;
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
@@ -134,30 +133,33 @@ function SponsorChat() {
   );
 
   // Speech Recognition
-  function createRecognition() {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  function createRecognition(): SpeechRecognition | null {
+    const SR =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
     if (!SR) {
       setErrorText('Speech recognition not supported.');
       return null;
     }
 
-    const rec = new SR();
+    const rec: SpeechRecognition = new SR();
     rec.lang = 'en-US';
     rec.continuous = false;
     rec.interimResults = false;
 
     rec.onstart = () => setStatusText('Listening…');
-    rec.onresult = async (e) => {
+    rec.onresult = async (e: SpeechRecognitionEvent) => {
       const transcript = e?.results?.[0]?.[0]?.transcript || '';
       setLastHeard(transcript);
       setStatusText('Thinking…');
 
       try {
-        if (!API_KEY) throw new Error('Missing API key. Set NEXT_PUBLIC_OPENAI_API_KEY.');
+        if (!API_KEY)
+          throw new Error('Missing API key. Set NEXT_PUBLIC_OPENAI_API_KEY.');
         const { reply, sentiment } = await callChatGPT(transcript, API_KEY);
         setSentiment(sentiment);
         speak(reply || "I'm here for you.");
-      } catch (err) {
+      } catch (err: any) {
         setErrorText(err.message);
         setSentiment('unknown');
         speak("I’m here with you. Let’s take one small step together.");
@@ -166,7 +168,7 @@ function SponsorChat() {
       }
     };
 
-    rec.onerror = (e) => {
+    rec.onerror = (e: any) => {
       setErrorText(`Mic error: ${e?.error || 'unknown'}`);
       setIsListening(false);
       setStatusText('Idle');
@@ -205,11 +207,12 @@ function SponsorChat() {
     setStatusText('Thinking…');
 
     try {
-      if (!API_KEY) throw new Error('Missing API key. Set NEXT_PUBLIC_OPENAI_API_KEY.');
+      if (!API_KEY)
+        throw new Error('Missing API key. Set NEXT_PUBLIC_OPENAI_API_KEY.');
       const { reply, sentiment } = await callChatGPT(manualText, API_KEY);
       setSentiment(sentiment);
       speak(reply || "I'm here for you.");
-    } catch (err) {
+    } catch (err: any) {
       setErrorText(err.message);
       setSentiment('unknown');
       speak("I’m here with you. Let’s take one small step together.");
@@ -218,84 +221,440 @@ function SponsorChat() {
     }
   };
 
+  // Simple helper to color sentiment badge
+  const sentimentClass = (() => {
+    const s = sentiment.toLowerCase();
+    if (s.includes('very high')) return 'sentiment-badge danger';
+    if (s.includes('high')) return 'sentiment-badge warning';
+    if (s.includes('low')) return 'sentiment-badge low';
+    if (s.includes('neutral')) return 'sentiment-badge neutral';
+    if (!s || s === 'unknown') return 'sentiment-badge unknown';
+    return 'sentiment-badge neutral';
+  })();
+
   return (
-    <div style={{ padding: 20, background: 'black', color: 'white', minHeight: '100vh' }}>
-      <h2>M.A.T.T. — My Anchor Through Turmoil</h2>
+    <>
+      <div className="matt-root">
+        <div className="matt-shell">
+          <header className="matt-header">
+            <h1>M.A.T.T.</h1>
+            <p className="matt-subtitle">My Anchor Through Turmoil</p>
+          </header>
 
-      <div><strong>Status:</strong> {statusText}</div>
-      {sentiment && <div><strong>Sentiment:</strong> {sentiment}</div>}
-      {errorText && <div style={{ color: 'red' }}>Error: {errorText}</div>}
+          <section className="matt-status-row">
+            <div className="status-chip">
+              <span className="label">Status</span>
+              <span className="value">{statusText}</span>
+            </div>
 
-      <div style={{ marginTop: 10 }}>
-        Voice:&nbsp;
-        <select value={voiceName} onChange={(e) => setVoiceName(e.target.value)}>
-          {voices.map((v) => (
-            <option key={v.name} value={v.name}>
-              {v.name} — {v.lang}
-            </option>
-          ))}
-        </select>
-        &nbsp; Rate:
-        <input
-          type="range"
-          min="0.7"
-          max="1.3"
-          step="0.01"
-          value={rate}
-          onChange={(e) => setRate(parseFloat(e.target.value))}
-        />
-        &nbsp; Pitch:
-        <input
-          type="range"
-          min="0.8"
-          max="1.4"
-          step="0.01"
-          value={pitch}
-          onChange={(e) => setPitch(parseFloat(e.target.value))}
-        />
-        <button onClick={() => speak("Hi, I’m M.A.T.T. This is my current voice.")}>
-          Preview Voice
-        </button>
-      </div>
+            {sentiment && (
+              <div className={sentimentClass}>
+                <span className="label">Sentiment</span>
+                <span className="value">{sentiment}</span>
+              </div>
+            )}
+          </section>
 
-      {!isListening ? (
-        <button
-          onClick={startListening}
-          style={{ background: 'green', color: 'white', padding: '10px', marginTop: '10px' }}
-        >
-          Start Talking
-        </button>
-      ) : (
-        <button
-          onClick={stopListening}
-          style={{ background: 'red', color: 'white', padding: '10px', marginTop: '10px' }}
-        >
-          Stop
-        </button>
-      )}
+          {errorText && <div className="error-box">Error: {errorText}</div>}
 
-      <div style={{ marginTop: 14 }}>
-        <input
-          value={manualText}
-          onChange={(e) => setManualText(e.target.value)}
-          placeholder="Type here to test ChatGPT..."
-          style={{ width: '80%', padding: 8 }}
-        />
-        <button
-          onClick={sendManual}
-          style={{ padding: 8, background: '#0a84ff', color: 'white' }}
-        >
-          Send
-        </button>
-      </div>
+          <section className="card">
+            <h2 className="card-title">Voice Settings</h2>
 
-      {lastHeard && (
-        <div style={{ marginTop: 16 }}>
-          <strong>You said:</strong> {lastHeard}
+            <div className="field-group">
+              <label className="field-label">Voice</label>
+              <select
+                className="select"
+                value={voiceName}
+                onChange={(e) => setVoiceName(e.target.value)}
+              >
+                {voices.map((v) => (
+                  <option key={v.name} value={v.name}>
+                    {v.name} — {v.lang}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="slider-row">
+              <div className="slider-field">
+                <label className="field-label">
+                  Rate <span className="slider-value">{rate.toFixed(2)}</span>
+                </label>
+                <input
+                  type="range"
+                  min="0.7"
+                  max="1.3"
+                  step="0.01"
+                  value={rate}
+                  onChange={(e) => setRate(parseFloat(e.target.value))}
+                />
+              </div>
+              <div className="slider-field">
+                <label className="field-label">
+                  Pitch <span className="slider-value">{pitch.toFixed(2)}</span>
+                </label>
+                <input
+                  type="range"
+                  min="0.8"
+                  max="1.4"
+                  step="0.01"
+                  value={pitch}
+                  onChange={(e) => setPitch(parseFloat(e.target.value))}
+                />
+              </div>
+            </div>
+
+            <button
+              className="btn secondary full"
+              onClick={() =>
+                speak('Hi, I’m M.A.T.T. This is my current voice.')
+              }
+            >
+              Preview Voice
+            </button>
+          </section>
+
+          <section className="card">
+            <h2 className="card-title">Talk to M.A.T.T.</h2>
+
+            <div className="button-row">
+              {!isListening ? (
+                <button className="btn primary full" onClick={startListening}>
+                  🎤 Start Talking
+                </button>
+              ) : (
+                <button className="btn danger full" onClick={stopListening}>
+                  ■ Stop Listening
+                </button>
+              )}
+            </div>
+
+            <div className="or-divider">
+              <span>or type instead</span>
+            </div>
+
+            <div className="field-group">
+              <textarea
+                className="textarea"
+                rows={3}
+                value={manualText}
+                onChange={(e) => setManualText(e.target.value)}
+                placeholder="Tell M.A.T.T. how you're feeling right now..."
+              />
+            </div>
+
+            <button className="btn accent full" onClick={sendManual}>
+              Send to M.A.T.T.
+            </button>
+          </section>
+
+          {lastHeard && (
+            <section className="card">
+              <h2 className="card-title">Last thing you said</h2>
+              <p className="transcript">{lastHeard}</p>
+            </section>
+          )}
         </div>
-      )}
-    </div>
+      </div>
+
+      <style jsx>{`
+        :root {
+          color-scheme: dark;
+        }
+
+        .matt-root {
+          min-height: 100vh;
+          background: radial-gradient(circle at top, #222b3b, #050509 50%, #000);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+            sans-serif;
+          color: #f9fafb;
+        }
+
+        .matt-shell {
+          width: 100%;
+          max-width: 480px;
+          background: rgba(10, 10, 16, 0.9);
+          border-radius: 20px;
+          padding: 18px 16px 24px;
+          box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
+          border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+
+        @media (min-width: 768px) {
+          .matt-shell {
+            max-width: 640px;
+            padding: 24px 22px 28px;
+          }
+        }
+
+        .matt-header {
+          text-align: center;
+          margin-bottom: 16px;
+        }
+
+        .matt-header h1 {
+          margin: 0;
+          font-size: 1.9rem;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .matt-subtitle {
+          margin: 4px 0 0;
+          font-size: 0.9rem;
+          color: #a5b4fc;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .matt-status-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-bottom: 14px;
+        }
+
+        .status-chip,
+        .sentiment-badge {
+          padding: 6px 10px;
+          border-radius: 999px;
+          font-size: 0.8rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          border: 1px solid rgba(148, 163, 184, 0.4);
+          background: rgba(15, 23, 42, 0.8);
+        }
+
+        .status-chip .label,
+        .sentiment-badge .label {
+          text-transform: uppercase;
+          font-weight: 600;
+          color: #9ca3af;
+          font-size: 0.7rem;
+        }
+
+        .status-chip .value,
+        .sentiment-badge .value {
+          font-weight: 500;
+        }
+
+        .sentiment-badge.danger {
+          border-color: rgba(248, 113, 113, 0.9);
+          background: rgba(127, 29, 29, 0.7);
+        }
+
+        .sentiment-badge.warning {
+          border-color: rgba(250, 204, 21, 0.9);
+          background: rgba(113, 63, 18, 0.7);
+        }
+
+        .sentiment-badge.low {
+          border-color: rgba(96, 165, 250, 0.9);
+          background: rgba(23, 37, 84, 0.7);
+        }
+
+        .sentiment-badge.neutral {
+          border-color: rgba(148, 163, 184, 0.9);
+          background: rgba(15, 23, 42, 0.7);
+        }
+
+        .sentiment-badge.unknown {
+          opacity: 0.75;
+        }
+
+        .error-box {
+          margin-bottom: 10px;
+          padding: 8px 10px;
+          font-size: 0.8rem;
+          border-radius: 10px;
+          background: rgba(239, 68, 68, 0.09);
+          border: 1px solid rgba(248, 113, 113, 0.7);
+          color: #fecaca;
+        }
+
+        .card {
+          background: radial-gradient(circle at top left, #020617, #020617 40%, #020617);
+          border-radius: 16px;
+          padding: 12px 12px 14px;
+          border: 1px solid rgba(55, 65, 81, 0.7);
+          margin-top: 10px;
+        }
+
+        @media (min-width: 768px) {
+          .card {
+            padding: 14px 14px 16px;
+            margin-top: 12px;
+          }
+        }
+
+        .card-title {
+          margin: 0 0 8px;
+          font-size: 0.95rem;
+          font-weight: 600;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          color: #e5e7eb;
+        }
+
+        .field-group {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          margin-bottom: 10px;
+        }
+
+        .field-label {
+          font-size: 0.8rem;
+          color: #9ca3af;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .slider-value {
+          font-variant-numeric: tabular-nums;
+          color: #e5e7eb;
+        }
+
+        .select,
+        .textarea {
+          border-radius: 10px;
+          border: 1px solid rgba(75, 85, 99, 0.9);
+          background: rgba(15, 23, 42, 0.8);
+          color: #f9fafb;
+          padding: 8px 10px;
+          font-size: 0.9rem;
+          outline: none;
+        }
+
+        .select:focus,
+        .textarea:focus {
+          border-color: #6366f1;
+          box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.7);
+        }
+
+        .textarea {
+          resize: vertical;
+          min-height: 72px;
+          max-height: 200px;
+        }
+
+        .slider-row {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          margin-bottom: 10px;
+        }
+
+        .slider-field input[type='range'] {
+          width: 100%;
+        }
+
+        @media (min-width: 600px) {
+          .slider-row {
+            flex-direction: row;
+            gap: 12px;
+          }
+          .slider-field {
+            flex: 1;
+          }
+        }
+
+        .btn {
+          border-radius: 999px;
+          border: none;
+          padding: 10px 14px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: transform 0.08s ease, box-shadow 0.08s ease,
+            background 0.12s ease;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          white-space: nowrap;
+        }
+
+        .btn.full {
+          width: 100%;
+        }
+
+        .btn.primary {
+          background: linear-gradient(to right, #22c55e, #16a34a);
+          color: #022c22;
+          box-shadow: 0 8px 18px rgba(34, 197, 94, 0.45);
+        }
+
+        .btn.danger {
+          background: linear-gradient(to right, #ef4444, #dc2626);
+          color: #fee2e2;
+          box-shadow: 0 8px 18px rgba(239, 68, 68, 0.45);
+        }
+
+        .btn.secondary {
+          background: rgba(17, 24, 39, 0.9);
+          color: #e5e7eb;
+          border: 1px solid rgba(75, 85, 99, 0.9);
+        }
+
+        .btn.accent {
+          background: linear-gradient(to right, #6366f1, #8b5cf6);
+          color: #eef2ff;
+          box-shadow: 0 8px 18px rgba(129, 140, 248, 0.5);
+        }
+
+        .btn:active {
+          transform: translateY(1px) scale(0.99);
+          box-shadow: none;
+        }
+
+        .button-row {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-bottom: 8px;
+        }
+
+        .or-divider {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 8px 0 10px;
+          font-size: 0.8rem;
+          color: #9ca3af;
+        }
+
+        .or-divider::before,
+        .or-divider::after {
+          content: '';
+          flex: 1;
+          height: 1px;
+          background: linear-gradient(to right, transparent, #4b5563);
+        }
+
+        .or-divider::before {
+          margin-right: 8px;
+        }
+
+        .or-divider::after {
+          margin-left: 8px;
+        }
+
+        .transcript {
+          margin: 4px 0 0;
+          font-size: 0.9rem;
+          color: #e5e7eb;
+          border-radius: 10px;
+          padding: 8px 10px;
+          background: rgba(15, 23, 42, 0.7);
+          border: 1px solid rgba(55, 65, 81, 0.8);
+        }
+      `}</style>
+    </>
   );
 }
-
-export default SponsorChat;
