@@ -127,9 +127,7 @@ const GSRReport = () => {
               centralcoastna.org
             </Link>
           </ListItem>
-          <ListItem>
-            Are there any other NA Announcements from the floor?
-          </ListItem>
+        
         </List>
       </section>
     </Box>
