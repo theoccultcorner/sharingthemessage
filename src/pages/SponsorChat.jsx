@@ -2,35 +2,79 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // ==========================
-//   CALL /api/matt SAFELY
+//   LOAD API KEY FROM ENV
 // ==========================
-async function callMatt(prompt) {
-  const res = await fetch('/api/matt', {
+function getApiKey() {
+  // Vercel: NEXT_PUBLIC_OPENAI_API_KEY is set in dashboard
+  return process.env.NEXT_PUBLIC_OPENAI_API_KEY || '';
+}
+
+// ==========================
+//   CALL CHATGPT (NO JSON MODE, JUST PROMPTED JSON)
+// ==========================
+async function callChatGPT(prompt, apiKey) {
+  if (!apiKey) {
+    throw new Error('Missing NEXT_PUBLIC_OPENAI_API_KEY in environment.');
+  }
+
+  const url = 'https://api.openai.com/v1/chat/completions';
+
+  const system = [
+    'You are M.A.T.T. (My Anchor Through Turmoil), a calm, compassionate NA-style sponsor.',
+    'Reply in 1–3 short sentences. Be supportive, non-judgmental, practical.',
+    'Suggest one gentle next step (drink water, text a friend, breathe).',
+    'Avoid medical claims. If user sounds in crisis, suggest calling 988 in U.S. or local help.',
+    'No emojis. Warm, grounded, concise.',
+    'Always respond ONLY as a JSON object with two keys: "reply" and "sentiment".',
+    '"reply" is the short supportive message.',
+    '"sentiment" is one of: "very low", "low", "neutral", "high", or "very high" emotional distress.',
+    'Example: {"reply":"I’m here with you.","sentiment":"high"}'
+  ].join(' ');
+
+  const body = {
+    model: 'gpt-4.1-mini',
+    messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: `User said: "${prompt}"` }
+    ],
+    temperature: 0.7,
+    max_tokens: 200
+  };
+
+  const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt })
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
   });
 
   const text = await res.text();
-
   let data;
+
   try {
     data = text ? JSON.parse(text) : {};
   } catch (e) {
-    // If the server returned HTML or empty body, show raw text
-    throw new Error(
-      `Bad JSON from /api/matt: ${text || '[empty response from server]'}`
-    );
+    throw new Error(`OpenAI raw response (not JSON): ${text || '[empty]'}`);
   }
 
   if (!res.ok) {
-    throw new Error(data?.error || `HTTP ${res.status}`);
+    throw new Error(data?.error?.message || `OpenAI HTTP ${res.status}`);
   }
 
-  return {
-    reply: data.reply || '',
-    sentiment: data.sentiment || 'unknown'
-  };
+  const content = data?.choices?.[0]?.message?.content || '';
+
+  try {
+    const parsed = JSON.parse(content);
+    return {
+      reply: parsed.reply || '',
+      sentiment: parsed.sentiment || 'unknown'
+    };
+  } catch {
+    // If it didn't obey JSON strictly, just speak the content
+    return { reply: content.trim(), sentiment: 'unknown' };
+  }
 }
 
 // ==========================
@@ -54,6 +98,7 @@ function pickBestVoice(list) {
 //   MAIN COMPONENT
 // ==========================
 function SponsorChat() {
+  const API_KEY = getApiKey();
   const recognitionRef = useRef(null);
 
   const [isListening, setIsListening] = useState(false);
@@ -137,7 +182,7 @@ function SponsorChat() {
       setStatusText('Thinking…');
 
       try {
-        const { reply, sentiment } = await callMatt(transcript);
+        const { reply, sentiment } = await callChatGPT(transcript, API_KEY);
         setSentiment(sentiment);
         setErrorText('');
         speak(reply || "I'm here for you.");
@@ -191,7 +236,7 @@ function SponsorChat() {
     setStatusText('Thinking…');
 
     try {
-      const { reply, sentiment } = await callMatt(manualText);
+      const { reply, sentiment } = await callChatGPT(manualText, API_KEY);
       setSentiment(sentiment);
       setErrorText('');
       speak(reply || "I'm here for you.");
@@ -349,6 +394,7 @@ function SponsorChat() {
         </div>
       </div>
 
+      {/* ====== STYLES (Mobile + Desktop) ====== */}
       <style jsx>{`
         :root {
           color-scheme: dark;
@@ -369,7 +415,7 @@ function SponsorChat() {
         .matt-shell {
           width: 100%;
           max-width: 480px;
-          background: rgba(10, 10, 16, 0.9);
+          background: rgba(10, 10, 16, 0.95);
           border-radius: 20px;
           padding: 18px 16px 24px;
           box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
@@ -390,7 +436,7 @@ function SponsorChat() {
 
         .matt-header h1 {
           margin: 0;
-          font-size: 1.9rem;
+          font-size: 2rem;
           letter-spacing: 0.08em;
           text-transform: uppercase;
         }
