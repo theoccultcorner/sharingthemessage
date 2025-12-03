@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // ==========================
-//   CALL /api/matt (no key here)
+//   CALL /api/matt SAFELY
 // ==========================
 async function callMatt(prompt) {
   const res = await fetch('/api/matt', {
@@ -11,7 +11,18 @@ async function callMatt(prompt) {
     body: JSON.stringify({ prompt })
   });
 
-  const data = await res.json();
+  const text = await res.text();
+
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (e) {
+    // If the server returned HTML or empty body, show raw text
+    throw new Error(
+      `Bad JSON from /api/matt: ${text || '[empty response from server]'}`
+    );
+  }
+
   if (!res.ok) {
     throw new Error(data?.error || `HTTP ${res.status}`);
   }
@@ -128,6 +139,7 @@ function SponsorChat() {
       try {
         const { reply, sentiment } = await callMatt(transcript);
         setSentiment(sentiment);
+        setErrorText('');
         speak(reply || "I'm here for you.");
       } catch (err) {
         setErrorText(String(err.message || err));
@@ -181,6 +193,7 @@ function SponsorChat() {
     try {
       const { reply, sentiment } = await callMatt(manualText);
       setSentiment(sentiment);
+      setErrorText('');
       speak(reply || "I'm here for you.");
     } catch (err) {
       setErrorText(String(err.message || err));
@@ -229,7 +242,7 @@ function SponsorChat() {
             ) : null}
           </section>
 
-          {errorText && <div className="error-box">Error: {errorText}</div>}
+          {errorText && <div className="error-box">{errorText}</div>}
 
           <section className="card">
             <h2 className="card-title">Voice Settings</h2>
@@ -454,6 +467,7 @@ function SponsorChat() {
           background: rgba(239, 68, 68, 0.09);
           border: 1px solid rgba(248, 113, 113, 0.7);
           color: #fecaca;
+          word-break: break-word;
         }
 
         .card {
