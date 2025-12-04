@@ -5,8 +5,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 //   LOAD API KEY FROM ENV
 // ==========================
 function getApiKey() {
-  // Vercel: NEXT_PUBLIC_OPENAI_API_KEY is set in dashboard
-  return process.env.OPENAI_API_KEY || '';
+  // Must use NEXT_PUBLIC_ prefix for browser
+  const key = process.env.NEXT_PUBLIC_OPENAI_API_KEY || '';
+  // Debug: you can comment this out later
+  console.log('MATT ENV KEY (first 10 chars):', key ? key.slice(0, 10) + '...' : 'MISSING');
+  return key;
 }
 
 // ==========================
