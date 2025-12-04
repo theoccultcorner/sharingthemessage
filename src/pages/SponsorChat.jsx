@@ -5,10 +5,17 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 //   LOAD API KEY FROM ENV
 // ==========================
 function getApiKey() {
-  // Must use NEXT_PUBLIC_ prefix for browser
-  const key = process.env.NEXT_PUBLIC_OPENAI_API_KEY || '';
-  // Debug: you can comment this out later
-  console.log('MATT ENV KEY (first 10 chars):', key ? key.slice(0, 10) + '...' : 'MISSING');
+  // Try both names, just in case
+  const key =
+    process.env.NEXT_PUBLIC_OPENAI_API_KEY ||
+    process.env.OPENAI_API_KEY ||
+    '';
+
+  // Debug: you can remove this later
+  console.log(
+    'MATT ENV KEY (first 10 chars):',
+    key ? key.slice(0, 10) + '...' : 'MISSING'
+  );
   return key;
 }
 
@@ -17,7 +24,7 @@ function getApiKey() {
 // ==========================
 async function callChatGPT(prompt, apiKey) {
   if (!apiKey) {
-    throw new Error('Missing NEXT_PUBLIC_OPENAI_API_KEY in environment.');
+    throw new Error('Missing NEXT_PUBLIC_OPENAI_API_KEY / OPENAI_API_KEY in environment.');
   }
 
   const url = 'https://api.openai.com/v1/chat/completions';
@@ -264,6 +271,8 @@ function SponsorChat() {
     return 'sentiment-badge unknown';
   })();
 
+  const hasKey = !!API_KEY;
+
   // ==========================
   //   UI
   // ==========================
@@ -288,6 +297,11 @@ function SponsorChat() {
                 <span className="value">{sentiment}</span>
               </div>
             ) : null}
+
+            <div className={`status-chip ${hasKey ? 'key-ok' : 'key-missing'}`}>
+              <span className="label">API Key</span>
+              <span className="value">{hasKey ? 'Loaded' : 'Missing'}</span>
+            </div>
           </section>
 
           {errorText && <div className="error-box">{errorText}</div>}
@@ -482,6 +496,16 @@ function SponsorChat() {
         .status-chip .value,
         .sentiment-badge .value {
           font-weight: 500;
+        }
+
+        .status-chip.key-ok {
+          border-color: rgba(34, 197, 94, 0.7);
+          background: rgba(22, 163, 74, 0.2);
+        }
+
+        .status-chip.key-missing {
+          border-color: rgba(248, 113, 113, 0.7);
+          background: rgba(127, 29, 29, 0.2);
         }
 
         .sentiment-badge.danger {
