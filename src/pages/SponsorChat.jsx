@@ -6,7 +6,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 // ==========================
 function getApiKey() {
   // Vercel: NEXT_PUBLIC_OPENAI_API_KEY is set in dashboard
-  return process.env.NEXT_PUBLIC_OPENAI_API_KEY || '';
+  return process.env.OPENAI_API_KEY || '';
 }
 
 // ==========================
