@@ -18,7 +18,10 @@ const GSRReport = () => {
         marginBottom: "20px",
       }}
     >
-      <Typography variant="h4" sx={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold" }}>
+      <Typography
+        variant="h4"
+        sx={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold" }}
+      >
         STM GSR Report December 2025
       </Typography>
 
@@ -29,14 +32,12 @@ const GSRReport = () => {
           Positions Available
         </Typography>
         <List>
+          <ListItem>STM GROUP POSITIONS OPEN: Vice-Chair, GSR & Literature</ListItem>
           <ListItem>
-            STM GROUP POSITIONS OPEN: Vice-Chair, GSR & Literature
+            Participate in Your Recovery: Thursday Noon &amp; Sunday 8pm Secretary Positions open.
           </ListItem>
           <ListItem>
-            Participate in Your Recovery: Sunday 8pm Secretary Position open. Election on Dec. 14th.
-          </ListItem>
-          <ListItem>
-            Greeters, Coffee Persons & Meeting Service Reps (MSRs) needed for ALL STM Meetings.
+            Greeters, Coffee Persons &amp; Meeting Service Reps (MSRs) needed for ALL STM Meetings.
           </ListItem>
         </List>
       </section>
@@ -48,26 +49,19 @@ const GSRReport = () => {
           Meeting News
         </Typography>
         <List>
+          <ListItem>Guad Squad: Wednesday @ 7pm: 4635 6th Street.</ListItem>
+
           <ListItem>
-            STM Men’s Stag Meeting: Tuesdays @ 6:30pm needs support.
-          </ListItem>
-          <ListItem>
-            STM Women’s Book Study Meeting: Thursdays @ 6:30pm needs support. Keytags 1st Thursday.
-          </ListItem>
-          <ListItem>
-            Guad Squad: Wednesday @ 7pm: 4635 6th Street.
-          </ListItem>
-          <ListItem>
-            Survivors Bday/Speaker Mtgs:
+            Survivors Bday/Speaker Mtg:
             <List sx={{ paddingLeft: "20px" }}>
-              <ListItem>
-                Sat. Dec. 20th – Glenn S. & Wed. Dec. 31st – Ralphie V. @ 6pm
-              </ListItem>
+              <ListItem>Sat. Dec. 20th - Glenn S.</ListItem>
             </List>
           </ListItem>
-          <ListItem>
-            STM Activities/Group Service Committee Meeting December 13th @ 9am & 10am.
-          </ListItem>
+
+          <ListItem>STM Birthday/Speaker Meeting: December 27th @ 8pm - Kila</ListItem>
+
+          <ListItem>STM Activities/Group Service Committee Meeting: January 10th @ 9am &amp; 10am.</ListItem>
+
           <ListItem sx={{ paddingLeft: "20px" }}>
             Come support STM Activities. All Meeting Secretaries required to attend Group Service @ 10.
           </ListItem>
@@ -82,19 +76,21 @@ const GSRReport = () => {
         </Typography>
         <List>
           <ListItem>
-            New Attitudes Annual Men’s Brunch: Dec. 14th @ 11am. All Welcome. Donations accepted.
+            SBNA Deck the Halls @ 235 E. Cota St, SB: Saturday, Dec. 20th 3-10pm. Presale Tix $30.
           </ListItem>
+
           <ListItem>
-            SBNA Deck the Halls @ 235 E. Cota St, SB: Saturday, Dec. 20th 3–10pm. Presale Tix $30.
-          </ListItem>
-          <ListItem>
-            STM New Year Speaker Bash/Dinner/Karaoke/Dance: Wed, Dec. 31st Speaker @ 1:30pm: Gregory W.
-          </ListItem>
-          <ListItem sx={{ paddingLeft: "20px" }}>
-            Speakers Sign-ups for 2:30, 3:30, 4:30pm. Dinner/Karaoke @ 6–8pm. Speaker @ 8pm.
-          </ListItem>
-          <ListItem sx={{ paddingLeft: "20px" }}>
-            Dance 9pm – 12:30am. Event is free. Plates $10. Kids eat free.
+            STM New Year Speaker Bash/Dinner/Karaoke/Dance: Dec. 31st
+            <List sx={{ paddingLeft: "20px" }}>
+              <ListItem>Speakers @ 1:30pm: Greggory W.</ListItem>
+              <ListItem>2:30pm: Felicia H.</ListItem>
+              <ListItem>3:30pm: Daniel M.</ListItem>
+              <ListItem>4:30pm: Lorenzo N.</ListItem>
+              <ListItem>Dinner/Karaoke @ 6-8pm.</ListItem>
+              <ListItem>Speaker @ 8pm: “T”.</ListItem>
+              <ListItem>Dance 9pm - 12:30am.</ListItem>
+              <ListItem>Event is free. Plates $10. Kids eat free.</ListItem>
+            </List>
           </ListItem>
         </List>
       </section>
@@ -107,27 +103,21 @@ const GSRReport = () => {
         </Typography>
         <List>
           <ListItem>
-            STM Spanish NA Literature for sale now.
+            STM Toy Drive: Please donate new unused toys this Christmas for our STM kids. Thank you.
           </ListItem>
+          <ListItem>STM Spanish NA Literature for sale now.</ListItem>
+          <ListItem>STM Venmo &amp; CashApp: Please tag $ w/info.</ListItem>
+          <ListItem>STM GEAR for sale. Order sheet posted.</ListItem>
           <ListItem>
-            STM Venmo & CashApp: Please tag $ w/info.
+            Celebrating a milestone in your recovery? Put your name, clean date &amp; time on board.
           </ListItem>
-          <ListItem>
-            STM GEAR for sale. Order sheet posted.
-          </ListItem>
-          <ListItem>
-            Celebrating a milestone in your recovery? Put your name, clean date & time on board.
-          </ListItem>
-          <ListItem>
-            PR, H&I & Behind the Walls Sponsorship needs volunteers. Info posted.
-          </ListItem>
+          <ListItem>PR, H&amp;I &amp; Behind the Walls Sponsorship needs volunteers. Info posted.</ListItem>
           <ListItem>
             NA Area Information @{" "}
             <Link href="https://centralcoastna.org" target="_blank" rel="noopener">
               centralcoastna.org
             </Link>
           </ListItem>
-        
         </List>
       </section>
     </Box>
