@@ -32,7 +32,7 @@ const existingMeetings = {
   ],
   Thursday: [
     { time: "12 PM", host: "Bob S." },
-    { time: "6:30 PM", host: "Women’s Meeting – Erika" },
+   
     { time: "8 PM", host: "Sandy K." }
   ],
   Friday: [
