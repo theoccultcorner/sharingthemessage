@@ -15,7 +15,7 @@ import {
 const existingMeetings = {
   Sunday: [
     { time: "12 PM", host: "Jon T." },
-    { time: "8 PM", host: "James K." }
+    { time: "8 PM", host: "Mark P." }
   ],
   Monday: [
     { time: "12 PM", host: "MARK" },
@@ -31,7 +31,7 @@ const existingMeetings = {
     { time: "8 PM", host: "Daniel M." }
   ],
   Thursday: [
-    { time: "12 PM", host: "Cambria" },
+    { time: "12 PM", host: "Bob S." },
     { time: "6:30 PM", host: "Women’s Meeting – Erika" },
     { time: "8 PM", host: "Sandy K." }
   ],
@@ -40,7 +40,7 @@ const existingMeetings = {
     { time: "8 PM", host: "Joseph / Candle-light" }
   ],
   Saturday: [
-    { time: "12 PM", host: "T" },
+    { time: "12 PM", host: "Felicia" },
     { time: "8 PM", host: "Michael B." }
   ]
 };
