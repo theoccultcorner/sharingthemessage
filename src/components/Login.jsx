@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 
 import naLogo from "../assets/images.gif";
+import naLogo1 from "../assets/images1.PNG";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -211,6 +212,20 @@ const Login = () => {
       >
         The only requirement for membership is a desire to stop using.
       </Typography>
+
+    <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+        <Box
+          component="img"
+          src={naLogo1}
+          alt="Narcotics Anonymous Logo"
+          sx={{
+            height: 90,
+            width: "auto",
+            opacity: 0.9
+          }}
+        />
+      </Box>
+      
     </Container>
   );
 };
