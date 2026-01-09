@@ -14,8 +14,11 @@ import {
   Container,
   Typography,
   TextField,
-  Stack
+  Stack,
+  Box
 } from "@mui/material";
+
+import naLogo from "../assets/images.gif";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -30,12 +33,10 @@ const Login = () => {
       await setPersistence(auth, browserLocalPersistence);
       const result = await signInWithPopup(auth, provider);
 
-      // ✅ Save or update user info in Firestore
       const userRef = doc(db, "users", result.user.uid);
       const snap = await getDoc(userRef);
 
       if (!snap.exists()) {
-        // New user: create the Firestore document with profile photo
         await setDoc(userRef, {
           screenName: "",
           email: result.user.email,
@@ -43,22 +44,22 @@ const Login = () => {
           role: "member"
         });
       } else {
-        // Existing user: update photoURL if it changed or was missing
         const userData = snap.data();
         if (userData.photoURL !== result.user.photoURL) {
           await setDoc(
             userRef,
-            {
-              photoURL: result.user.photoURL || ""
-            },
+            { photoURL: result.user.photoURL || "" },
             { merge: true }
           );
         }
       }
 
-      // Navigate based on screenName presence
       const screenName = snap.exists() ? snap.data().screenName : null;
-      navigate(screenName && screenName.trim() !== "" ? "/home" : "/create-screen-name");
+      navigate(
+        screenName && screenName.trim() !== ""
+          ? "/home"
+          : "/create-screen-name"
+      );
     } catch (err) {
       console.error("Google login failed:", err);
       alert("Google login failed: " + err.message);
@@ -74,7 +75,11 @@ const Login = () => {
       const snap = await getDoc(docRef);
 
       const screenName = snap.exists() ? snap.data().screenName : null;
-      navigate(screenName && screenName.trim() !== "" ? "/home" : "/create-screen-name");
+      navigate(
+        screenName && screenName.trim() !== ""
+          ? "/home"
+          : "/create-screen-name"
+      );
     } catch (err) {
       console.error(err);
       alert("Login failed: " + err.message);
@@ -85,11 +90,10 @@ const Login = () => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
 
-      // New user: create Firestore document with empty photoURL
       await setDoc(doc(db, "users", result.user.uid), {
         screenName: "",
         email: result.user.email,
-        photoURL: "", // email users won't have a photo initially
+        photoURL: "",
         role: "member"
       });
 
@@ -101,10 +105,25 @@ const Login = () => {
   };
 
   return (
-    <Container maxWidth="sm" style={{ marginTop: "2rem", textAlign: "center" }}>
+    <Container maxWidth="sm" sx={{ mt: 4, textAlign: "center" }}>
+      {/* Title */}
       <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: green }}>
         Sharing the Message Group of Narcotics Anonymous
       </Typography>
+
+      {/* NA LOGO UNDER "NARCOTICS ANONYMOUS" */}
+      <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+        <Box
+          component="img"
+          src={naLogo}
+          alt="Narcotics Anonymous Logo"
+          sx={{
+            height: 90,
+            width: "auto",
+            opacity: 0.9
+          }}
+        />
+      </Box>
 
       <Typography variant="h4" gutterBottom sx={{ color: green }}>
         {isSignup ? "Sign Up" : "Login"}
@@ -119,6 +138,7 @@ const Login = () => {
           onChange={(e) => setEmail(e.target.value)}
           sx={{ input: { color: green }, label: { color: green } }}
         />
+
         <TextField
           label="Password"
           type="password"
@@ -140,6 +160,7 @@ const Login = () => {
             >
               Sign Up
             </Button>
+
             <Button
               variant="text"
               onClick={() => setIsSignup(false)}
@@ -160,6 +181,7 @@ const Login = () => {
             >
               Login
             </Button>
+
             <Button
               variant="text"
               onClick={() => setIsSignup(true)}
@@ -183,7 +205,10 @@ const Login = () => {
         </Button>
       </Stack>
 
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: green }}>
+      <Typography
+        variant="h5"
+        sx={{ mt: 4, fontWeight: 600, color: green }}
+      >
         The only requirement for membership is a desire to stop using.
       </Typography>
     </Container>
