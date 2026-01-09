@@ -125,7 +125,7 @@ const Login = () => {
         />
       </Box>
 
-      <Typography variant="h4" gutterBottom sx={{ color: green }}>
+      <Typography variant="h5" gutterBottom sx={{ color: green }}>
         {isSignup ? "Sign Up" : "Login"}
       </Typography>
 
