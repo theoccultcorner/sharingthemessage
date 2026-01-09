@@ -19,7 +19,7 @@ import {
 } from "@mui/material";
 
 import naLogo from "../assets/images.gif";
-import naLogo1 from "../assets/images1.PNG";
+import naLogo1 from "../assets/images1.png";
 
 const Login = () => {
   const navigate = useNavigate();
