@@ -49,17 +49,38 @@ const Home = () => {
   };
 
   return (
-    <Box>
-      <AppBar position="static" sx={{ backgroundColor: "#1F3F3A" }}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Sharing the Message
-          </Typography>
-          <Button color="inherit" onClick={handleLogout} startIcon={<LogoutIcon />}>
-            Logout
-          </Button>
-        </Toolbar>
-      </AppBar>
+<Box>
+  <AppBar position="static" sx={{ backgroundColor: "#1F3F3A" }}>
+    <Toolbar>
+      {/* NA Logo */}
+      <Box
+        component="img"
+        src={naLogo}
+        alt="Narcotics Anonymous Logo"
+        sx={{
+          height: 40,
+          width: "auto",
+          mr: 2,
+        }}
+      />
+
+      {/* Title */}
+      <Typography variant="h6" sx={{ flexGrow: 1 }}>
+        Sharing the Message
+      </Typography>
+
+      {/* Logout */}
+      <Button
+        color="inherit"
+        onClick={handleLogout}
+        startIcon={<LogoutIcon />}
+      >
+        Logout
+      </Button>
+    </Toolbar>
+  </AppBar>
+</ 
+
 
       <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
         <Stack spacing={2} sx={{ mt: 4 }}>
