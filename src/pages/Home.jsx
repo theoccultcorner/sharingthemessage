@@ -41,15 +41,12 @@ const Home = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      // Optional: navigate("/login");
     } catch (err) {
       console.error("Logout error:", err);
     }
   };
 
-  const handleOpenMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const handleOpenMenu = (event) => setAnchorEl(event.currentTarget);
 
   const handleCloseMenu = (path) => {
     setAnchorEl(null);
@@ -58,26 +55,20 @@ const Home = () => {
 
   return (
     <Box>
+      {/* TOP BAR */}
       <AppBar position="static" sx={{ backgroundColor: "#1F3F3A" }}>
         <Toolbar>
-          {/* NA Logo */}
           <Box
             component="img"
             src={naLogo}
             alt="Narcotics Anonymous Logo"
-            sx={{
-              height: 40,
-              width: "auto",
-              mr: 2,
-            }}
+            sx={{ height: 40, width: "auto", mr: 2 }}
           />
 
-          {/* Title */}
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Sharing the Message
           </Typography>
 
-          {/* Logout */}
           <Button
             color="inherit"
             onClick={handleLogout}
@@ -88,7 +79,7 @@ const Home = () => {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
+      <Container maxWidth="sm" sx={{ mt: 4, mb: 12 }}>
         <Stack spacing={2} sx={{ mt: 4 }}>
           <Typography variant="h4" gutterBottom>
             Welcome, {screenName || user?.displayName}!
@@ -199,44 +190,67 @@ const Home = () => {
         </Stack>
       </Container>
 
+      {/* BOTTOM BAR (logo + nav) */}
       <Paper
-
-          component="img"
+        elevation={3}
+        sx={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: "#f5f5f5",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            px: 1,
+          }}
+        >
+          {/* Bottom logo (2nd time) */}
+          <Box
+            component="img"
             src={naLogo}
             alt="Narcotics Anonymous Logo"
             sx={{
-              height: 40,
+              height: 34,
               width: "auto",
-              mr: 2,
+              mr: 1,
+              flexShrink: 0,
             }}
-        sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
-        elevation={3}
-      >
-        <BottomNavigation
-          showLabels
-          value={navValue}
-          onChange={(event, newValue) => {
-            setNavValue(newValue);
-            if (newValue === 0) navigate("/meetings");
-            if (newValue === 1) navigate("/chatroom");
-            if (newValue === 2) navigate("/profile");
-            if (newValue === 3) navigate("/sponsor-chat");
-          }}
-          sx={{
-            backgroundColor: "#f5f5f5",
-            "& .Mui-selected, & .Mui-selected > svg": {
-              color: "#1F3F3A",
-            },
-          }}
-        >
-          <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
-          <BottomNavigationAction label="Message Board" icon={<MessageIcon />} />
-          <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
-          <BottomNavigationAction
-            label="A.I. Sponsor"
-            icon={<VolunteerActivismIcon />}
           />
-        </BottomNavigation>
+
+          <BottomNavigation
+            showLabels
+            value={navValue}
+            onChange={(event, newValue) => {
+              setNavValue(newValue);
+              if (newValue === 0) navigate("/meetings");
+              if (newValue === 1) navigate("/chatroom");
+              if (newValue === 2) navigate("/profile");
+              if (newValue === 3) navigate("/sponsor-chat");
+            }}
+            sx={{
+              flexGrow: 1,
+              backgroundColor: "transparent",
+              "& .Mui-selected, & .Mui-selected > svg": {
+                color: "#1F3F3A",
+              },
+            }}
+          >
+            <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
+            <BottomNavigationAction
+              label="Message Board"
+              icon={<MessageIcon />}
+            />
+            <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
+            <BottomNavigationAction
+              label="A.I. Sponsor"
+              icon={<VolunteerActivismIcon />}
+            />
+          </BottomNavigation>
+        </Box>
       </Paper>
     </Box>
   );
