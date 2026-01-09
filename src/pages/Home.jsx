@@ -30,7 +30,7 @@ import ArticleIcon from "@mui/icons-material/Article";
 import HeadphonesIcon from "@mui/icons-material/Headphones";
 import PeopleIcon from "@mui/icons-material/People";
 
-import naLogo from "../assets/images.png";
+import naLogo from "../assets/images.gif";
 
 const Home = () => {
   const { user, screenName } = useAuth();
