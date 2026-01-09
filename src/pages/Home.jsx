@@ -46,7 +46,9 @@ const Home = () => {
     }
   };
 
-  const handleOpenMenu = (event) => setAnchorEl(event.currentTarget);
+  const handleOpenMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
   const handleCloseMenu = (path) => {
     setAnchorEl(null);
@@ -55,7 +57,7 @@ const Home = () => {
 
   return (
     <Box>
-      {/* TOP BAR */}
+      {/* TOP APP BAR */}
       <AppBar position="static" sx={{ backgroundColor: "#1F3F3A" }}>
         <Toolbar>
           <Box
@@ -79,22 +81,21 @@ const Home = () => {
         </Toolbar>
       </AppBar>
 
+      {/* PAGE CONTENT */}
       <Container maxWidth="sm" sx={{ mt: 4, mb: 12 }}>
-        <Stack spacing={2} sx={{ mt: 4 }}>
-          <Typography variant="h4" gutterBottom>
+        <Stack spacing={2}>
+          <Typography variant="h4">
             Welcome, {screenName || user?.displayName}!
           </Typography>
 
-          <Typography variant="body1" gutterBottom>
+          <Typography variant="body1">
             To the "Sharing the Message" group of Narcotics Anonymous Community
             Homepage.
           </Typography>
 
-          <Typography variant="h5" gutterBottom>
-            NA Service Prayer
-          </Typography>
+          <Typography variant="h5">NA Service Prayer</Typography>
 
-          <Typography variant="body1" gutterBottom>
+          <Typography variant="body1">
             GOD, grant us knowledge that we may serve according to Your Divine
             precepts. Instill in us a sense of Your purpose. Make us servants of
             Your will and grant us a bond of selflessness that this may truly be
@@ -102,6 +103,7 @@ const Home = () => {
             from the horrors of addiction.
           </Typography>
 
+          {/* NAVIGATE BUTTON */}
           <Button
             variant="contained"
             onClick={handleOpenMenu}
@@ -113,36 +115,43 @@ const Home = () => {
             Navigate
           </Button>
 
+          {/* SECOND NA LOGO (UNDER NAVIGATE BUTTON) */}
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+            <Box
+              component="img"
+              src={naLogo}
+              alt="Narcotics Anonymous Logo"
+              sx={{
+                height: 80,
+                width: "auto",
+                opacity: 0.9,
+              }}
+            />
+          </Box>
+
+          {/* NAV MENU */}
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={() => handleCloseMenu(null)}
           >
             <MenuItem onClick={() => handleCloseMenu("/meetings")}>
-              <ListItemIcon>
-                <GroupIcon />
-              </ListItemIcon>
+              <ListItemIcon><GroupIcon /></ListItemIcon>
               <ListItemText primary="Find a Meeting" />
             </MenuItem>
 
             <MenuItem onClick={() => handleCloseMenu("/phone-list")}>
-              <ListItemIcon>
-                <MessageIcon />
-              </ListItemIcon>
+              <ListItemIcon><MessageIcon /></ListItemIcon>
               <ListItemText primary="Phone List" />
             </MenuItem>
 
             <MenuItem onClick={() => handleCloseMenu("/service")}>
-              <ListItemIcon>
-                <VolunteerActivismIcon />
-              </ListItemIcon>
+              <ListItemIcon><VolunteerActivismIcon /></ListItemIcon>
               <ListItemText primary="Service Opportunities" />
             </MenuItem>
 
             <MenuItem onClick={() => handleCloseMenu("/meditation")}>
-              <ListItemIcon>
-                <ArticleIcon />
-              </ListItemIcon>
+              <ListItemIcon><ArticleIcon /></ListItemIcon>
               <ListItemText primary="JFT Meditation" />
             </MenuItem>
 
@@ -153,104 +162,62 @@ const Home = () => {
               rel="noopener noreferrer"
               onClick={() => setAnchorEl(null)}
             >
-              <ListItemIcon>
-                <OpenInNewIcon />
-              </ListItemIcon>
+              <ListItemIcon><OpenInNewIcon /></ListItemIcon>
               <ListItemText primary="SPAD Meditation" />
             </MenuItem>
 
             <MenuItem onClick={() => handleCloseMenu("/gsr-report")}>
-              <ListItemIcon>
-                <ArticleIcon />
-              </ListItemIcon>
+              <ListItemIcon><ArticleIcon /></ListItemIcon>
               <ListItemText primary="STM GSR Report" />
             </MenuItem>
 
             <MenuItem onClick={() => handleCloseMenu("/audiobooks")}>
-              <ListItemIcon>
-                <HeadphonesIcon />
-              </ListItemIcon>
+              <ListItemIcon><HeadphonesIcon /></ListItemIcon>
               <ListItemText primary="Audiobooks" />
             </MenuItem>
 
             <MenuItem onClick={() => handleCloseMenu("/members")}>
-              <ListItemIcon>
-                <PeopleIcon />
-              </ListItemIcon>
+              <ListItemIcon><PeopleIcon /></ListItemIcon>
               <ListItemText primary="Members" />
             </MenuItem>
 
             <MenuItem onClick={() => handleCloseMenu("/sponsor-chat")}>
-              <ListItemIcon>
-                <VolunteerActivismIcon />
-              </ListItemIcon>
+              <ListItemIcon><VolunteerActivismIcon /></ListItemIcon>
               <ListItemText primary="Sponsor Chat" />
             </MenuItem>
           </Menu>
         </Stack>
       </Container>
 
-      {/* BOTTOM BAR (logo + nav) */}
+      {/* BOTTOM NAVIGATION */}
       <Paper
         elevation={3}
-        sx={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: "#f5f5f5",
-        }}
+        sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
       >
-        <Box
+        <BottomNavigation
+          showLabels
+          value={navValue}
+          onChange={(event, newValue) => {
+            setNavValue(newValue);
+            if (newValue === 0) navigate("/meetings");
+            if (newValue === 1) navigate("/chatroom");
+            if (newValue === 2) navigate("/profile");
+            if (newValue === 3) navigate("/sponsor-chat");
+          }}
           sx={{
-            display: "flex",
-            alignItems: "center",
-            px: 1,
+            "& .Mui-selected, & .Mui-selected > svg": {
+              color: "#1F3F3A",
+            },
           }}
         >
-          {/* Bottom logo (2nd time) */}
-          <Box
-            component="img"
-            src={naLogo}
-            alt="Narcotics Anonymous Logo"
-            sx={{
-              height: 34,
-              width: "auto",
-              mr: 1,
-              flexShrink: 0,
-            }}
+          <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
+          <BottomNavigationAction label="Message Board" icon={<MessageIcon />} />
+          <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
+          <BottomNavigationAction
+            label="A.I. Sponsor"
+            icon={<VolunteerActivismIcon />}
           />
-
-          <BottomNavigation
-            showLabels
-            value={navValue}
-            onChange={(event, newValue) => {
-              setNavValue(newValue);
-              if (newValue === 0) navigate("/meetings");
-              if (newValue === 1) navigate("/chatroom");
-              if (newValue === 2) navigate("/profile");
-              if (newValue === 3) navigate("/sponsor-chat");
-            }}
-            sx={{
-              flexGrow: 1,
-              backgroundColor: "transparent",
-              "& .Mui-selected, & .Mui-selected > svg": {
-                color: "#1F3F3A",
-              },
-            }}
-          >
-            <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
-            <BottomNavigationAction
-              label="Message Board"
-              icon={<MessageIcon />}
-            />
-            <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
-            <BottomNavigationAction
-              label="A.I. Sponsor"
-              icon={<VolunteerActivismIcon />}
-            />
-          </BottomNavigation>
-        </Box>
+        </BottomNavigation>
       </Paper>
     </Box>
   );
