@@ -28,6 +28,8 @@ import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import ArticleIcon from "@mui/icons-material/Article";
 import HeadphonesIcon from "@mui/icons-material/Headphones";
 import PeopleIcon from "@mui/icons-material/People"; // Icon for Members
+import naLogo from "../assets/na-logo.png";
+
 
 const Home = () => {
   const { user, screenName } = useAuth();
