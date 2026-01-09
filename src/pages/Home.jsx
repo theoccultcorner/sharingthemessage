@@ -200,6 +200,15 @@ const Home = () => {
       </Container>
 
       <Paper
+
+          component="img"
+            src={naLogo}
+            alt="Narcotics Anonymous Logo"
+            sx={{
+              height: 40,
+              width: "auto",
+              mr: 2,
+            }}
         sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
         elevation={3}
       >
