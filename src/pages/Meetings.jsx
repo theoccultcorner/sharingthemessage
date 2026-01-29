@@ -4,29 +4,19 @@ import {
   Typography,
   Paper,
   Box,
-  useTheme,
-  useMediaQuery,
   Divider,
   Stack,
   Tabs,
   Tab,
   Button,
   Chip,
-  TextField,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 
-/**
- * ✅ Vercel-safe (client-only export)
- * - No Node APIs
- * - No filesystem
- * - Uses Blob + URL.createObjectURL for downloads
- * - Clipboard copy is optional (falls back to manual copy)
- *
- * ✅ Bottom has "Meeting Export" with:
- * - Download JSON
- * - Download CSV
- * - Copy JSON
- */
+/* =========================
+   DATA
+========================= */
 
 const STM_LOCATION = {
   name: "upstairs in back of thrift store suite D",
@@ -111,9 +101,12 @@ const extraMeetings = {
   ],
 };
 
-function downloadTextFile(filename, text, mime) {
-  // ✅ Browser-safe download (works on Vercel deployments)
-  const blob = new Blob([text], { type: mime });
+/* =========================
+   HELPERS
+========================= */
+
+function downloadCSV(filename, text) {
+  const blob = new Blob([text], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -124,98 +117,49 @@ function downloadTextFile(filename, text, mime) {
   URL.revokeObjectURL(url);
 }
 
-function escapeCsv(value) {
-  const s = String(value ?? "");
-  if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
+function escapeCSV(value) {
+  const v = String(value ?? "");
+  return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
 }
 
-function toCsv(rows) {
-  const headers = ["day", "category", "time", "host", "details"];
+function toCSV(rows) {
+  const headers = ["Day", "Category", "Time", "Host", "Details"];
   const lines = [headers.join(",")];
-  for (const r of rows) {
+
+  rows.forEach((r) => {
     lines.push(
       [
-        escapeCsv(r.day),
-        escapeCsv(r.category),
-        escapeCsv(r.time),
-        escapeCsv(r.host),
-        escapeCsv(r.details),
+        escapeCSV(r.day),
+        escapeCSV(r.category),
+        escapeCSV(r.time),
+        escapeCSV(r.host),
+        escapeCSV(r.details),
       ].join(",")
     );
-  }
+  });
+
   return lines.join("\n");
 }
 
-function DayCard({ day, stm, allMeetings }) {
-  return (
-    <Paper elevation={2} sx={{ p: 2 }}>
-      <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
-        {day}
-      </Typography>
-
-      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
-        STM Hosts
-      </Typography>
-
-      {stm?.length ? (
-        stm.map(({ time, host }, idx) => (
-          <Box key={`${day}-stm-${idx}`} sx={{ mb: 1 }}>
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              ⏰ {time}
-            </Typography>
-            <Typography variant="body2" sx={{ ml: 2 }}>
-              👤 {host}
-            </Typography>
-            {idx < stm.length - 1 && <Divider sx={{ my: 1 }} />}
-          </Box>
-        ))
-      ) : (
-        <Typography variant="body2" color="text.secondary">
-          No STM host meetings listed.
-        </Typography>
-      )}
-
-      <Divider sx={{ my: 2 }} />
-
-      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
-        All NA Meetings
-      </Typography>
-
-      {allMeetings?.length ? (
-        allMeetings.map((entry, idx) => (
-          <Box key={`${day}-all-${idx}`} sx={{ mb: 1 }}>
-            <Typography variant="body2">📍 {entry}</Typography>
-            {idx < allMeetings.length - 1 && <Divider sx={{ my: 1 }} />}
-          </Box>
-        ))
-      ) : (
-        <Typography variant="body2" color="text.secondary">
-          No meetings listed.
-        </Typography>
-      )}
-    </Paper>
-  );
-}
+/* =========================
+   COMPONENT
+========================= */
 
 export default function Meetings() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const daysOfWeek = useMemo(() => Object.keys(existingMeetings), []);
-  const todayIndex = new Date().getDay(); // 0..6
-  const safeTodayIndex =
-    Number.isInteger(todayIndex) && todayIndex >= 0 && todayIndex <= 6 ? todayIndex : 0;
-
-  const [selectedTab, setSelectedTab] = useState(safeTodayIndex);
+  const daysOfWeek = Object.keys(existingMeetings);
+  const today = new Date().getDay();
+  const [selectedTab, setSelectedTab] = useState(today);
 
   const dayKey = daysOfWeek[selectedTab];
 
-  // ✅ Build export rows (STM Hosts + All NA Meetings)
   const exportRows = useMemo(() => {
     const rows = [];
-    for (const day of daysOfWeek) {
-      for (const m of existingMeetings[day] || []) {
+
+    daysOfWeek.forEach((day) => {
+      existingMeetings[day]?.forEach((m) => {
         rows.push({
           day,
           category: "STM Hosts",
@@ -223,8 +167,9 @@ export default function Meetings() {
           host: m.host,
           details: `${STM_LOCATION.name} — ${STM_LOCATION.address}`,
         });
-      }
-      for (const entry of extraMeetings[day] || []) {
+      });
+
+      extraMeetings[day]?.forEach((entry) => {
         rows.push({
           day,
           category: "All NA Meetings",
@@ -232,33 +177,19 @@ export default function Meetings() {
           host: "",
           details: entry,
         });
-      }
-    }
+      });
+    });
+
     return rows;
   }, [daysOfWeek]);
-
-  const exportJson = useMemo(
-    () =>
-      JSON.stringify(
-        {
-          generatedAt: new Date().toISOString(),
-          stmLocation: STM_LOCATION,
-          meetings: exportRows,
-        },
-        null,
-        2
-      ),
-    [exportRows]
-  );
 
   return (
     <Container sx={{ mt: 4, mb: 10 }}>
       <Typography
         variant={isMobile ? "h5" : "h4"}
         align="center"
+        fontWeight="bold"
         gutterBottom
-        sx={{ fontWeight: "bold" }}
-        component="div"
       >
         Daily NA Meetings
       </Typography>
@@ -274,7 +205,6 @@ export default function Meetings() {
         onChange={(_, v) => setSelectedTab(v)}
         variant="scrollable"
         scrollButtons="auto"
-        allowScrollButtonsMobile
         sx={{ mb: 2 }}
       >
         {daysOfWeek.map((day) => (
@@ -282,65 +212,56 @@ export default function Meetings() {
         ))}
       </Tabs>
 
-      <Stack spacing={2}>
-        <DayCard day={dayKey} stm={existingMeetings[dayKey]} allMeetings={extraMeetings[dayKey]} />
+      <Paper elevation={2} sx={{ p: 2 }}>
+        <Typography variant="h6" fontWeight={700}>
+          STM Hosts
+        </Typography>
 
-        {/* ✅ EXPORT AT THE BOTTOM (VERCEL SAFE) */}
-        <Paper elevation={3} sx={{ p: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
-            Export Meetings
-          </Typography>
+        {existingMeetings[dayKey].map((m, i) => (
+          <Box key={i} sx={{ mb: 1 }}>
+            <Typography>⏰ {m.time}</Typography>
+            <Typography sx={{ ml: 2 }}>👤 {m.host}</Typography>
+            {i < existingMeetings[dayKey].length - 1 && <Divider sx={{ my: 1 }} />}
+          </Box>
+        ))}
 
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Download the full weekly list as JSON or CSV. (Works in Vercel because it runs in the
-            browser.)
-          </Typography>
+        <Divider sx={{ my: 2 }} />
 
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ mb: 2 }}>
-            <Button
-              variant="contained"
-              onClick={() =>
-                downloadTextFile("meetings.json", exportJson, "application/json;charset=utf-8")
-              }
-            >
-              Download JSON
-            </Button>
+        <Typography variant="h6" fontWeight={700}>
+          All NA Meetings
+        </Typography>
 
-            <Button
-              variant="outlined"
-              onClick={() =>
-                downloadTextFile("meetings.csv", toCsv(exportRows), "text/csv;charset=utf-8")
-              }
-            >
-              Download CSV
-            </Button>
+        {extraMeetings[dayKey].map((m, i) => (
+          <Box key={i} sx={{ mb: 1 }}>
+            <Typography variant="body2">📍 {m}</Typography>
+            {i < extraMeetings[dayKey].length - 1 && <Divider sx={{ my: 1 }} />}
+          </Box>
+        ))}
+      </Paper>
 
-            <Button
-              variant="outlined"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(exportJson);
-                } catch (_e) {
-                  // clipboard might be blocked; user can copy from preview
-                }
-              }}
-            >
-              Copy JSON
-            </Button>
+      {/* ✅ CSV EXPORT (BOTTOM) */}
+      <Paper elevation={3} sx={{ p: 2, mt: 4 }}>
+        <Typography variant="h6" fontWeight={800} gutterBottom>
+          Export Meetings (CSV)
+        </Typography>
 
-            <Chip label={`${exportRows.length} rows`} variant="outlined" sx={{ width: "fit-content" }} />
-          </Stack>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Download the full weekly meeting list as a CSV file.
+        </Typography>
 
-          <TextField
-            label="Export Preview (JSON)"
-            value={exportJson}
-            multiline
-            minRows={8}
-            fullWidth
-            inputProps={{ readOnly: true }}
-          />
-        </Paper>
-      </Stack>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+          <Button
+            variant="contained"
+            onClick={() =>
+              downloadCSV("na-meetings.csv", toCSV(exportRows))
+            }
+          >
+            Download CSV
+          </Button>
+
+          <Chip label={`${exportRows.length} rows`} variant="outlined" />
+        </Stack>
+      </Paper>
     </Container>
   );
 }
