@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import {
@@ -16,6 +16,7 @@ import PsychologyRoundedIcon from "@mui/icons-material/PsychologyRounded";
 import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import { useTheme } from "@mui/material/styles";
 import { auth } from "../firebase";
 import { useAuth } from "../context/AuthContext";
@@ -43,6 +44,8 @@ export default function AppShell({ children }) {
   const navigate = useNavigate();
   const { screenName, user } = useAuth();
   const current = location.pathname;
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const handleNavigate = (path) => { navigate(path); setMobileMenuOpen(false); };
 
   const navigation = (
     <Box sx={{ height: "100%", display: "flex", flexDirection: "column", p: 2 }}>
@@ -59,7 +62,7 @@ export default function AppShell({ children }) {
           <ListItemButton
             key={path}
             selected={current === path}
-            onClick={() => navigate(path)}
+            onClick={() => handleNavigate(path)}
             sx={{ borderRadius: 2.5, minHeight: 46, color: "rgba(255,255,255,.78)", "& .MuiListItemIcon-root": { color: "inherit", minWidth: 40 }, "&.Mui-selected": { color: "#fff", bgcolor: "rgba(255,255,255,.13)", "&:hover": { bgcolor: "rgba(255,255,255,.17)" } } }}
           >
             <ListItemIcon><Icon fontSize="small" /></ListItemIcon>
@@ -69,7 +72,7 @@ export default function AppShell({ children }) {
       </List>
       <Box sx={{ mt: "auto", p: 1 }}>
         <Divider sx={{ borderColor: "rgba(255,255,255,.1)", mb: 2 }} />
-        <Button onClick={() => navigate("/profile")} fullWidth sx={{ color: "#fff", justifyContent: "flex-start", px: 1, gap: 1.25 }}>
+        <Button onClick={() => handleNavigate("/profile")} fullWidth sx={{ color: "#fff", justifyContent: "flex-start", px: 1, gap: 1.25 }}>
           <Avatar src={user?.photoURL || undefined} sx={{ width: 34, height: 34, bgcolor: "secondary.main", fontSize: 14 }}>{screenName?.[0]?.toUpperCase()}</Avatar>
           <Box sx={{ textAlign: "left", minWidth: 0 }}>
             <Typography variant="body2" noWrap sx={{ fontWeight: 700 }}>{screenName || "My profile"}</Typography>
@@ -88,11 +91,24 @@ export default function AppShell({ children }) {
       ) : (
         <AppBar position="sticky" elevation={0} sx={{ bgcolor: "rgba(243,245,241,.92)", color: "text.primary", backdropFilter: "blur(14px)", borderBottom: "1px solid rgba(21,63,58,.08)" }}>
           <Toolbar>
+            <IconButton onClick={() => setMobileMenuOpen(true)} aria-label="Open all sections" sx={{ mr: .5 }}><MenuRoundedIcon /></IconButton>
             <Box component="img" src={naLogo} alt="" sx={{ width: 36, height: 36, objectFit: "contain", mr: 1.25 }} />
             <Box sx={{ flex: 1 }}><Typography variant="caption" color="text.secondary">Sharing the Message</Typography><Typography sx={{ fontWeight: 750, lineHeight: 1.15 }}>{pageTitles[current] || "Community"}</Typography></Box>
             <Tooltip title="Sign out"><IconButton onClick={() => signOut(auth)} aria-label="Sign out"><LogoutRoundedIcon /></IconButton></Tooltip>
           </Toolbar>
         </AppBar>
+      )}
+
+      {!desktop && (
+        <Drawer
+          anchor="left"
+          open={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          ModalProps={{ keepMounted: true }}
+          sx={{ "& .MuiDrawer-paper": { width: "min(86vw, 300px)", border: 0, color: "#fff", bgcolor: "primary.dark", backgroundImage: "radial-gradient(circle at 20% 0%, rgba(75,142,126,.32), transparent 36%)" } }}
+        >
+          {navigation}
+        </Drawer>
       )}
 
       <Box component="main" sx={{ ml: desktop ? `${drawerWidth}px` : 0, pb: desktop ? 4 : 11, minHeight: "100vh" }}>

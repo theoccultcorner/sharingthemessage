@@ -1,127 +1,62 @@
 import React, { useEffect } from "react";
-import { Box, Typography, List, ListItem, Link, Divider } from "@mui/material";
+import { Alert, Box, Chip, Container, Grid, Link, List, ListItem, ListItemIcon, ListItemText, Paper, Stack, Typography } from "@mui/material";
+import WorkOutlineRoundedIcon from "@mui/icons-material/WorkOutlineRounded";
+import CampaignRoundedIcon from "@mui/icons-material/CampaignRounded";
+import CelebrationRoundedIcon from "@mui/icons-material/CelebrationRounded";
+import PublicRoundedIcon from "@mui/icons-material/PublicRounded";
+import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
+import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 
-const GSRReport = () => {
-  useEffect(() => {
-    // Scroll to the top of the page when the component mounts
-    window.scrollTo(0, 0);
-  }, []);
+const sections = [
+  { title: "Service positions", icon: WorkOutlineRoundedIcon, items: [
+    "STM group positions open: Vice-Chair, GSR, and Literature.",
+    "Thursday noon and Sunday 8 PM secretary positions are open.",
+    "Greeters, coffee persons, and Meeting Service Representatives are needed for all STM meetings."
+  ]},
+  { title: "Meeting news", icon: CampaignRoundedIcon, items: [
+    "Guad Squad: Wednesday at 7 PM, 4635 6th Street.",
+    "Survivors Birthday/Speaker Meeting: Saturday, December 20 — Glenn S.",
+    "STM Birthday/Speaker Meeting: December 27 at 8 PM — Kila.",
+    "STM Activities Committee meets January 10 at 9 AM; Group Service meets at 10 AM. Meeting secretaries are asked to attend."
+  ]},
+  { title: "Activities", icon: CelebrationRoundedIcon, items: [
+    "SBNA Deck the Halls: December 20, 3–10 PM at 235 E. Cota St., Santa Barbara. Presale tickets: $30.",
+    "STM New Year Speaker Bash: December 31. Speakers begin at 1:30 PM, dinner and karaoke run 6–8 PM, the evening speaker begins at 8 PM, and dancing runs 9 PM–12:30 AM.",
+    "The New Year event is free. Dinner plates are $10; children eat free."
+  ]},
+  { title: "Community announcements", icon: PublicRoundedIcon, items: [
+    "Please donate new, unused toys for the STM toy drive.",
+    "Spanish NA literature and STM gear are available; order information is posted at the meeting.",
+    "Celebrating a milestone? Add your name, clean date, and clean time to the board.",
+    "Public Relations, Hospitals & Institutions, and Behind the Walls Sponsorship need volunteers."
+  ]}
+];
 
+export default function GSRReport() {
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   return (
-    <Box
-      sx={{
-        padding: "20px",
-        fontFamily: "Arial, sans-serif",
-        lineHeight: "1.6",
-        backgroundColor: "#f9f9f9",
-        color: "#333",
-        marginBottom: "20px",
-      }}
-    >
-      <Typography
-        variant="h4"
-        sx={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold" }}
-      >
-        STM GSR Report December 2025
-      </Typography>
-
-      <Divider sx={{ marginY: "20px" }} />
-
-      <section>
-        <Typography variant="h5" sx={{ marginBottom: "10px", fontWeight: "bold" }}>
-          Positions Available
-        </Typography>
-        <List>
-          <ListItem>STM GROUP POSITIONS OPEN: Vice-Chair, GSR & Literature</ListItem>
-          <ListItem>
-            Participate in Your Recovery: Thursday Noon &amp; Sunday 8pm Secretary Positions open.
-          </ListItem>
-          <ListItem>
-            Greeters, Coffee Persons &amp; Meeting Service Reps (MSRs) needed for ALL STM Meetings.
-          </ListItem>
-        </List>
-      </section>
-
-      <Divider sx={{ marginY: "20px" }} />
-
-      <section>
-        <Typography variant="h5" sx={{ marginBottom: "10px", fontWeight: "bold" }}>
-          Meeting News
-        </Typography>
-        <List>
-          <ListItem>Guad Squad: Wednesday @ 7pm: 4635 6th Street.</ListItem>
-
-          <ListItem>
-            Survivors Bday/Speaker Mtg:
-            <List sx={{ paddingLeft: "20px" }}>
-              <ListItem>Sat. Dec. 20th - Glenn S.</ListItem>
-            </List>
-          </ListItem>
-
-          <ListItem>STM Birthday/Speaker Meeting: December 27th @ 8pm - Kila</ListItem>
-
-          <ListItem>STM Activities/Group Service Committee Meeting: January 10th @ 9am &amp; 10am.</ListItem>
-
-          <ListItem sx={{ paddingLeft: "20px" }}>
-            Come support STM Activities. All Meeting Secretaries required to attend Group Service @ 10.
-          </ListItem>
-        </List>
-      </section>
-
-      <Divider sx={{ marginY: "20px" }} />
-
-      <section>
-        <Typography variant="h5" sx={{ marginBottom: "10px", fontWeight: "bold" }}>
-          Activities Flyers Posted
-        </Typography>
-        <List>
-          <ListItem>
-            SBNA Deck the Halls @ 235 E. Cota St, SB: Saturday, Dec. 20th 3-10pm. Presale Tix $30.
-          </ListItem>
-
-          <ListItem>
-            STM New Year Speaker Bash/Dinner/Karaoke/Dance: Dec. 31st
-            <List sx={{ paddingLeft: "20px" }}>
-              <ListItem>Speakers @ 1:30pm: Greggory W.</ListItem>
-              <ListItem>2:30pm: Felicia H.</ListItem>
-              <ListItem>3:30pm: Daniel M.</ListItem>
-              <ListItem>4:30pm: Lorenzo N.</ListItem>
-              <ListItem>Dinner/Karaoke @ 6-8pm.</ListItem>
-              <ListItem>Speaker @ 8pm: “T”.</ListItem>
-              <ListItem>Dance 9pm - 12:30am.</ListItem>
-              <ListItem>Event is free. Plates $10. Kids eat free.</ListItem>
-            </List>
-          </ListItem>
-        </List>
-      </section>
-
-      <Divider sx={{ marginY: "20px" }} />
-
-      <section>
-        <Typography variant="h5" sx={{ marginBottom: "10px", fontWeight: "bold" }}>
-          Other NA Announcements
-        </Typography>
-        <List>
-          <ListItem>
-            STM Toy Drive: Please donate new unused toys this Christmas for our STM kids. Thank you.
-          </ListItem>
-          <ListItem>STM Spanish NA Literature for sale now.</ListItem>
-          <ListItem>STM Venmo &amp; CashApp: Please tag $ w/info.</ListItem>
-          <ListItem>STM GEAR for sale. Order sheet posted.</ListItem>
-          <ListItem>
-            Celebrating a milestone in your recovery? Put your name, clean date &amp; time on board.
-          </ListItem>
-          <ListItem>PR, H&amp;I &amp; Behind the Walls Sponsorship needs volunteers. Info posted.</ListItem>
-          <ListItem>
-            NA Area Information @{" "}
-            <Link href="https://centralcoastna.org" target="_blank" rel="noopener">
-              centralcoastna.org
-            </Link>
-          </ListItem>
-        </List>
-      </section>
-    </Box>
+    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
+      <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "flex-end" }} spacing={2} sx={{ mb: 3 }}>
+        <Box><Typography variant="overline" color="secondary.dark" sx={{ fontWeight: 800, letterSpacing: ".12em" }}>GROUP SERVICE REPRESENTATIVE</Typography><Typography variant="h4">STM GSR report</Typography><Typography color="text.secondary" sx={{ mt: 1 }}>Group business, opportunities, events, and fellowship updates.</Typography></Box>
+        <Chip label="December 2025" sx={{ bgcolor: "primary.light", color: "primary.dark", fontWeight: 750 }} />
+      </Stack>
+      <Alert severity="info" sx={{ mb: 3 }}>This is the latest report currently posted in the app. Confirm dates with the meeting before attending an event.</Alert>
+      <Grid container spacing={2.5}>
+        {sections.map(({ title, icon: Icon, items }) => (
+          <Grid item xs={12} md={6} key={title}>
+            <Paper component="section" elevation={0} sx={{ height: "100%", p: { xs: 2.5, md: 3.5 }, border: "1px solid rgba(21,63,58,.1)" }}>
+              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1.5 }}><Box sx={{ width: 44, height: 44, display: "grid", placeItems: "center", borderRadius: 2.5, bgcolor: "primary.light", color: "primary.dark" }}><Icon /></Box><Typography variant="h5">{title}</Typography></Stack>
+              <List disablePadding>
+                {items.map((item) => <ListItem key={item} alignItems="flex-start" sx={{ px: 0, py: 1 }}><ListItemIcon sx={{ minWidth: 32, pt: .3 }}><CheckCircleOutlineRoundedIcon color="primary" sx={{ fontSize: 19 }} /></ListItemIcon><ListItemText primary={item} primaryTypographyProps={{ variant: "body2", lineHeight: 1.65 }} /></ListItem>)}
+              </List>
+            </Paper>
+          </Grid>
+        ))}
+      </Grid>
+      <Paper elevation={0} sx={{ mt: 2.5, p: 2.5, border: "1px solid rgba(21,63,58,.1)", display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+        <PublicRoundedIcon color="primary" /><Box sx={{ flex: 1, minWidth: 220 }}><Typography sx={{ fontWeight: 750 }}>Central Coast NA</Typography><Typography variant="body2" color="text.secondary">Find current regional information and announcements.</Typography></Box>
+        <Link href="https://centralcoastna.org" target="_blank" rel="noopener noreferrer" sx={{ fontWeight: 750, display: "inline-flex", alignItems: "center", gap: .5 }}>Visit website <OpenInNewRoundedIcon fontSize="small" /></Link>
+      </Paper>
+    </Container>
   );
-};
-
-export default GSRReport;
+}
