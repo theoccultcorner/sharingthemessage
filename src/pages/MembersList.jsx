@@ -35,11 +35,11 @@ const MembersList = () => {
   }, []);
 
   return (
-    <Box minHeight="100vh" bgcolor="#f0f0f0" py={4}>
-      <Container maxWidth="sm">
-        <Typography variant="h5" align="center" gutterBottom sx={{ color: "#1F3F3A" }}>
-          Members List
-        </Typography>
+    <Box minHeight="100vh" py={{ xs: 3, md: 5 }}>
+      <Container maxWidth="md">
+        <Typography variant="overline" color="secondary.dark" sx={{ fontWeight: 800, letterSpacing: ".12em" }}>COMMUNITY</Typography>
+        <Typography variant="h4" gutterBottom>Members</Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>Connect with people in the Sharing the Message fellowship.</Typography>
 
         {loading ? (
           <Box display="flex" justifyContent="center" mt={4}>

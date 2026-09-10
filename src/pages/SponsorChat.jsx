@@ -1,65 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // ==========================
-//   LOAD API KEY FROM ENV
-// ==========================
-function getApiKey() {
-  const key =
-    process.env.NEXT_PUBLIC_OPENAI_API_KEY ||
-    process.env.OPENAI_API_KEY ||
-    '';
-
-  if (typeof window !== 'undefined') {
-    console.log(
-      'MATT ENV KEY (first 10 chars):',
-      key ? key.slice(0, 10) + '...' : 'MISSING'
-    );
-  }
-
-  return key;
-}
-
-// ==========================
 //   CALL CHATGPT
 // ==========================
-async function callChatGPT(prompt, apiKey) {
-  if (!apiKey) {
-    throw new Error(
-      'Missing NEXT_PUBLIC_OPENAI_API_KEY / OPENAI_API_KEY in environment.'
-    );
-  }
-
-  const url = 'https://api.openai.com/v1/chat/completions';
-
-  const system = [
-    'You are M.A.T.T. (My Anchor Through Turmoil), a calm, compassionate NA-style sponsor.',
-    'Reply in 1–3 short sentences. Be supportive, non-judgmental, practical.',
-    'Suggest one gentle next step (drink water, text a friend, breathe).',
-    'Avoid medical claims. If user sounds in crisis, suggest calling 988 in U.S. or local help.',
-    'No emojis. Warm, grounded, concise.',
-    'Always respond ONLY as a JSON object with two keys: "reply" and "sentiment".',
-    '"reply" is the short supportive message.',
-    '"sentiment" is one of: "very low", "low", "neutral", "high", or "very high" emotional distress.',
-    'Example: {"reply":"I’m here with you.","sentiment":"high"}'
-  ].join(' ');
-
-  const body = {
-    model: 'gpt-4.1-mini',
-    messages: [
-      { role: 'system', content: system },
-      { role: 'user', content: `User said: "${prompt}"` }
-    ],
-    temperature: 0.7,
-    max_tokens: 200
-  };
-
-  const res = await fetch(url, {
+async function callChatGPT(prompt) {
+  const res = await fetch('/api/matt', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt })
   });
 
   const text = await res.text();
@@ -75,17 +23,7 @@ async function callChatGPT(prompt, apiKey) {
     throw new Error(data?.error?.message || `OpenAI HTTP ${res.status}`);
   }
 
-  const content = data?.choices?.[0]?.message?.content || '';
-
-  try {
-    const parsed = JSON.parse(content);
-    return {
-      reply: parsed.reply || '',
-      sentiment: parsed.sentiment || 'unknown'
-    };
-  } catch {
-    return { reply: content.trim(), sentiment: 'unknown' };
-  }
+  return { reply: data.reply || '', sentiment: data.sentiment || 'unknown' };
 }
 
 // ==========================
@@ -344,7 +282,6 @@ const styles = {
 //   MAIN COMPONENT
 // ==========================
 function SponsorChat() {
-  const API_KEY = getApiKey();
   const recognitionRef = useRef(null);
 
   const [isListening, setIsListening] = useState(false);
@@ -420,7 +357,7 @@ function SponsorChat() {
       setStatusText('Thinking…');
 
       try {
-        const { reply, sentiment } = await callChatGPT(transcript, API_KEY);
+        const { reply, sentiment } = await callChatGPT(transcript);
         setSentiment(sentiment);
         setErrorText('');
         speak(reply || "I'm here for you.");
@@ -473,7 +410,7 @@ function SponsorChat() {
     setStatusText('Thinking…');
 
     try {
-      const { reply, sentiment } = await callChatGPT(manualText, API_KEY);
+      const { reply, sentiment } = await callChatGPT(manualText);
       setSentiment(sentiment);
       setErrorText('');
       speak(reply || "I'm here for you.");
@@ -494,8 +431,6 @@ function SponsorChat() {
     if (s.includes('neutral')) return styles.sentimentNeutral;
     return {};
   })();
-
-  const hasKey = !!API_KEY;
 
   return (
     <div style={styles.root}>
@@ -518,17 +453,6 @@ function SponsorChat() {
             </div>
           ) : null}
 
-          <div
-            style={{
-              ...styles.chipBase,
-              ...(hasKey ? styles.chipKeyOk : styles.chipKeyMissing)
-            }}
-          >
-            <span style={styles.chipLabel}>API Key</span>
-            <span style={styles.chipValue}>
-              {hasKey ? 'Loaded' : 'Missing'}
-            </span>
-          </div>
         </section>
 
         {errorText && <div style={styles.errorBox}>{errorText}</div>}

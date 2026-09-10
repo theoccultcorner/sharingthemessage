@@ -184,20 +184,18 @@ export default function Meetings() {
   }, [daysOfWeek]);
 
   return (
-    <Container sx={{ mt: 4, mb: 10 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
       <Typography
         variant={isMobile ? "h5" : "h4"}
-        align="center"
+        align="left"
         fontWeight="bold"
         gutterBottom
       >
-        Daily NA Meetings
+        Meetings
       </Typography>
 
-      <Typography align="center" variant="body2" sx={{ mb: 2 }}>
-        {STM_LOCATION.name}
-        <br />
-        {STM_LOCATION.address}
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+        Sharing the Message meets {STM_LOCATION.name}, {STM_LOCATION.address}.
       </Typography>
 
       <Tabs
@@ -205,14 +203,14 @@ export default function Meetings() {
         onChange={(_, v) => setSelectedTab(v)}
         variant="scrollable"
         scrollButtons="auto"
-        sx={{ mb: 2 }}
+        sx={{ mb: 2, bgcolor: "#fff", borderRadius: 3, px: 1, border: "1px solid rgba(21,63,58,.09)" }}
       >
         {daysOfWeek.map((day) => (
           <Tab key={day} label={day} />
         ))}
       </Tabs>
 
-      <Paper elevation={2} sx={{ p: 2 }}>
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3.5 }, border: "1px solid rgba(21,63,58,.1)" }}>
         <Typography variant="h6" fontWeight={700}>
           STM Hosts
         </Typography>
@@ -240,9 +238,9 @@ export default function Meetings() {
       </Paper>
 
       {/* ✅ CSV EXPORT (BOTTOM) */}
-      <Paper elevation={3} sx={{ p: 2, mt: 4 }}>
+      <Paper elevation={0} sx={{ p: 2.5, mt: 3, border: "1px solid rgba(21,63,58,.1)" }}>
         <Typography variant="h6" fontWeight={800} gutterBottom>
-          Export Meetings (CSV)
+          Take the schedule with you
         </Typography>
 
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>

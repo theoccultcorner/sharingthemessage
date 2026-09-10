@@ -1,8 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import theme from './theme';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test('uses the Sharing the Message design system', () => {
+  expect(theme.palette.primary.main).toBe('#153f3a');
+  expect(theme.typography.button.textTransform).toBe('none');
 });

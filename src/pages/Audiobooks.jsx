@@ -5,6 +5,8 @@ import {
   AccordionSummary,
   AccordionDetails,
   Typography,
+  Box,
+  Container,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
@@ -57,9 +59,10 @@ const books = [
 
 const Audiobooks = () => {
   return (
-    <div style={{ padding: "1rem", maxWidth: "900px", margin: "0 auto" }}>
-      <h1>Narcotics Anonymous Audiobooks</h1>
-      <p>Click each book to explore its chapters:</p>
+    <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+      <Typography variant="overline" color="secondary.dark" sx={{ fontWeight: 800, letterSpacing: ".12em" }}>LISTEN & LEARN</Typography>
+      <Typography variant="h4" gutterBottom>Audiobooks</Typography>
+      <Typography color="text.secondary" sx={{ mb: 3 }}>Choose a book, then select a chapter to listen.</Typography>
       {books.map((book, bookIndex) => (
         <Accordion key={bookIndex}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -101,7 +104,8 @@ const Audiobooks = () => {
           </AccordionDetails>
         </Accordion>
       ))}
-    </div>
+      <Box sx={{ height: 12 }} />
+    </Container>
   );
 };
 

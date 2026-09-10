@@ -24,10 +24,10 @@ const PhoneList = () => {
   );
 
   return (
-    <Box sx={{ maxWidth: 500, mx: "auto", mt: 4 }}>
-      <Typography variant="h5" align="center" gutterBottom>
-        📞 Phone List
-      </Typography>
+    <Box sx={{ maxWidth: 760, mx: "auto", py: { xs: 3, md: 5 }, px: 2 }}>
+      <Typography variant="overline" color="secondary.dark" sx={{ fontWeight: 800, letterSpacing: ".12em" }}>FELLOWSHIP</Typography>
+      <Typography variant="h4" gutterBottom>Phone list</Typography>
+      <Typography color="text.secondary" sx={{ mb: 3 }}>Tap a member to call. Use search to find someone quickly.</Typography>
 
       {/* Toggle between Men/Women */}
       <ToggleButtonGroup

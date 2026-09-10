@@ -15,10 +15,10 @@ const ChatRoom = () => {
     >
       <Box>
         <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
-          🚧 Under Construction
+          Message board
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          This page is being built. Please check back soon.
+          Community conversations are coming soon.
         </Typography>
       </Box>
     </Box>

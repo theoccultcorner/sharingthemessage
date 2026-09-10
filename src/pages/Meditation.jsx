@@ -7,18 +7,13 @@ import {
   Typography,
   Paper,
   CircularProgress,
-  AppBar,
-  Toolbar,
-  Button
+  Alert
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useNavigate } from "react-router-dom";
 
 const Meditation = () => {
   const [meditation, setMeditation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const loadMeditation = async () => {
@@ -55,32 +50,19 @@ const Meditation = () => {
 
   return (
     <Box>
-      <AppBar position="static" sx={{ backgroundColor: "#1F3F3A" }}>
-        <Toolbar>
-          <Button
-            color="inherit"
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate("/home")}
-          >
-            Back
-          </Button>
-          <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center" }}>
-            Daily Meditation
-          </Typography>
-        </Toolbar>
-      </AppBar>
-
-      <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
+      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+        <Typography variant="overline" color="secondary.dark" sx={{ fontWeight: 800, letterSpacing: ".12em" }}>JUST FOR TODAY</Typography>
+        <Typography variant="h4" sx={{ mb: 3 }}>Daily meditation</Typography>
         {loading ? (
           <CircularProgress />
         ) : error ? (
-          <Typography color="error">{error}</Typography>
+          <Alert severity="error">{error}</Alert>
         ) : meditation ? (
-          <Paper elevation={3} sx={{ p: 3, whiteSpace: "pre-line" }}>
+          <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, whiteSpace: "pre-line", border: "1px solid rgba(21,63,58,.1)", boxShadow: "0 16px 42px rgba(25,55,49,.08)" }}>
             <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
               {meditation.date}
             </Typography>
-            <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
+            <Typography variant="body1" sx={{ lineHeight: 1.85, fontSize: "1.08rem" }}>
               {meditation.text}
             </Typography>
           </Paper>

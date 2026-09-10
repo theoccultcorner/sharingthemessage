@@ -3,19 +3,14 @@ import { useAuth } from "../context/AuthContext";
 import { db, auth, rtdb } from "../firebase";
 import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { ref as rtdbRef, remove as rtdbRemove } from "firebase/database";
-import { signOut, deleteUser } from "firebase/auth";
+import { deleteUser } from "firebase/auth";
 import {
-  AppBar,
-  Toolbar,
   Typography,
   TextField,
   Button,
   Container,
   Stack,
   Box,
-  Paper,
-  BottomNavigation,
-  BottomNavigationAction,
   Chip,
   Link,
   Card,
@@ -28,10 +23,6 @@ import {
   DialogActions,
   Alert
 } from "@mui/material";
-import GroupIcon from "@mui/icons-material/Group";
-import MessageIcon from "@mui/icons-material/Message";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import LogoutIcon from "@mui/icons-material/Logout";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { useNavigate } from "react-router-dom";
@@ -39,7 +30,6 @@ import { useNavigate } from "react-router-dom";
 const Profile = () => {
   const { user, screenName, setScreenName } = useAuth();
   const navigate = useNavigate();
-  const [navValue, setNavValue] = useState(2);
 
   const [profileData, setProfileData] = useState({
     screenName: screenName || "",
@@ -136,10 +126,6 @@ const Profile = () => {
     }
   };
 
-  const handleLogout = () => {
-    signOut(auth);
-  };
-
   const getDaysClean = (cleanDateString) => {
     const cleanDate = new Date(cleanDateString);
     const today = new Date();
@@ -204,31 +190,12 @@ const Profile = () => {
   };
 
   return (
-    <Box minHeight="100vh" display="flex" flexDirection="column" bgcolor="#f0f0f0">
-      <AppBar position="static" sx={{ backgroundColor: "#1F3F3A" }}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            My NA Profile
-          </Typography>
-
-          {/* Delete button added in AppBar */}
-          <Button 
-            color="error" 
-            variant="outlined"
-            onClick={openDeleteDialog}
-            startIcon={<DeleteForeverIcon />}
-            sx={{ mr: 1 }}
-          >
-            Delete
-          </Button>
-
-          <Button color="inherit" onClick={handleLogout} startIcon={<LogoutIcon />}>
-            Logout
-          </Button>
-        </Toolbar>
-      </AppBar>
-
-      <Container maxWidth="sm" sx={{ mt: 4, mb: 10, flexGrow: 1 }}>
+    <Box minHeight="100vh" display="flex" flexDirection="column">
+      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 }, flexGrow: 1 }}>
+        <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "center" }} spacing={2} sx={{ mb: 3 }}>
+          <Box><Typography variant="overline" color="secondary.dark" sx={{ fontWeight: 800, letterSpacing: ".12em" }}>MEMBER PROFILE</Typography><Typography variant="h4">Your recovery space</Typography></Box>
+          <Button color="error" variant="outlined" onClick={openDeleteDialog} startIcon={<DeleteForeverIcon />}>Delete account</Button>
+        </Stack>
         <Card>
           <CardContent>
             <Stack alignItems="center" spacing={2}>
@@ -398,29 +365,6 @@ const Profile = () => {
           </CardContent>
         </Card>
       </Container>
-
-      <Paper sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }} elevation={3}>
-        <BottomNavigation
-          showLabels
-          value={navValue}
-          onChange={(event, newValue) => {
-            setNavValue(newValue);
-            if (newValue === 0) navigate("/meetings");
-            if (newValue === 1) navigate("/chatroom");
-            if (newValue === 2) navigate("/profile");
-          }}
-          sx={{
-            backgroundColor: "#f5f5f5",
-            "& .Mui-selected, & .Mui-selected > svg": {
-              color: "#1F3F3A"
-            }
-          }}
-        >
-          <BottomNavigationAction label="Meetings" icon={<GroupIcon />} />
-          <BottomNavigationAction label="Message Board" icon={<MessageIcon />} />
-          <BottomNavigationAction label="Profile" icon={<AccountCircleIcon />} />
-        </BottomNavigation>
-      </Paper>
 
       {/* Delete confirmation dialog */}
       <Dialog open={confirmOpen} onClose={closeDeleteDialog}>

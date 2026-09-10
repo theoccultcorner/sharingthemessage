@@ -22,15 +22,15 @@ export const AuthProvider = ({ children }) => {
 
           if (snap.exists()) {
             const data = snap.data();
-            setScreenName(data.screenName || firebaseUser.displayName || firebaseUser.email);
+            setScreenName(data.screenName || "");
             setRole(data.role || "member");
           } else {
-            setScreenName(firebaseUser.displayName || firebaseUser.email);
+            setScreenName("");
             setRole("member");
           }
         } catch (err) {
           console.error("Error fetching user profile:", err);
-          setScreenName(firebaseUser.displayName || firebaseUser.email);
+          setScreenName("");
         }
       } else {
         setUser(null);
