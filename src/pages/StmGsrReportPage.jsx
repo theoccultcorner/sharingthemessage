@@ -99,12 +99,16 @@ export default function GSRReport() {
         if (snapshot.exists()) {
           const data = snapshot.data();
 
-          setSections(
-            (data.sections || defaultSections).map((section, index) => ({
-              ...section,
-              icon: defaultSections[index]?.icon || PublicRoundedIcon,
-            }))
-          );
+      setSections(
+  (data.sections || defaultSections).map((section, index) => ({
+    ...section,
+    title:
+      index === 3
+        ? "Other NA Announcements"
+        : section.title || defaultSections[index]?.title,
+    icon: defaultSections[index]?.icon || PublicRoundedIcon,
+  }))
+);
 
           setReportDate(data.reportDate || "December 2025");
         }
