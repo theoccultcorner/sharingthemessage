@@ -44,8 +44,10 @@ const parseContacts = (value) =>
 export default function PhoneList() {
   const { user } = useAuth();
 
-  const canEdit =
-    user?.email?.toLowerCase() === PHONE_EDITOR_EMAIL.toLowerCase();
+ 
+
+const canEdit =
+  user?.email?.trim().toLowerCase() === PHONE_EDITOR_EMAIL;
 
   const [contacts, setContacts] = useState({
     women: womenContacts,
