@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "message_board": {
+      ".read": "auth != null",
+      "$messageId": {
+        ".write": "auth != null && ((!data.exists() && newData.child('authorId').val() == auth.uid) || (data.exists() && data.child('authorId').val() == auth.uid && !newData.exists()))",
+        ".validate": "newData.hasChildren(['body', 'authorId', 'authorName', 'createdAt']) && newData.child('body').isString() && newData.child('body').val().length <= 500 && newData.child('authorId').val() == auth.uid"
+      }
+    }
+  }
+}
