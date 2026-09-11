@@ -65,7 +65,7 @@ const defaultSections = [
     ],
   },
   {
-    title: "Community announcements",
+    title: "Other NA announcements",
     icon: PublicRoundedIcon,
     items: [
       "Please donate new, unused toys for the STM toy drive.",
