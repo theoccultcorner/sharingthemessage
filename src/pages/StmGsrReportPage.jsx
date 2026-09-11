@@ -32,7 +32,7 @@ import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 
-const GSR_EDITOR_EMAIL = "nmsaucedapacios@gmail.com";
+const GSR_EDITOR_EMAIL = "nmsaucedapalacios@gmail.com";
 const REPORT_REF = doc(db, "reports", "gsr");
 
 const defaultSections = [
